@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, APIRouter, UploadFile, File, BackgroundTasks, HTTPException
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -493,6 +493,11 @@ def cancel_task(task_id: int):
 DIST = Path("static")
 app.include_router(api_router)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+@app.get("/")
+def redirect_to_static():
+    """根路径重定向到 /static"""
+    return RedirectResponse(url="/static", status_code=302)
 
 @app.get("/static/{path:path}")
 def spa_fallback(path: str):

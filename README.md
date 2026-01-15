@@ -28,54 +28,25 @@
   - 执行统计（成功/失败次数）
   - 媒体文件在线预览
 
+## 应用截图
 
-![1](./images/1.png)                                       
-                                                                                     
-![2](./images/2.png)                                      
-                                                                                                  
-![3](./images/3.png)                                     
-                                                        
+![任务列表](./images/1.png)
+![创建任务](./images/2.png)
+![任务结果](./images/3.png)
+
 ## 技术栈
 
 ### 后端
-- **框架**: FastAPI 0.125.0
-- **数据库**: SQLite
-- **任务队列**: 自定义任务管理器（支持并发控制）
-- **HTTP 客户端**: requests
-- **环境变量**: python-dotenv
+- FastAPI 0.125.0
+- SQLite
+- requests
+- python-dotenv
 
 ### 前端
-- **框架**: React Router v7
-- **语言**: TypeScript
-- **构建工具**: Vite 7
-- **UI 框架**: Tailwind CSS 4 + shadcn/ui
-- **图标**: lucide-react
-- **HTTP 客户端**: axios
-
-## 项目结构
-
-```
-runninghub/
-├── app.py                # FastAPI 应用主文件
-├── database.py           # 数据库操作
-├── runninghub.py         # RunningHub API 集成
-├── task_manager.py       # 任务队列管理器
-├── .env                  # 环境变量配置
-├── .env.example          # 环境变量模板
-├── pyproject.toml        # Python 项目配置
-├── requirements.txt      # Python 依赖
-├── static/               # 前端构建输出目录
-├── uploads/              # 本地上传文件存储
-├── runninghub.db         # SQLite 数据库
-└── frontend/             # 前端项目
-    ├── app/
-    │   ├── routes/      # 页面路由
-    │   ├── components/  # UI 组件
-    │   ├── lib/         # 工具库
-    │   └── types/       # TypeScript 类型定义
-    ├── package.json
-    └── vite.config.ts   # Vite 构建配置
-```
+- React Router v7
+- TypeScript
+- Vite 7
+- Tailwind CSS 4 + shadcn/ui
 
 ## 快速开始
 
@@ -83,19 +54,8 @@ runninghub/
 
 - Python 3.13+
 - Node.js 18+
-- uv 或 pip（Python 包管理器）
-- pnpm 或 npm（Node.js 包管理器）
 
-### 1. 克隆项目
-
-```bash
-git clone <repository-url>
-cd runninghub
-```
-
-### 2. 配置环境变量
-
-复制环境变量模板并填入你的 API Key：
+### 1. 配置环境变量
 
 ```bash
 cp .env.example .env
@@ -107,69 +67,46 @@ cp .env.example .env
 RUNNINGHUB_API_KEY=your_api_key_here
 ```
 
-> 获取 API Key：登录 [RunningHub 控制台](https://www.runninghub.cn) 获取
+> 获取 API Key：登录 [RunningHub 控制台](https://www.runninghub.cn)
 
-### 3. 安装后端依赖
-
-**使用 uv（推荐）：**
+### 2. 安装依赖
 
 ```bash
-uv sync
-```
-
-**或使用 pip：**
-
-```bash
+# 安装后端依赖
 pip install -r requirements.txt
-```
 
-### 4. 安装前端依赖
-
-```bash
+# 安装前端依赖
 cd frontend
-pnpm install
-# 或
 npm install
 ```
 
-### 5. 构建前端
+### 3. 构建前端
 
 ```bash
-pnpm build
-# 或
 npm run build
 ```
 
-构建完成后，前端文件会自动复制到 `static/` 目录。
-
-### 6. 启动后端服务
+### 4. 启动服务
 
 ```bash
+cd ..
 python app.py
 ```
 
 服务将在 `http://localhost:7777` 启动。
 
-### 7. 访问应用
-
-打开浏览器访问：`http://localhost:7777`
-
 ## 开发模式
 
-### 前端开发
-
 ```bash
-cd frontend
-pnpm dev
-```
-
-前端开发服务器将在 `http://localhost:5173` 启动。
-
-### 后端开发
-
-```bash
+# 终端 1：启动后端
 python app.py
+
+# 终端 2：启动前端开发服务器
+cd frontend
+npm run dev
 ```
+
+前端开发服务器：`http://localhost:5173`
 
 ## API 接口
 
@@ -187,146 +124,34 @@ python app.py
 ### 文件管理
 - `POST /api/upload` - 上传文件
 - `GET /api/media/files` - 获取媒体文件列表
-- `GET /api/media/file/{file_id}` - 获取媒体文件（预览）
 
 ### 任务模板
 - `POST /api/templates` - 保存模板
 - `GET /api/templates` - 获取模板列表
-- `GET /api/templates/{template_id}` - 获取模板详情
 - `DELETE /api/templates/{template_id}` - 删除模板
-
-## 部署
-
-### 生产环境部署
-
-1. **构建前端**
-
-```bash
-cd frontend
-pnpm build
-```
-
-2. **配置生产环境变量**
-
-创建 `.env.production` 文件：
-
-```env
-RUNNINGHUB_API_KEY=your_production_api_key
-```
-
-3. **使用 Gunicorn 启动（推荐）**
-
-```bash
-pip install gunicorn
-gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:7777
-```
-
-4. **使用 systemd 服务（Linux）**
-
-创建 `/etc/systemd/system/runninghub.service`：
-
-```ini
-[Unit]
-Description=RunningHub Task Manager
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/path/to/runninghub
-Environment="PATH=/path/to/runninghub/.venv/bin"
-ExecStart=/path/to/runninghub/.venv/bin/gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:7777
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-启动服务：
-
-```bash
-sudo systemctl start runninghub
-sudo systemctl enable runninghub
-```
-
-### Docker 部署（可选）
-
-创建 `Dockerfile`：
-
-```dockerfile
-FROM python:3.13-slim
-
-WORKDIR /app
-
-# 安装 Python 依赖
-COPY pyproject.toml requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 复制应用代码
-COPY . .
-
-# 构建前端
-WORKDIR /app/frontend
-RUN npm install && npm run build
-
-WORKDIR /app
-
-# 暴露端口
-EXPOSE 7777
-
-# 启动应用
-CMD ["python", "app.py"]
-```
-
-构建和运行：
-
-```bash
-docker build -t runninghub .
-docker run -d -p 7777:7777 --env RUNNINGHUB_API_KEY=your_key runninghub
-```
 
 ## 配置说明
 
 ### 任务并发控制
 
-在 `task_manager.py` 中可以修改并发任务数：
+在 `task_manager.py` 中修改最大并发任务数：
 
 ```python
-MAX_CONCURRENT_TASKS = 2  # 最大并发任务数
-```
-
-### 前端 API 地址
-
-在 `frontend/.env` 中配置开发环境 API 地址：
-
-```env
-VITE_API_BASE_URL=http://localhost:7777
+MAX_CONCURRENT_TASKS = 2
 ```
 
 ## 常见问题
 
-### 1. 任务执行失败
-
+### 任务执行失败
 - 检查 RunningHub API Key 是否正确
 - 查看后端日志获取详细错误信息
 - 使用"重试"功能重新执行失败的任务
 
-### 2. 文件上传失败
-
+### 文件上传失败
 - 检查 `uploads/` 目录是否有写入权限
 - 确认文件大小未超过限制
 - 查看后端日志
 
-### 3. 前端无法连接后端
-
-- 确认后端服务已启动
-- 检查 `VITE_API_BASE_URL` 配置是否正确
-- 查看浏览器控制台错误信息
-
 ## 许可证
 
 MIT License
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！

@@ -4,8 +4,13 @@ import mimetypes
 from codecs import encode
 import time
 import os
+import ssl
 import requests
 from dotenv import load_dotenv
+import urllib3
+
+# 禁用 SSL 警告
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # 加载环境变量
 load_dotenv()
@@ -15,7 +20,9 @@ API_KEY = os.getenv("RUNNINGHUB_API_KEY")
 if not API_KEY:
     raise ValueError("环境变量 RUNNINGHUB_API_KEY 未设置，请在 .env 文件中配置")
 def get_nodo(webappId):
-    conn = http.client.HTTPSConnection(API_HOST)
+    # 创建不验证 SSL 的上下文
+    context = ssl._create_unverified_context()
+    conn = http.client.HTTPSConnection(API_HOST, context=context)
     payload = ''
     headers = {}
     conn.request("GET", f"/api/webapp/apiCallDemo?apiKey={API_KEY}&webappId={webappId}", payload, headers)
@@ -43,11 +50,14 @@ def upload_file(file_path):
     }
     with open(file_path, 'rb') as f:
         files = {'file': f}
-        response = requests.post(url, headers=headers, files=files, data=data)
+        # 禁用 SSL 验证
+        response = requests.post(url, headers=headers, files=files, data=data, verify=False)
     return response.json()
 # 1️⃣ 提交任务
 def submit_task(webapp_id, node_info_list):
-    conn = http.client.HTTPSConnection(API_HOST)
+    # 创建不验证 SSL 的上下文
+    context = ssl._create_unverified_context()
+    conn = http.client.HTTPSConnection(API_HOST, context=context)
     payload = json.dumps({
         "webappId": webapp_id,
         "apiKey": API_KEY,
@@ -64,7 +74,9 @@ def submit_task(webapp_id, node_info_list):
     conn.close()
     return data
 def query_task_outputs(task_id):
-    conn = http.client.HTTPSConnection(API_HOST)
+    # 创建不验证 SSL 的上下文
+    context = ssl._create_unverified_context()
+    conn = http.client.HTTPSConnection(API_HOST, context=context)
     payload = json.dumps({
         "apiKey": API_KEY,
         "taskId": task_id

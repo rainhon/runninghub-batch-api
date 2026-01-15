@@ -1,0 +1,35 @@
+[
+  {
+    "nodeId": "82",
+    "nodeName": "LoadImage",
+    "fieldName": "image",
+    "fieldValue": "${FILE_NAME}",
+    "fieldData": "[[\"example.png\", \"keep_this_dic\"], {\"image_upload\": true}]",
+    "fieldType": "IMAGE",
+    "description": "人物图片（含背景尽量全身）",
+    "descriptionCn": null,
+    "descriptionEn": "Character image (including background, preferably full body)"
+  },
+  {
+    "nodeId": "79",
+    "nodeName": "StringConstantMultiline",
+    "fieldName": "string",
+    "fieldValue": "主体在跳舞，(虚化背景:1.5)，",
+    "fieldData": "[\"STRING\", {\"default\": \"\", \"multiline\": true}]",
+    "fieldType": "STRING",
+    "description": "提示词（可补充添加人物图片中没有的元素）",
+    "descriptionCn": null,
+    "descriptionEn": "Prompt (you can supplement elements not present in the character image)"
+  },
+  {
+    "nodeId": "160",
+    "nodeName": "StringConstantMultiline",
+    "fieldName": "string",
+    "fieldValue": "${TEMPLATE_ID}",
+    "fieldData": "[\"STRING\", {\"default\": \"\", \"multiline\": true}]",
+    "fieldType": "STRING",
+    "description": "参考视频序号（1-6）",
+    "descriptionCn": null,
+    "descriptionEn": "Reference video number (1 6)"
+  }
+]

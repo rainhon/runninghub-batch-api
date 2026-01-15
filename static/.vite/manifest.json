@@ -1,0 +1,156 @@
+{
+  "_api-BhhqYs-Z.js": {
+    "file": "assets/api-BhhqYs-Z.js",
+    "name": "api",
+    "imports": [
+      "_createLucideIcon-DtgM1CL6.js",
+      "_chunk-WWGJGFF6-nyOa09Sz.js",
+      "_index-DwmZqWTl.js"
+    ]
+  },
+  "_card-Df6hLeyZ.js": {
+    "file": "assets/card-Df6hLeyZ.js",
+    "name": "card",
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js",
+      "_createLucideIcon-DtgM1CL6.js"
+    ]
+  },
+  "_chunk-WWGJGFF6-nyOa09Sz.js": {
+    "file": "assets/chunk-WWGJGFF6-nyOa09Sz.js",
+    "name": "chunk-WWGJGFF6"
+  },
+  "_createLucideIcon-DtgM1CL6.js": {
+    "file": "assets/createLucideIcon-DtgM1CL6.js",
+    "name": "createLucideIcon",
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js"
+    ]
+  },
+  "_file-text-976nw4IX.js": {
+    "file": "assets/file-text-976nw4IX.js",
+    "name": "file-text",
+    "imports": [
+      "_createLucideIcon-DtgM1CL6.js"
+    ]
+  },
+  "_index-DwmZqWTl.js": {
+    "file": "assets/index-DwmZqWTl.js",
+    "name": "index",
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js"
+    ]
+  },
+  "_list-COZZlOOw.js": {
+    "file": "assets/list-COZZlOOw.js",
+    "name": "list",
+    "imports": [
+      "_createLucideIcon-DtgM1CL6.js"
+    ]
+  },
+  "_plus-Bi-xtxpj.js": {
+    "file": "assets/plus-Bi-xtxpj.js",
+    "name": "plus",
+    "imports": [
+      "_createLucideIcon-DtgM1CL6.js"
+    ]
+  },
+  "_save-Zqon43ao.js": {
+    "file": "assets/save-Zqon43ao.js",
+    "name": "save",
+    "imports": [
+      "_createLucideIcon-DtgM1CL6.js"
+    ]
+  },
+  "_table-BNpnYNON.js": {
+    "file": "assets/table-BNpnYNON.js",
+    "name": "table",
+    "imports": [
+      "_createLucideIcon-DtgM1CL6.js",
+      "_chunk-WWGJGFF6-nyOa09Sz.js"
+    ]
+  },
+  "app/root.tsx?__react-router-build-client-route": {
+    "file": "assets/root-479vm0GW.js",
+    "name": "root",
+    "src": "app/root.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js",
+      "_createLucideIcon-DtgM1CL6.js",
+      "_list-COZZlOOw.js",
+      "_file-text-976nw4IX.js"
+    ],
+    "css": [
+      "assets/root-B8cbMEc0.css"
+    ]
+  },
+  "app/routes/create.tsx?__react-router-build-client-route": {
+    "file": "assets/create-DO7lZFJM.js",
+    "name": "create",
+    "src": "app/routes/create.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js",
+      "_createLucideIcon-DtgM1CL6.js",
+      "_api-BhhqYs-Z.js",
+      "_card-Df6hLeyZ.js",
+      "_plus-Bi-xtxpj.js",
+      "_save-Zqon43ao.js",
+      "_index-DwmZqWTl.js"
+    ]
+  },
+  "app/routes/home.tsx?__react-router-build-client-route": {
+    "file": "assets/home-C8aQekOL.js",
+    "name": "home",
+    "src": "app/routes/home.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js",
+      "_createLucideIcon-DtgM1CL6.js",
+      "_card-Df6hLeyZ.js",
+      "_list-COZZlOOw.js"
+    ]
+  },
+  "app/routes/tasks.tsx?__react-router-build-client-route": {
+    "file": "assets/tasks-Pe7c88xq.js",
+    "name": "tasks",
+    "src": "app/routes/tasks.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js",
+      "_createLucideIcon-DtgM1CL6.js",
+      "_api-BhhqYs-Z.js",
+      "_card-Df6hLeyZ.js",
+      "_table-BNpnYNON.js",
+      "_save-Zqon43ao.js",
+      "_index-DwmZqWTl.js"
+    ]
+  },
+  "app/routes/templates.tsx?__react-router-build-client-route": {
+    "file": "assets/templates-BaFtRKa4.js",
+    "name": "templates",
+    "src": "app/routes/templates.tsx?__react-router-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js",
+      "_createLucideIcon-DtgM1CL6.js",
+      "_api-BhhqYs-Z.js",
+      "_card-Df6hLeyZ.js",
+      "_table-BNpnYNON.js",
+      "_plus-Bi-xtxpj.js",
+      "_file-text-976nw4IX.js",
+      "_index-DwmZqWTl.js"
+    ]
+  },
+  "node_modules/@react-router/dev/dist/config/defaults/entry.client.tsx": {
+    "file": "assets/entry.client-h1ppbj9q.js",
+    "name": "entry.client",
+    "src": "node_modules/@react-router/dev/dist/config/defaults/entry.client.tsx",
+    "isEntry": true,
+    "imports": [
+      "_chunk-WWGJGFF6-nyOa09Sz.js",
+      "_index-DwmZqWTl.js"
+    ]
+  }
+}

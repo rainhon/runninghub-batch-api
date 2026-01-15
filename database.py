@@ -14,6 +14,15 @@ def get_db_connection() -> sqlite3.Connection:
         conn = sqlite3.connect(DB_FILE_PATH)
         # 设置行工厂，查询结果以字典形式返回
         conn.row_factory = sqlite3.Row
+
+        # 设置时区为中国时区 (UTC+8)
+        # 注意：需要 SQLite 3.38.0+ 版本支持
+        try:
+            conn.execute("PRAGMA time_zone = '+08:00'")
+        except sqlite3.OperationalError:
+            # 如果 SQLite 版本不支持，忽略错误
+            pass
+
         return conn
     except sqlite3.Error as e:
         raise Exception(f"数据库连接失败：{str(e)}")

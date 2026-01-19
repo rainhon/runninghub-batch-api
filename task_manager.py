@@ -251,18 +251,24 @@ class TaskManager:
         """队列处理循环（内部方法）"""
         while self.is_running:
             try:
-                if not self.queue.empty() and self._can_start_task():
-                    task_data = self.queue.get(timeout=1)
-                    mission_id, repeat_index = task_data
-                    print(f"🚀 从队列取出任务 #{mission_id} (第{repeat_index}次执行)")
+                with self.lock:  # 加锁确保并发控制准确
+                    if not self.queue.empty() and self._can_start_task():
+                        task_data = self.queue.get_nowait()  # 使用 nowait 因为已经在锁中
+                        mission_id, repeat_index = task_data
 
-                    # 在新线程中处理任务
-                    task_thread = threading.Thread(
-                        target=self._execute_task,
-                        args=(task_data,),
-                        daemon=True
-                    )
-                    task_thread.start()
+                        # 先标记为运行中，再启动线程
+                        execution_id = self._get_next_execution_id()
+                        self._mark_task_running(execution_id)
+
+                        print(f"🚀 从队列取出任务 #{mission_id} (第{repeat_index}次执行)，当前并发: {self._get_running_count()}/{MAX_CONCURRENT_TASKS}")
+
+                        # 在新线程中处理任务，传入 execution_id
+                        task_thread = threading.Thread(
+                            target=self._execute_task_with_id,
+                            args=(execution_id, task_data,),
+                            daemon=True
+                        )
+                        task_thread.start()
 
                 time.sleep(0.5)  # 避免 CPU 占用过高
             except Exception as e:
@@ -295,17 +301,20 @@ class TaskManager:
             self.execution_counter += 1
             return self.execution_counter
 
-    def _execute_task(self, task_data: tuple):
-        """执行单个任务（内部方法）"""
+    def _execute_task_with_id(self, execution_id: int, task_data: tuple):
+        """执行单个任务（内部方法）- 已预先标记运行中
+
+        Args:
+            execution_id: 执行实例ID
+            task_data: (mission_id, repeat_index)
+        """
         mission_id, repeat_index = task_data
-        # 如果没有 repeat_index，生成一个执行ID
-        execution_id = self._get_next_execution_id()
         if repeat_index is None:
             repeat_index = 1  # 默认为第1次
 
         error_message = None
         try:
-            self._mark_task_running(execution_id)
+            # 已经在 _process_queue 中标记为运行中了，不需要再次标记
             print(f"🔵 执行实例 #{execution_id} - 任务 #{mission_id} (第{repeat_index}次执行) 开始")
 
             # 获取任务信息

@@ -251,16 +251,17 @@ class TaskManager:
         """队列处理循环（内部方法）"""
         while self.is_running:
             try:
-                with self.lock:  # 加锁确保并发控制准确
-                    if not self.queue.empty() and self._can_start_task():
-                        task_data = self.queue.get_nowait()  # 使用 nowait 因为已经在锁中
+                with self.lock:  # 在整个循环中持有锁
+                    if not self.queue.empty() and len(self.running_tasks) < MAX_CONCURRENT_TASKS:
+                        task_data = self.queue.get_nowait()
                         mission_id, repeat_index = task_data
 
-                        # 先标记为运行中，再启动线程
-                        execution_id = self._get_next_execution_id()
-                        self._mark_task_running(execution_id)
+                        # 生成执行ID并标记为运行中（原子操作）
+                        self.execution_counter += 1
+                        execution_id = self.execution_counter
+                        self.running_tasks.add(execution_id)
 
-                        print(f"🚀 从队列取出任务 #{mission_id} (第{repeat_index}次执行)，当前并发: {self._get_running_count()}/{MAX_CONCURRENT_TASKS}")
+                        print(f"🚀 从队列取出任务 #{mission_id} (第{repeat_index}次执行)，当前并发: {len(self.running_tasks)}/{MAX_CONCURRENT_TASKS}")
 
                         # 在新线程中处理任务，传入 execution_id
                         task_thread = threading.Thread(
@@ -273,33 +274,9 @@ class TaskManager:
                 time.sleep(0.5)  # 避免 CPU 占用过高
             except Exception as e:
                 print(f"❌ 队列处理错误: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 time.sleep(1)
-
-    def _can_start_task(self) -> bool:
-        """检查是否可以启动新任务（内部方法）"""
-        return self._get_running_count() < MAX_CONCURRENT_TASKS
-
-    def _get_running_count(self) -> int:
-        """获取当前运行中的任务数量（内部方法）"""
-        with self.lock:
-            return len(self.running_tasks)
-
-    def _mark_task_running(self, execution_id: int):
-        """标记任务为运行中（内部方法）"""
-        with self.lock:
-            self.running_tasks.add(execution_id)
-
-    def _mark_task_complete(self, execution_id: int):
-        """标记任务完成（内部方法）"""
-        with self.lock:
-            if execution_id in self.running_tasks:
-                self.running_tasks.remove(execution_id)
-
-    def _get_next_execution_id(self) -> int:
-        """获取下一个执行实例 ID（内部方法）"""
-        with self.lock:
-            self.execution_counter += 1
-            return self.execution_counter
 
     def _execute_task_with_id(self, execution_id: int, task_data: tuple):
         """执行单个任务（内部方法）- 已预先标记运行中
@@ -387,7 +364,10 @@ class TaskManager:
                 # 检查是否所有任务都完成
                 self._check_and_update_mission_status(mission_id, repeat_count)
         finally:
-            self._mark_task_complete(execution_id)
+            # 标记任务完成
+            with self.lock:
+                if execution_id in self.running_tasks:
+                    self.running_tasks.remove(execution_id)
 
     def _poll_task_status(self, mission_id: int, runninghub_task_id: str, app_id: str, nodes: list, repeat_index: int, repeat_count: int):
         """后台轮询任务状态（内部方法）

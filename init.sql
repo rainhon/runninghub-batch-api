@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS missions (
     task_id TEXT,
     retries INTEGER DEFAULT 0,
     repeat_count INTEGER DEFAULT 1,
-    current_repeat INTEGER DEFAULT 1,
+    current_repeat INTEGER DEFAULT 0,
     error_message TEXT,  -- 失败原因
     nodes_list TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

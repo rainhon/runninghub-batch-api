@@ -221,7 +221,7 @@ async def submit_task(request: Request):
         # 创建任务记录并获取 ID
         sql = """
             INSERT INTO missions (workflow, status, status_code, repeat_count, current_repeat, nodes_list)
-            VALUES (?, 'queued', 813, ?, 1, ?)
+            VALUES (?, 'queued', 813, ?, 0, ?)
         """
         mission_id = database.execute_insert_returning_id(sql, (app_id, repeat_count, nodes_json))
 

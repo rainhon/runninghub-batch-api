@@ -4,7 +4,7 @@
 """
 import time
 import threading
-from queue import Queue
+from collections import deque
 from typing import Optional
 import database
 import runninghub
@@ -21,7 +21,7 @@ class TaskManager:
     """任务管理器 - 负责任务队列和执行管理"""
 
     def __init__(self):
-        self.queue = Queue()  # 任务队列
+        self.queue = deque()  # 任务队列（使用 deque，线程安全需要配合锁）
         self.running_tasks = set()  # 正在运行的执行实例 ID
         self.execution_counter = 0  # 执行实例计数器
         self.lock = threading.Lock()
@@ -55,8 +55,8 @@ class TaskManager:
                 (mission_id,)
             )
             # 存储元组 (mission_id, repeat_index)
-            self.queue.put((mission_id, repeat_index))
-            print(f"📥 任务 #{mission_id} (第{repeat_index}次执行) 已加入队列，队列长度: {self.queue.qsize()}")
+            self.queue.append((mission_id, repeat_index))
+            print(f"📥 任务 #{mission_id} (第{repeat_index}次执行) 已加入队列，队列长度: {len(self.queue)}")
 
     def submit_mission(self, mission_id: int, repeat_count: int):
         """提交任务的所有重复执行到队列
@@ -111,16 +111,16 @@ class TaskManager:
 
                 # 从队列中移除未完成的任务
                 # 创建一个新的队列，过滤掉要取消的任务
-                new_queue = Queue()
+                new_queue = deque()
                 cancelled_count = 0
 
-                while not self.queue.empty():
+                while len(self.queue) > 0:
                     try:
-                        item = self.queue.get_nowait()
+                        item = self.queue.popleft()
                         if item[0] == mission_id and item[1] not in completed_indices:
                             cancelled_count += 1
                         else:
-                            new_queue.put(item)
+                            new_queue.append(item)
                     except:
                         break
 
@@ -148,7 +148,7 @@ class TaskManager:
         """
         with self.lock:
             return {
-                "queue_size": self.queue.qsize(),
+                "queue_size": len(self.queue),
                 "running_count": len(self.running_tasks),
                 "max_concurrent": MAX_CONCURRENT_TASKS,
             }
@@ -252,8 +252,8 @@ class TaskManager:
         while self.is_running:
             try:
                 with self.lock:  # 在整个循环中持有锁
-                    if not self.queue.empty() and len(self.running_tasks) < MAX_CONCURRENT_TASKS:
-                        task_data = self.queue.get_nowait()
+                    if len(self.queue) > 0 and len(self.running_tasks) < MAX_CONCURRENT_TASKS:
+                        task_data = self.queue.popleft()
                         mission_id, repeat_index = task_data
 
                         # 生成执行ID并标记为运行中（原子操作）

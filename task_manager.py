@@ -341,14 +341,20 @@ class TaskManager:
             error_message = str(e)
             print(f"❌ 执行实例 #{execution_id} - 任务 #{mission_id} 出错: {error_message}")
 
-            # 获取当前重试次数
+            # 获取当前重试次数、状态和重复次数
             task_info = database.execute_sql(
-                "SELECT retries, repeat_count FROM missions WHERE id = ?",
+                "SELECT retries, repeat_count, status FROM missions WHERE id = ?",
                 (mission_id,),
                 fetch_one=True
             )
             current_retries = task_info['retries'] if task_info else 0
             repeat_count = task_info['repeat_count'] if task_info else 1
+            current_status = task_info['status'] if task_info else 'queued'
+
+            # 检查任务是否已取消
+            if current_status == 'cancelled':
+                print(f"🚫 任务 #{mission_id} 已取消，不重试")
+                return
 
             if current_retries < MAX_RETRIES:
                 # 未达到重试上限，重试当前这次执行
@@ -413,13 +419,19 @@ class TaskManager:
                 elif code == 805:  # 失败
                     error_msg = outputs_result.get("msg", "RunningHub 任务执行失败")
 
-                    # 获取当前重试次数
+                    # 获取当前重试次数和状态
                     task_info = database.execute_sql(
-                        "SELECT retries FROM missions WHERE id = ?",
+                        "SELECT retries, status FROM missions WHERE id = ?",
                         (mission_id,),
                         fetch_one=True
                     )
                     current_retries = task_info['retries'] if task_info else 0
+                    current_status = task_info['status'] if task_info else 'queued'
+
+                    # 检查任务是否已取消
+                    if current_status == 'cancelled':
+                        print(f"🚫 任务 #{mission_id} 已取消，不重试")
+                        return
 
                     if current_retries < MAX_RETRIES:
                         # 未达到重试上限，重试当前这次执行
@@ -458,13 +470,19 @@ class TaskManager:
                 if time.time() - start_time > POLL_TIMEOUT:
                     error_msg = f"任务执行超时（{POLL_TIMEOUT}秒）"
 
-                    # 获取当前重试次数
+                    # 获取当前重试次数和状态
                     task_info = database.execute_sql(
-                        "SELECT retries FROM missions WHERE id = ?",
+                        "SELECT retries, status FROM missions WHERE id = ?",
                         (mission_id,),
                         fetch_one=True
                     )
                     current_retries = task_info['retries'] if task_info else 0
+                    current_status = task_info['status'] if task_info else 'queued'
+
+                    # 检查任务是否已取消
+                    if current_status == 'cancelled':
+                        print(f"🚫 任务 #{mission_id} 已取消，不重试")
+                        return
 
                     if current_retries < MAX_RETRIES:
                         # 未达到重试上限，重试

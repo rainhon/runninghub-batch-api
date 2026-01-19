@@ -305,6 +305,11 @@ class TaskManager:
                 print(f"⚠️ 任务 #{mission_id} 不存在")
                 return
 
+            # 检查任务是否已取消
+            if task['status'] == 'cancelled':
+                print(f"🚫 任务 #{mission_id} 已取消，跳过执行")
+                return
+
             app_id = task['workflow']
             import json
             nodes = json.loads(task['nodes_list']) if task['nodes_list'] else []

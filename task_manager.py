@@ -14,7 +14,7 @@ import os
 
 # 配置常量
 MAX_CONCURRENT_TASKS = 2  # 最大并行任务数
-MAX_RETRIES = 10  # 最大重试次数
+MAX_RETRIES = 5  # 最大重试次数
 POLL_INTERVAL = 5  # 轮询间隔（秒）
 
 # 是否使用模拟服务（通过环境变量控制）

@@ -15,7 +15,6 @@ import os
 # 配置常量
 MAX_CONCURRENT_TASKS = 2  # 最大并行任务数
 MAX_RETRIES = 10  # 最大重试次数
-POLL_TIMEOUT = 1200  # 轮询超时时间（秒）= 20分钟
 POLL_INTERVAL = 5  # 轮询间隔（秒）
 
 # 是否使用模拟服务（通过环境变量控制）
@@ -405,8 +404,6 @@ class TaskManager:
             repeat_index: 第几次执行（1, 2, 3...）
             repeat_count: 总共需要执行的次数
         """
-        start_time = time.time()
-
         try:
             while True:
                 outputs_result = runninghub_service.query_task_outputs(runninghub_service_task_id)
@@ -479,45 +476,6 @@ class TaskManager:
                         "UPDATE missions SET status = 'pending', status_code = 813, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                         (mission_id,)
                     )
-
-                # 超时检查
-                if time.time() - start_time > POLL_TIMEOUT:
-                    error_msg = f"任务执行超时（{POLL_TIMEOUT}秒）"
-
-                    # 获取当前重试次数和状态
-                    task_info = database.execute_sql(
-                        "SELECT retries, status FROM missions WHERE id = ?",
-                        (mission_id,),
-                        fetch_one=True
-                    )
-                    current_retries = task_info['retries'] if task_info else 0
-                    current_status = task_info['status'] if task_info else 'queued'
-
-                    # 检查任务是否已取消
-                    if current_status == 'cancelled':
-                        print(f"🚫 任务 #{mission_id} 已取消，不重试")
-                        return
-
-                    if current_retries < MAX_RETRIES:
-                        # 未达到重试上限，重试
-                        database.execute_sql(
-                            "UPDATE missions SET retries = retries + 1, error_message = ?, status = 'queued', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                            (error_msg, mission_id)
-                        )
-                        print(f"⏰ 任务 #{mission_id} 第 {repeat_index} 次执行超时，准备重试（{MAX_RETRIES - current_retries} 次剩余）")
-                        self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
-                    else:
-                        # 达到重试上限，记录失败
-                        database.execute_sql(
-                            "INSERT INTO results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'failed', ?)",
-                            (mission_id, repeat_index, error_msg)
-                        )
-                        print(f"⏰ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
-
-                        # 检查是否所有任务都完成
-                        self._check_and_update_mission_status(mission_id, repeat_count)
-
-                    break
 
                 time.sleep(POLL_INTERVAL)  # 每 5 秒轮询一次
 

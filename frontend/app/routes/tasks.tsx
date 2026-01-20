@@ -37,10 +37,25 @@ const statusConfig = {
     variant: 'destructive' as const,
     icon: XCircle,
   },
+  fail: {
+    label: '失败',
+    variant: 'destructive' as const,
+    icon: XCircle,
+  },
   cancelled: {
     label: '已取消',
     variant: 'secondary' as const,
     icon: XCircle,
+  },
+  submit: {
+    label: '已提交',
+    variant: 'default' as const,
+    icon: Loader2,
+  },
+  submit_failed: {
+    label: '提交失败',
+    variant: 'destructive' as const,
+    icon: AlertCircle,
   },
 } as const;
 
@@ -471,37 +486,65 @@ export default function TasksPage() {
                   .sort(([a], [b]) => parseInt(a) - parseInt(b)) // 按执行次数排序
                   .map(([repeatIndex, groupResults]) => {
                     const firstResult = groupResults[0];
-                    const isSuccess = groupResults.some(r => r.status === 'success');
+                    const status = firstResult.status;
+
+                    // 根据状态显示不同的图标和文本
+                    let statusIcon;
+                    let statusText;
+                    let statusColor;
+                    let showFiles = false;
+                    let showError = false;
+
+                    if (status === 'success') {
+                      statusIcon = <CheckCircle2 className="w-5 h-5 text-green-600" />;
+                      statusText = `第 ${repeatIndex} 次执行成功`;
+                      statusColor = 'text-green-600';
+                      showFiles = true;
+                    } else if (status === 'fail' || status === 'failed' || status === 'submit_failed') {
+                      statusIcon = <XCircle className="w-5 h-5 text-destructive" />;
+                      if (status === 'submit_failed') {
+                        statusText = `第 ${repeatIndex} 次提交失败`;
+                      } else {
+                        statusText = `第 ${repeatIndex} 次执行失败`;
+                      }
+                      statusColor = 'text-destructive';
+                      showError = true;
+                    } else if (status === 'submit') {
+                      statusIcon = <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />;
+                      statusText = `第 ${repeatIndex} 次执行中`;
+                      statusColor = 'text-blue-600';
+                    } else if (status === 'pending') {
+                      statusIcon = <Clock className="w-5 h-5 text-orange-600" />;
+                      statusText = `第 ${repeatIndex} 次排队中`;
+                      statusColor = 'text-orange-600';
+                    } else {
+                      statusIcon = <AlertCircle className="w-5 h-5 text-muted-foreground" />;
+                      statusText = `第 ${repeatIndex} 次 ${status}`;
+                      statusColor = 'text-muted-foreground';
+                    }
 
                     return (
-                      <Card key={repeatIndex} className={!isSuccess ? 'border-destructive' : ''}>
+                      <Card key={repeatIndex} className={showError ? 'border-destructive' : ''}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-base flex items-center gap-2">
-                              {isSuccess ? (
-                                <>
-                                  <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                  第 {repeatIndex} 次执行成功
-                                </>
-                              ) : (
-                                <>
-                                  <XCircle className="w-5 h-5 text-destructive" />
-                                  第 {repeatIndex} 次执行失败
-                                </>
-                              )}
-                              {groupResults.length > 1 && (
+                              {statusIcon}
+                              <span className={statusColor}>{statusText}</span>
+                              {showFiles && groupResults.length > 1 && (
                                 <span className="text-sm font-normal text-muted-foreground">
                                   ({groupResults.length} 个文件)
                                 </span>
                               )}
                             </CardTitle>
-                            <CardDescription>
-                              {new Date(firstResult.created_at).toLocaleString('zh-CN')}
-                            </CardDescription>
+                            {firstResult.created_at && (
+                              <CardDescription>
+                                {new Date(firstResult.created_at).toLocaleString('zh-CN')}
+                              </CardDescription>
+                            )}
                           </div>
                         </CardHeader>
                         <CardContent>
-                          {isSuccess ? (
+                          {showFiles ? (
                             <div className="space-y-4">
                               {groupResults.map((result) => (
                                 <div key={result.id} className="space-y-2 p-3 bg-muted rounded-lg">
@@ -552,10 +595,15 @@ export default function TasksPage() {
                                 </div>
                               ))}
                             </div>
-                          ) : (
+                          ) : showError ? (
                             <div className="text-sm">
                               <p className="font-medium text-destructive">失败原因:</p>
-                              <p className="text-muted-foreground mt-1">{firstResult.error_message}</p>
+                              <p className="text-muted-foreground mt-1">{firstResult.error_message || '未知错误'}</p>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">
+                              {status === 'pending' && '等待执行...'}
+                              {status === 'submit' && '任务执行中，请稍候...'}
                             </div>
                           )}
                         </CardContent>

@@ -329,12 +329,26 @@ def get_task_detail(task_id: int):
 def get_task_results(task_id: int):
     """获取任务结果"""
     try:
-        sql = "SELECT * FROM results WHERE mission_id = ? ORDER BY created_at DESC"
-        result = database.execute_sql(sql, (task_id,), fetch_all=True)
+        # 获取任务信息，了解需要执行多少次
+        task_info = database.execute_sql(
+            "SELECT repeat_count FROM missions WHERE id = ?",
+            (task_id,),
+            fetch_one=True
+        )
 
-        results = []
-        for row in result or []:
-            results.append({
+        if not task_info:
+            return {"code": 404, "data": [], "msg": "任务不存在"}
+
+        repeat_count = task_info["repeat_count"]
+
+        # 获取已有的结果记录
+        sql = "SELECT * FROM results WHERE mission_id = ? ORDER BY repeat_index ASC"
+        existing_results = database.execute_sql(sql, (task_id,), fetch_all=True)
+
+        # 创建一个字典，按 repeat_index 索引已有结果
+        results_dict = {}
+        for row in existing_results or []:
+            results_dict[row["repeat_index"]] = {
                 "id": row["id"],
                 "mission_id": row["mission_id"],
                 "repeat_index": row["repeat_index"],
@@ -344,7 +358,27 @@ def get_task_results(task_id: int):
                 "file_url": row.get("file_url"),
                 "created_at": row["created_at"],
                 "updated_at": row["updated_at"],
-            })
+            }
+
+        # 生成完整的结果列表（1 到 repeat_count）
+        results = []
+        for i in range(1, repeat_count + 1):
+            if i in results_dict:
+                # 已有结果记录
+                results.append(results_dict[i])
+            else:
+                # 还没有结果记录，显示 pending（排队中）
+                results.append({
+                    "id": None,
+                    "mission_id": task_id,
+                    "repeat_index": i,
+                    "status": "pending",
+                    "error_message": None,
+                    "file_path": None,
+                    "file_url": None,
+                    "created_at": None,
+                    "updated_at": None,
+                })
 
         return {"code": 200, "data": results, "msg": "获取成功"}
     except Exception as e:

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS results (
     mission_id INTEGER NOT NULL,
     repeat_index INTEGER NOT NULL,  -- 第几次重复执行（1, 2, 3...）
     status TEXT NOT NULL,  -- 'success' 或 'failed'
+    runninghub_task_id TEXT,  -- RunningHub 返回的任务ID（用于重启后继续查询）
     error_message TEXT,  -- 失败原因
     file_path TEXT,  -- 成功时的文件路径
     file_url TEXT,  -- 成功时的结果文件 URL

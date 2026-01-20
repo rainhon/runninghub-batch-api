@@ -484,13 +484,12 @@ class TaskManager:
                 data = outputs_result.get("data")
 
                 if code == 0 and data:  # 成功
-                    # 更新或插入 results 表
+                    # 更新 results 表状态为 success
                     for item in data:
                         file_url = item.get("fileUrl")
-                        # 使用 INSERT OR REPLACE 来处理记录可能不存在的情况（提交失败的情况）
                         database.execute_sql(
-                            "INSERT results (mission_id, repeat_index, status, file_path, file_url) VALUES (?, ?, 'success', ?, ?)",
-                            (mission_id, repeat_index, file_url, file_url)
+                            "UPDATE results SET status = 'success', file_path = ?, file_url = ?, updated_at = CURRENT_TIMESTAMP WHERE mission_id = ? AND repeat_index = ?",
+                            (file_url, file_url, mission_id, repeat_index)
                         )
 
                     print(f"✅ 任务 #{mission_id} 第 {repeat_index} 次执行成功")
@@ -526,10 +525,10 @@ class TaskManager:
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行失败，准备重试（{MAX_RETRIES - current_retries} 次剩余）: {error_msg}")
                         self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
                     else:
-                        # 达到重试上限，插入或更新 results 表
+                        # 达到重试上限，更新 results 表
                         database.execute_sql(
-                            "INSERT results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
-                            (mission_id, repeat_index, error_msg)
+                            "UPDATE results SET status = 'fail', error_message = ?, updated_at = CURRENT_TIMESTAMP WHERE mission_id = ? AND repeat_index = ?",
+                            (error_msg, mission_id, repeat_index)
                         )
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
 
@@ -571,10 +570,10 @@ class TaskManager:
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态，准备重试（{MAX_RETRIES - current_retries} 次剩余）: {error_msg}")
                         self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
                     else:
-                        # 达到重试上限，插入或更新 results 表
+                        # 达到重试上限，更新 results 表
                         database.execute_sql(
-                            "INSERT results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
-                            (mission_id, repeat_index, error_msg)
+                            "UPDATE results SET status = 'fail', error_message = ?, updated_at = CURRENT_TIMESTAMP WHERE mission_id = ? AND repeat_index = ?",
+                            (error_msg, mission_id, repeat_index)
                         )
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态已达重试上限（{MAX_RETRIES} 次）")
 

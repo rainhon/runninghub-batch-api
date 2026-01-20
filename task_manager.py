@@ -8,6 +8,8 @@ from collections import deque
 from typing import Optional
 import database
 import runninghub
+import mock_runninghub
+import os
 
 
 # 配置常量
@@ -15,6 +17,16 @@ MAX_CONCURRENT_TASKS = 2  # 最大并行任务数
 MAX_RETRIES = 10  # 最大重试次数
 POLL_TIMEOUT = 1200  # 轮询超时时间（秒）= 20分钟
 POLL_INTERVAL = 5  # 轮询间隔（秒）
+
+# 是否使用模拟服务（通过环境变量控制）
+USE_MOCK_SERVICE = os.getenv("USE_MOCK_SERVICE", "false").lower() == "true"
+
+if USE_MOCK_SERVICE:
+    print("🧪 使用 Mock RunningHub 服务（模拟模式）")
+    runninghub_service = mock_runninghub
+else:
+    print("🔗 使用真实 RunningHub 服务")
+    runninghub_service = runninghub
 
 
 class TaskManager:
@@ -48,12 +60,14 @@ class TaskManager:
             mission_id: 任务ID
             repeat_index: 第几次执行（1, 2, 3...），None表示重试
         """
+        # 更新数据库状态为 queued（在锁外执行，避免阻塞）
+        database.execute_sql(
+            "UPDATE missions SET status = 'queued' WHERE id = ?",
+            (mission_id,)
+        )
+
+        # 只在加锁时操作队列
         with self.lock:
-            # 更新数据库状态为 queued
-            database.execute_sql(
-                "UPDATE missions SET status = 'queued' WHERE id = ?",
-                (mission_id,)
-            )
             # 存储元组 (mission_id, repeat_index)
             self.queue.append((mission_id, repeat_index))
             print(f"📥 任务 #{mission_id} (第{repeat_index}次执行) 已加入队列，队列长度: {len(self.queue)}")
@@ -319,23 +333,23 @@ class TaskManager:
             print(f"▶️ 执行实例 #{execution_id} - 任务 #{mission_id} 第{repeat_index}次执行开始（重试 {current_retries} 次）")
 
             # 提交到 RunningHub
-            submit_result = runninghub.submit_task(app_id, nodes)
+            submit_result = runninghub_service.submit_task(app_id, nodes)
 
             if submit_result.get('code') != 0:
                 # 提交失败
                 error_message = f"提交到 RunningHub 失败: {submit_result.get('msg', '未知错误')}"
                 raise Exception(error_message)
 
-            runninghub_task_id = submit_result['data'].get('taskId')
+            runninghub_service_task_id = submit_result['data'].get('taskId')
 
             # 更新任务状态
             database.execute_sql(
                 "UPDATE missions SET task_id = ?, status = 'running', status_code = 804, error_message = NULL WHERE id = ?",
-                (runninghub_task_id, mission_id)
+                (runninghub_service_task_id, mission_id)
             )
 
             # 轮询任务状态
-            self._poll_task_status(mission_id, runninghub_task_id, app_id, nodes, repeat_index, repeat_count)
+            self._poll_task_status(mission_id, runninghub_service_task_id, app_id, nodes, repeat_index, repeat_count)
 
         except Exception as e:
             error_message = str(e)
@@ -380,12 +394,12 @@ class TaskManager:
                 if execution_id in self.running_tasks:
                     self.running_tasks.remove(execution_id)
 
-    def _poll_task_status(self, mission_id: int, runninghub_task_id: str, app_id: str, nodes: list, repeat_index: int, repeat_count: int):
+    def _poll_task_status(self, mission_id: int, runninghub_service_task_id: str, app_id: str, nodes: list, repeat_index: int, repeat_count: int):
         """后台轮询任务状态（内部方法）
 
         Args:
             mission_id: 任务ID
-            runninghub_task_id: RunningHub 任务ID
+            runninghub_service_task_id: RunningHub 任务ID
             app_id: 应用ID
             nodes: 节点配置
             repeat_index: 第几次执行（1, 2, 3...）
@@ -395,7 +409,7 @@ class TaskManager:
 
         try:
             while True:
-                outputs_result = runninghub.query_task_outputs(runninghub_task_id)
+                outputs_result = runninghub_service.query_task_outputs(runninghub_service_task_id)
                 code = outputs_result.get("code")
                 data = outputs_result.get("data")
 
@@ -508,7 +522,7 @@ class TaskManager:
                 time.sleep(POLL_INTERVAL)  # 每 5 秒轮询一次
 
         except Exception as e:
-            print(f"❌ 轮询任务 {runninghub_task_id} 时出错: {str(e)}")
+            print(f"❌ 轮询任务 {runninghub_service_task_id} 时出错: {str(e)}")
             database.execute_sql(
                 "UPDATE missions SET status = 'failed', status_code = 805, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                 (mission_id,)

@@ -47,6 +47,11 @@ const statusConfig = {
     variant: 'secondary' as const,
     icon: XCircle,
   },
+  completed: {
+    label: '已完成',
+    variant: 'default' as const,
+    icon: CheckCircle2,
+  },
   submit: {
     label: '已提交',
     variant: 'default' as const,

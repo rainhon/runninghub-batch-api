@@ -178,6 +178,14 @@ class TaskManager:
             if submitting_results:
                 print(f"♻️ 发现 {len(submitting_results)} 个正在执行的任务，恢复轮询...")
 
+                # 统计每个任务的执行数量
+                mission_submit_counts = {}
+                for result in submitting_results:
+                    mission_id = result['mission_id']
+                    if mission_id not in mission_submit_counts:
+                        mission_submit_counts[mission_id] = 0
+                    mission_submit_counts[mission_id] += 1
+
                 for result in submitting_results:
                     mission_id = result['mission_id']
                     repeat_index = result['repeat_index']
@@ -198,6 +206,12 @@ class TaskManager:
 
                         print(f"♻️ 恢复轮询：任务 #{mission_id} 第{repeat_index}次执行 (runninghub_task_id: {runninghub_task_id})")
 
+                        # 为每个轮询任务分配执行ID并标记为运行中
+                        with self.lock:
+                            self.execution_counter += 1
+                            execution_id = self.execution_counter
+                            self.running_tasks.add(execution_id)
+
                         # 在新线程中恢复轮询
                         poll_thread = threading.Thread(
                             target=self._poll_task_status,
@@ -205,6 +219,14 @@ class TaskManager:
                             daemon=True
                         )
                         poll_thread.start()
+
+                # 更新任务状态为 running
+                for mission_id, count in mission_submit_counts.items():
+                    database.execute_sql(
+                        "UPDATE missions SET status = 'running', status_code = 804 WHERE id = ?",
+                        (mission_id,)
+                    )
+                    print(f"♻️ 任务 #{mission_id} 状态更新为 running ({count} 个执行正在轮询)")
 
             # 2. 恢复未提交的任务（队列中的任务）
             missions = database.execute_sql(
@@ -377,7 +399,7 @@ class TaskManager:
                 # 提交失败 - 立即保存到 results 表
                 error_message = f"提交到 RunningHub 失败: {submit_result.get('msg', '未知错误')}"
                 database.execute_sql(
-                    "INSERT OR REPLACE INTO results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'submit_failed', ?)",
+                    "INSERT results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'submit_failed', ?)",
                     (mission_id, repeat_index, error_message)
                 )
                 print(f"❌ 任务 #{mission_id} 第{repeat_index}次执行提交失败，已保存到 results")
@@ -385,7 +407,7 @@ class TaskManager:
 
             runninghub_service_task_id = submit_result['data'].get('taskId')
 
-            # 更新任务状态
+            # 更新任务状态（任务级别状态保持为 running，具体执行状态在 results 表）
             database.execute_sql(
                 "UPDATE missions SET task_id = ?, status = 'running', status_code = 804, error_message = NULL WHERE id = ?",
                 (runninghub_service_task_id, mission_id)
@@ -431,7 +453,7 @@ class TaskManager:
             else:
                 # 达到重试上限，插入或更新 results 表
                 database.execute_sql(
-                    "INSERT OR REPLACE INTO results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
+                    "INSERT results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
                     (mission_id, repeat_index, error_message)
                 )
                 print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
@@ -467,7 +489,7 @@ class TaskManager:
                         file_url = item.get("fileUrl")
                         # 使用 INSERT OR REPLACE 来处理记录可能不存在的情况（提交失败的情况）
                         database.execute_sql(
-                            "INSERT OR REPLACE INTO results (mission_id, repeat_index, status, file_path, file_url) VALUES (?, ?, 'success', ?, ?)",
+                            "INSERT results (mission_id, repeat_index, status, file_path, file_url) VALUES (?, ?, 'success', ?, ?)",
                             (mission_id, repeat_index, file_url, file_url)
                         )
 
@@ -506,7 +528,7 @@ class TaskManager:
                     else:
                         # 达到重试上限，插入或更新 results 表
                         database.execute_sql(
-                            "INSERT OR REPLACE INTO results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
+                            "INSERT results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
                             (mission_id, repeat_index, error_msg)
                         )
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
@@ -516,17 +538,11 @@ class TaskManager:
 
                     break
 
-                elif code == 804:  # 运行中
-                    database.execute_sql(
-                        "UPDATE missions SET status = 'running', status_code = 804, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                        (mission_id,)
-                    )
+                elif code == 804:  # 运行中 - 不需要更新 missions 表状态，保持 running
+                    pass  # 任务状态已经是 running，不需要更新
 
-                elif code == 813:  # 排队中
-                    database.execute_sql(
-                        "UPDATE missions SET status = 'pending', status_code = 813, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                        (mission_id,)
-                    )
+                elif code == 813:  # 排队中 - 不需要更新 missions 表状态，保持 running
+                    pass  # 任务状态保持 running，具体状态在 results 表中体现
 
                 else:  # 未知 code，作为失败处理
                     error_msg = f"未知的状态码: {code}, 消息: {outputs_result.get('msg', '无')}"
@@ -557,7 +573,7 @@ class TaskManager:
                     else:
                         # 达到重试上限，插入或更新 results 表
                         database.execute_sql(
-                            "INSERT OR REPLACE INTO results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
+                            "INSERT results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
                             (mission_id, repeat_index, error_msg)
                         )
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态已达重试上限（{MAX_RETRIES} 次）")
@@ -591,14 +607,6 @@ class TaskManager:
         )
         completed_count = completed_result['count'] if completed_result else 0
 
-        # 查询成功数量（按 repeat_index 去重）
-        success_result = database.execute_sql(
-            "SELECT COUNT(DISTINCT repeat_index) as count FROM results WHERE mission_id = ? AND status = 'success'",
-            (mission_id,),
-            fetch_one=True
-        )
-        success_count = success_result['count'] if success_result else 0
-
         # 更新 current_repeat
         database.execute_sql(
             "UPDATE missions SET current_repeat = ?, retries = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
@@ -607,27 +615,13 @@ class TaskManager:
 
         # 检查是否全部完成
         if completed_count >= repeat_count:
-            if success_count == repeat_count:
-                # 全部成功
-                database.execute_sql(
-                    "UPDATE missions SET status = 'success', status_code = 0, error_message = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                    (mission_id,)
-                )
-                print(f"✅ 任务 #{mission_id} 全部完成（共 {repeat_count} 次，全部成功）")
-            elif success_count > 0:
-                # 部分成功
-                database.execute_sql(
-                    "UPDATE missions SET status = 'success', status_code = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                    (mission_id,)
-                )
-                print(f"⚠️ 任务 #{mission_id} 完成（共 {repeat_count} 次，{success_count} 次成功，{repeat_count - success_count} 次失败）")
-            else:
-                # 全部失败
-                database.execute_sql(
-                    "UPDATE missions SET status = 'failed', status_code = 805, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                    (mission_id,)
-                )
-                print(f"❌ 任务 #{mission_id} 全部失败（共 {repeat_count} 次）")
+            # 所有重复次数都已完成，标记为 completed
+            # 具体的成功/失败情况在 results 表中查看
+            database.execute_sql(
+                "UPDATE missions SET status = 'completed', status_code = 0, error_message = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (mission_id,)
+            )
+            print(f"✅ 任务 #{mission_id} 全部完成（共 {repeat_count} 次）")
 
 
 # 全局任务管理器实例

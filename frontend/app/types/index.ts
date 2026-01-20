@@ -28,7 +28,7 @@ export const TaskStatus = {
 
 export type TaskStatusCode = typeof TaskStatus[keyof typeof TaskStatus];
 
-export type TaskStatusType = 'queued' | 'pending' | 'running' | 'success' | 'failed';
+export type TaskStatusType = 'queued' | 'pending' | 'running' | 'completed' | 'cancelled';
 
 // 任务信息
 export interface Task {
@@ -51,7 +51,8 @@ export interface TaskResult {
   id: number;
   mission_id: number;
   repeat_index: number;  // 第几次重复执行
-  status: 'success' | 'failed';  // 执行状态
+  status: 'pending' | 'submit' | 'success' | 'fail' | 'submit_failed';  // 执行状态
+  runninghub_task_id?: string;  // RunningHub 返回的任务ID
   error_message?: string;  // 失败原因
   file_path?: string;  // 成功时的文件路径
   file_url?: string;  // 成功时的结果文件 URL

@@ -1,7 +1,20 @@
+# OS
 .DS_Store
+
+# Environment files (所有环境变量文件)
 .env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+
+# Dependencies
 /node_modules/
 
 # React Router
 /.react-router/
 /build/
+
+# Build output
+/dist/

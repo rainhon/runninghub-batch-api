@@ -132,7 +132,7 @@ class MockRunningHub:
                 "code": 813,
                 "msg": "任务排队中"
             }
-        elif elapsed < 40:
+        elif elapsed < 10:
             # 2-40秒：运行中
             task["status"] = "running"
             return {
@@ -147,8 +147,15 @@ class MockRunningHub:
             with self.lock:
                 if task_id in self.running_tasks:
                     self.running_tasks.remove(task_id)
-
-            # 模拟生成输出文件（100%成功率）
+            if random.random() < 0.3:
+                # 失败
+                return {
+                    "code": 777,
+                    "msg": "ttt"
+                }
+            
+            
+            # 成功
             outputs = [{
                 "fileUrl": f"mock_result_{task_id}_1.txt",
                 "fileName": f"result_{int(time.time())}.txt"

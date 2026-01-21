@@ -36,9 +36,9 @@ export interface Task {
   workflow: string;
   status: TaskStatusType;
   status_code: TaskStatusCode;
-  retries: number;
   repeat_count: number;  // 重复执行次数
-  current_repeat: number;  // 当前执行第几次
+  current_repeat: number;  // 已提交次数
+  completed_repeat: number;  // 已完成次数
   error_message?: string;  // 失败原因
   nodes_list: NodeInfo[];
   task_id?: string;  // RunningHub 返回的 taskId
@@ -51,8 +51,9 @@ export interface TaskResult {
   id: number;
   mission_id: number;
   repeat_index: number;  // 第几次重复执行
-  status: 'pending' | 'submit' | 'success' | 'fail' | 'submit_failed';  // 执行状态
+  status: 'pending' | 'retry_pending' | 'submit' | 'success' | 'fail' | 'submit_failed' | 'cancelled';  // 执行状态
   runninghub_task_id?: string;  // RunningHub 返回的任务ID
+  retries: number;  // 重试次数
   error_message?: string;  // 失败原因
   file_path?: string;  // 成功时的文件路径
   file_url?: string;  // 成功时的结果文件 URL

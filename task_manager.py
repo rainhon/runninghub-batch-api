@@ -59,13 +59,6 @@ class TaskManager:
             mission_id: 任务ID
             repeat_index: 第几次执行（1, 2, 3...），None表示重试
         """
-        # 更新数据库状态为 queued（在锁外执行，避免阻塞）
-        database.execute_sql(
-            "UPDATE missions SET status = 'queued' WHERE id = ?",
-            (mission_id,)
-        )
-
-        # 只在加锁时操作队列
         with self.lock:
             # 存储元组 (mission_id, repeat_index)
             self.queue.append((mission_id, repeat_index))
@@ -143,6 +136,13 @@ class TaskManager:
                 # 更新任务状态为已取消
                 database.execute_sql(
                     "UPDATE missions SET status = 'cancelled', status_code = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                    (mission_id,)
+                )
+
+                # 将所有未完成的 results 记录标记为 cancelled
+                # 未完成指的是状态不是 success 或 fail 的记录
+                database.execute_sql(
+                    "UPDATE results SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE mission_id = ? AND status NOT IN ('success', 'fail')",
                     (mission_id,)
                 )
 
@@ -227,6 +227,39 @@ class TaskManager:
                         (mission_id,)
                     )
                     print(f"♻️ 任务 #{mission_id} 状态更新为 running ({count} 个执行正在轮询)")
+
+            # 1.5. 恢复待重试的任务（状态为 retry_pending）
+            retry_pending_results = database.execute_sql(
+                "SELECT mission_id, repeat_index, retries FROM results WHERE status = 'retry_pending'",
+                fetch_all=True
+            )
+
+            if retry_pending_results:
+                print(f"♻️ 发现 {len(retry_pending_results)} 个待重试的任务，重新加入队列...")
+
+                retry_mission_counts = {}
+                for result in retry_pending_results:
+                    mission_id = result['mission_id']
+                    if mission_id not in retry_mission_counts:
+                        retry_mission_counts[mission_id] = 0
+                    retry_mission_counts[mission_id] += 1
+
+                for result in retry_pending_results:
+                    mission_id = result['mission_id']
+                    repeat_index = result['repeat_index']
+                    retries = result['retries']
+
+                    print(f"♻️ 重新加入队列：任务 #{mission_id} 第{repeat_index}次执行 (已重试 {retries} 次)")
+                    # 重新加入队列
+                    self.add_task(mission_id, repeat_index)
+
+                # 更新任务状态为 queued
+                for mission_id, count in retry_mission_counts.items():
+                    database.execute_sql(
+                        "UPDATE missions SET status = 'queued', status_code = 813 WHERE id = ?",
+                        (mission_id,)
+                    )
+                    print(f"♻️ 任务 #{mission_id} 状态更新为 queued ({count} 个执行待重试)")
 
             # 2. 恢复未提交的任务（队列中的任务）
             missions = database.execute_sql(
@@ -321,6 +354,81 @@ class TaskManager:
 
     # ========== 内部方法 ==========
 
+    def _update_or_insert_result(self, mission_id: int, repeat_index: int, status: str, **kwargs):
+        """更新或插入 results 记录（内部方法）
+
+        除了提交任务和提交任务失败时直接插入外，其他情况先检查记录是否存在，
+        存在则更新，不存在才插入。
+
+        Args:
+            mission_id: 任务ID
+            repeat_index: 第几次执行
+            status: 状态
+            **kwargs: 其他字段（error_message, file_path, file_url, runninghub_task_id 等）
+        """
+        # 检查记录是否已存在
+        existing = database.execute_sql(
+            "SELECT id FROM results WHERE mission_id = ? AND repeat_index = ?",
+            (mission_id, repeat_index),
+            fetch_one=True
+        )
+
+        # 构建字段和值的列表
+        fields = ['status = ?']
+        values = [status]
+
+        if 'retries' in kwargs:
+            fields.append('retries = ?')
+            values.append(kwargs['retries'])
+        if 'error_message' in kwargs:
+            fields.append('error_message = ?')
+            values.append(kwargs['error_message'])
+        if 'file_path' in kwargs:
+            fields.append('file_path = ?')
+            values.append(kwargs['file_path'])
+        if 'file_url' in kwargs:
+            fields.append('file_url = ?')
+            values.append(kwargs['file_url'])
+        if 'runninghub_task_id' in kwargs:
+            fields.append('runninghub_task_id = ?')
+            values.append(kwargs['runninghub_task_id'])
+
+        values.extend([mission_id, repeat_index])
+
+        if existing:
+            # 记录存在，更新
+            update_sql = f"UPDATE results SET {', '.join(fields)}, updated_at = CURRENT_TIMESTAMP WHERE mission_id = ? AND repeat_index = ?"
+            database.execute_sql(update_sql, tuple(values))
+        else:
+            # 记录不存在，插入
+            insert_fields = ['mission_id', 'repeat_index', 'status']
+            insert_values = [mission_id, repeat_index, status]
+            placeholders = ['?', '?', '?']
+
+            if 'retries' in kwargs:
+                insert_fields.append('retries')
+                insert_values.append(kwargs['retries'])
+                placeholders.append('?')
+            if 'error_message' in kwargs:
+                insert_fields.append('error_message')
+                insert_values.append(kwargs['error_message'])
+                placeholders.append('?')
+            if 'file_path' in kwargs:
+                insert_fields.append('file_path')
+                insert_values.append(kwargs['file_path'])
+                placeholders.append('?')
+            if 'file_url' in kwargs:
+                insert_fields.append('file_url')
+                insert_values.append(kwargs['file_url'])
+                placeholders.append('?')
+            if 'runninghub_task_id' in kwargs:
+                insert_fields.append('runninghub_task_id')
+                insert_values.append(kwargs['runninghub_task_id'])
+                placeholders.append('?')
+
+            insert_sql = f"INSERT INTO results ({', '.join(insert_fields)}) VALUES ({', '.join(placeholders)})"
+            database.execute_sql(insert_sql, tuple(insert_values))
+
     def _process_queue(self):
         """队列处理循环（内部方法）"""
         while self.is_running:
@@ -388,7 +496,14 @@ class TaskManager:
             import json
             nodes = json.loads(task['nodes_list']) if task['nodes_list'] else []
             repeat_count = task['repeat_count']
-            current_retries = task['retries']
+
+            # 获取当前 result 的重试次数
+            result_info = database.execute_sql(
+                "SELECT retries FROM results WHERE mission_id = ? AND repeat_index = ?",
+                (mission_id, repeat_index),
+                fetch_one=True
+            )
+            current_retries = result_info['retries'] if result_info else 0
 
             print(f"▶️ 执行实例 #{execution_id} - 任务 #{mission_id} 第{repeat_index}次执行开始（重试 {current_retries} 次）")
 
@@ -396,11 +511,11 @@ class TaskManager:
             submit_result = runninghub_service.submit_task(app_id, nodes)
 
             if submit_result.get('code') != 0:
-                # 提交失败 - 立即保存到 results 表
+                # 提交失败 - 使用更新或插入逻辑保存到 results 表
                 error_message = f"提交到 RunningHub 失败: {submit_result.get('msg', '未知错误')}"
-                database.execute_sql(
-                    "INSERT results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'submit_failed', ?)",
-                    (mission_id, repeat_index, error_message)
+                self._update_or_insert_result(
+                    mission_id, repeat_index, 'submit_failed',
+                    error_message=error_message
                 )
                 print(f"❌ 任务 #{mission_id} 第{repeat_index}次执行提交失败，已保存到 results")
                 raise Exception(error_message)
@@ -413,10 +528,10 @@ class TaskManager:
                 (runninghub_service_task_id, mission_id)
             )
 
-            # 提交成功后立即保存到 results 表（状态为 submit，包含 task_id）
-            database.execute_sql(
-                "INSERT INTO results (mission_id, repeat_index, status, runninghub_task_id) VALUES (?, ?, 'submit', ?)",
-                (mission_id, repeat_index, runninghub_service_task_id)
+            # 提交成功后立即保存到 results 表（状态为 submit，包含 task_id，使用更新或插入逻辑）
+            self._update_or_insert_result(
+                mission_id, repeat_index, 'submit',
+                runninghub_task_id=runninghub_service_task_id
             )
             print(f"✅ 任务 #{mission_id} 第{repeat_index}次执行已提交并保存到 results (task_id: {runninghub_service_task_id})")
 
@@ -427,13 +542,20 @@ class TaskManager:
             error_message = str(e)
             print(f"❌ 执行实例 #{execution_id} - 任务 #{mission_id} 出错: {error_message}")
 
-            # 获取当前重试次数、状态和重复次数
+            # 获取当前重试次数和状态
+            result_info = database.execute_sql(
+                "SELECT retries FROM results WHERE mission_id = ? AND repeat_index = ?",
+                (mission_id, repeat_index),
+                fetch_one=True
+            )
+            current_retries = result_info['retries'] if result_info else 0
+
+            # 获取任务状态和重复次数
             task_info = database.execute_sql(
-                "SELECT retries, repeat_count, status FROM missions WHERE id = ?",
+                "SELECT repeat_count, status FROM missions WHERE id = ?",
                 (mission_id,),
                 fetch_one=True
             )
-            current_retries = task_info['retries'] if task_info else 0
             repeat_count = task_info['repeat_count'] if task_info else 1
             current_status = task_info['status'] if task_info else 'queued'
 
@@ -444,17 +566,17 @@ class TaskManager:
 
             if current_retries < MAX_RETRIES:
                 # 未达到重试上限，重试当前这次执行
-                database.execute_sql(
-                    "UPDATE missions SET retries = retries + 1, error_message = ?, status = 'queued', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                    (error_message, mission_id)
+                self._update_or_insert_result(
+                    mission_id, repeat_index, 'retry_pending',
+                    retries=current_retries + 1  # 增加重试次数
                 )
                 print(f"🔄 任务 #{mission_id} 第 {repeat_index} 次执行出错，准备重试（{MAX_RETRIES - current_retries} 次剩余）")
                 self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
             else:
-                # 达到重试上限，插入或更新 results 表
-                database.execute_sql(
-                    "INSERT results (mission_id, repeat_index, status, error_message) VALUES (?, ?, 'fail', ?)",
-                    (mission_id, repeat_index, error_message)
+                # 达到重试上限，更新或插入 results 表
+                self._update_or_insert_result(
+                    mission_id, repeat_index, 'fail',
+                    error_message=error_message
                 )
                 print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
 
@@ -484,12 +606,12 @@ class TaskManager:
                 data = outputs_result.get("data")
 
                 if code == 0 and data:  # 成功
-                    # 更新 results 表状态为 success
+                    # 更新 results 表状态为 success（使用更新或插入逻辑）
                     for item in data:
                         file_url = item.get("fileUrl")
-                        database.execute_sql(
-                            "UPDATE results SET status = 'success', file_path = ?, file_url = ?, updated_at = CURRENT_TIMESTAMP WHERE mission_id = ? AND repeat_index = ?",
-                            (file_url, file_url, mission_id, repeat_index)
+                        self._update_or_insert_result(
+                            mission_id, repeat_index, 'success',
+                            file_path=file_url, file_url=file_url
                         )
 
                     print(f"✅ 任务 #{mission_id} 第 {repeat_index} 次执行成功")
@@ -502,13 +624,20 @@ class TaskManager:
                 elif code == 805:  # 失败
                     error_msg = outputs_result.get("msg", "RunningHub 任务执行失败")
 
-                    # 获取当前重试次数和状态
+                    # 获取当前重试次数
+                    result_info = database.execute_sql(
+                        "SELECT retries FROM results WHERE mission_id = ? AND repeat_index = ?",
+                        (mission_id, repeat_index),
+                        fetch_one=True
+                    )
+                    current_retries = result_info['retries'] if result_info else 0
+
+                    # 获取任务状态
                     task_info = database.execute_sql(
-                        "SELECT retries, status FROM missions WHERE id = ?",
+                        "SELECT status FROM missions WHERE id = ?",
                         (mission_id,),
                         fetch_one=True
                     )
-                    current_retries = task_info['retries'] if task_info else 0
                     current_status = task_info['status'] if task_info else 'queued'
 
                     # 检查任务是否已取消
@@ -518,17 +647,17 @@ class TaskManager:
 
                     if current_retries < MAX_RETRIES:
                         # 未达到重试上限，重试当前这次执行
-                        database.execute_sql(
-                            "UPDATE missions SET retries = retries + 1, error_message = ?, status = 'queued', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                            (error_msg, mission_id)
+                        self._update_or_insert_result(
+                            mission_id, repeat_index, 'retry_pending',
+                            retries=current_retries + 1  # 增加重试次数
                         )
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行失败，准备重试（{MAX_RETRIES - current_retries} 次剩余）: {error_msg}")
                         self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
                     else:
-                        # 达到重试上限，更新 results 表
-                        database.execute_sql(
-                            "UPDATE results SET status = 'fail', error_message = ?, updated_at = CURRENT_TIMESTAMP WHERE mission_id = ? AND repeat_index = ?",
-                            (error_msg, mission_id, repeat_index)
+                        # 达到重试上限，更新 results 表（使用更新或插入逻辑）
+                        self._update_or_insert_result(
+                            mission_id, repeat_index, 'fail',
+                            error_message=error_msg
                         )
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
 
@@ -547,13 +676,20 @@ class TaskManager:
                     error_msg = f"未知的状态码: {code}, 消息: {outputs_result.get('msg', '无')}"
                     print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态码 {code}")
 
-                    # 获取当前重试次数和状态
+                    # 获取当前重试次数
+                    result_info = database.execute_sql(
+                        "SELECT retries FROM results WHERE mission_id = ? AND repeat_index = ?",
+                        (mission_id, repeat_index),
+                        fetch_one=True
+                    )
+                    current_retries = result_info['retries'] if result_info else 0
+
+                    # 获取任务状态
                     task_info = database.execute_sql(
-                        "SELECT retries, status FROM missions WHERE id = ?",
+                        "SELECT status FROM missions WHERE id = ?",
                         (mission_id,),
                         fetch_one=True
                     )
-                    current_retries = task_info['retries'] if task_info else 0
                     current_status = task_info['status'] if task_info else 'queued'
 
                     # 检查任务是否已取消
@@ -563,17 +699,17 @@ class TaskManager:
 
                     if current_retries < MAX_RETRIES:
                         # 未达到重试上限，重试当前这次执行
-                        database.execute_sql(
-                            "UPDATE missions SET retries = retries + 1, error_message = ?, status = 'queued', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                            (error_msg, mission_id)
+                        self._update_or_insert_result(
+                            mission_id, repeat_index, 'retry_pending',
+                            retries=current_retries + 1  # 增加重试次数
                         )
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态，准备重试（{MAX_RETRIES - current_retries} 次剩余）: {error_msg}")
                         self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
                     else:
-                        # 达到重试上限，更新 results 表
-                        database.execute_sql(
-                            "UPDATE results SET status = 'fail', error_message = ?, updated_at = CURRENT_TIMESTAMP WHERE mission_id = ? AND repeat_index = ?",
-                            (error_msg, mission_id, repeat_index)
+                        # 达到重试上限，更新 results 表（使用更新或插入逻辑）
+                        self._update_or_insert_result(
+                            mission_id, repeat_index, 'fail',
+                            error_message=error_msg
                         )
                         print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态已达重试上限（{MAX_RETRIES} 次）")
 
@@ -587,7 +723,7 @@ class TaskManager:
         except Exception as e:
             print(f"❌ 轮询任务 {runninghub_service_task_id} 时出错: {str(e)}")
             database.execute_sql(
-                "UPDATE missions SET status = 'failed', status_code = 805, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                "UPDATE missions SET status = 'completed', status_code = 805, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                 (mission_id,)
             )
 
@@ -598,29 +734,36 @@ class TaskManager:
             mission_id: 任务ID
             repeat_count: 总共需要执行的次数
         """
+        # 查询已提交的 results 记录数（包括所有状态：pending, retry_pending, submit, success, fail, submit_failed, cancelled）
+        submitted_result = database.execute_sql(
+            "SELECT COUNT(DISTINCT repeat_index) as count FROM results WHERE mission_id = ?",
+            (mission_id,),
+            fetch_one=True
+        )
+        submitted_count = submitted_result['count'] if submitted_result else 0
+
         # 查询已完成（成功+失败）的总数（按 repeat_index 去重）
         completed_result = database.execute_sql(
-            "SELECT COUNT(DISTINCT repeat_index) as count FROM results WHERE mission_id = ?",
+            "SELECT COUNT(DISTINCT repeat_index) as count FROM results WHERE mission_id = ? AND status IN ('success', 'fail', 'submit_failed', 'cancelled')",
             (mission_id,),
             fetch_one=True
         )
         completed_count = completed_result['count'] if completed_result else 0
 
-        # 更新 current_repeat
+        # 更新 current_repeat（使用已提交的数量）
         database.execute_sql(
-            "UPDATE missions SET current_repeat = ?, retries = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-            (completed_count, mission_id)
+            "UPDATE missions SET current_repeat = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (submitted_count, mission_id)
         )
 
-        # 检查是否全部完成
-        if completed_count >= repeat_count:
-            # 所有重复次数都已完成，标记为 completed
-            # 具体的成功/失败情况在 results 表中查看
+        # 检查是否全部完成：所有重复次数都已提交，并且状态都是成功或失败
+        if submitted_count >= repeat_count and completed_count >= repeat_count:
+            # 所有重复次数都已提交且都已完成（成功或失败），标记为 completed
             database.execute_sql(
                 "UPDATE missions SET status = 'completed', status_code = 0, error_message = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                 (mission_id,)
             )
-            print(f"✅ 任务 #{mission_id} 全部完成（共 {repeat_count} 次）")
+            print(f"✅ 任务 #{mission_id} 全部完成（共 {repeat_count} 次执行）")
 
 
 # 全局任务管理器实例

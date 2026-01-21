@@ -12,64 +12,28 @@ import { api } from '../lib/api';
 import { TaskStatus, type Task, type TaskResult } from '../types';
 
 const statusConfig = {
-  queued: {
-    label: '队列中',
-    variant: 'secondary' as const,
-    icon: Clock,
-  },
   pending: {
-    label: '排队中',
+    label: '执行中',
     variant: 'secondary' as const,
     icon: Clock,
-  },
-  running: {
-    label: '运行中',
-    variant: 'default' as const,
-    icon: Loader2,
-  },
-  success: {
-    label: '成功',
-    variant: 'default' as const,
-    icon: CheckCircle2,
-  },
-  failed: {
-    label: '失败',
-    variant: 'destructive' as const,
-    icon: XCircle,
-  },
-  fail: {
-    label: '失败',
-    variant: 'destructive' as const,
-    icon: XCircle,
-  },
-  cancelled: {
-    label: '已取消',
-    variant: 'secondary' as const,
-    icon: XCircle,
   },
   completed: {
     label: '已完成',
     variant: 'default' as const,
     icon: CheckCircle2,
   },
-  submit: {
-    label: '已提交',
-    variant: 'default' as const,
-    icon: Loader2,
-  },
-  submit_failed: {
-    label: '提交失败',
-    variant: 'destructive' as const,
-    icon: AlertCircle,
-  },
+  cancelled: {
+    label: '已取消',
+    variant: 'secondary' as const,
+    icon: XCircle,
+  }
 } as const;
 
-// 状态码到状态类型的映射
-const statusCodeToStatus = (statusCode: number): keyof typeof statusConfig => {
-  if (statusCode === TaskStatus.SUCCESS) return 'success';
-  if (statusCode === TaskStatus.FAILED) return 'failed';
-  if (statusCode === TaskStatus.RUNNING) return 'running';
-  return 'pending';
+// 状态映射函数
+const getTaskStatus = (status: string): keyof typeof statusConfig => {
+  if (status === 'cancelled') return 'cancelled';
+  if (status === 'pending' || status === 'queued' || status === 'running') return 'pending';
+  return 'completed';  // success, failed, completed 等都视为已完成
 };
 
 export default function TasksPage() {
@@ -239,9 +203,49 @@ export default function TasksPage() {
     return () => clearInterval(interval);
   }, [autoRefresh]); // autoRefresh 变化时重新创建定时器
 
-  const StatusIcon = ({ status }: { status: keyof typeof statusConfig }) => {
+  // Mission 级别的状态图标组件（用于简化状态：pending/completed/cancelled）
+  const MissionStatusIcon = ({ status }: { status: keyof typeof statusConfig }) => {
     const { icon: Icon } = statusConfig[status];
-    const props = status === 'running' ? { className: 'w-4 h-4 animate-spin' } : { className: 'w-4 h-4' };
+    const props = status === 'pending' ? { className: 'w-4 h-4 animate-spin' } : { className: 'w-4 h-4' };
+    return <Icon {...props} />;
+  };
+
+  // Result 级别的状态图标组件（用于详细状态：pending/retry_pending/submit/success/fail/submit_failed/cancelled）
+  const ResultStatusIcon = ({ status }: { status: TaskResult['status'] }) => {
+    let Icon;
+    let props = { className: 'w-5 h-5' };
+
+    switch (status) {
+      case 'pending':
+        Icon = Clock;
+        props = { className: 'w-5 h-5 text-orange-600' };
+        break;
+      case 'retry_pending':
+        Icon = RefreshCw;
+        props = { className: 'w-5 h-5 text-orange-600 animate-spin' };
+        break;
+      case 'submit':
+        Icon = Loader2;
+        props = { className: 'w-5 h-5 text-blue-600 animate-spin' };
+        break;
+      case 'success':
+        Icon = CheckCircle2;
+        props = { className: 'w-5 h-5 text-green-600' };
+        break;
+      case 'fail':
+      case 'submit_failed':
+        Icon = XCircle;
+        props = { className: 'w-5 h-5 text-destructive' };
+        break;
+      case 'cancelled':
+        Icon = XCircle;
+        props = { className: 'w-5 h-5 text-muted-foreground' };
+        break;
+      default:
+        Icon = AlertCircle;
+        props = { className: 'w-5 h-5 text-muted-foreground' };
+    }
+
     return <Icon {...props} />;
   };
 
@@ -285,14 +289,13 @@ export default function TasksPage() {
                   <TableHead>工作流 ID</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead className="w-32">重复进度</TableHead>
-                  <TableHead className="w-20">重试</TableHead>
                   <TableHead>创建时间</TableHead>
                   <TableHead className="w-24">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {tasks.map((task) => {
-                  const status = statusCodeToStatus(task.status_code);
+                  const status = getTaskStatus(task.status);
                   const statusInfo = statusConfig[status];
                   return (
                     <TableRow key={task.id}>
@@ -300,66 +303,39 @@ export default function TasksPage() {
                       <TableCell className="font-mono text-sm">{task.workflow}</TableCell>
                       <TableCell>
                         <Badge variant={statusInfo.variant} className="flex items-center gap-1 w-fit">
-                          <StatusIcon status={status} />
+                          <MissionStatusIcon status={status} />
                           {statusInfo.label}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <span className="font-medium">{task.current_repeat}</span>
+                          <span className="font-medium">{task.completed_repeat}</span>
                           <span className="text-muted-foreground"> / {task.repeat_count}</span>
                           {task.repeat_count > 1 && (
                             <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
                               <div
                                 className="bg-primary h-1.5 rounded-full transition-all"
-                                style={{ width: `${(task.current_repeat / task.repeat_count) * 100}%` }}
+                                style={{ width: `${(task.completed_repeat / task.repeat_count) * 100}%` }}
                               />
                             </div>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {task.retries > 0 && (
-                          <span className="text-orange-600">
-                            {task.retries} 次
-                            {task.error_message && ` (${task.error_message.substring(0, 20)}...)`}
-                          </span>
-                        )}
-                        {task.retries === 0 && '-'}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(task.created_at).toLocaleString('zh-CN')}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          {(status === 'running' || status === 'success' || status === 'failed') && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => viewResults(task)}
-                              className="gap-1"
-                            >
-                              <Eye className="w-4 h-4" />
-                              查看结果
-                            </Button>
-                          )}
-                          {status === 'failed' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRetryTask(task.id)}
-                              disabled={retryingTaskId === task.id}
-                              className="gap-1"
-                            >
-                              {retryingTaskId === task.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <RotateCcw className="w-4 h-4" />
-                              )}
-                              重试
-                            </Button>
-                          )}
-                          {(status === 'queued' || status === 'pending' || status === 'running') && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => viewResults(task)}
+                            className="gap-1"
+                          >
+                            <Eye className="w-4 h-4" />
+                            查看明细
+                          </Button>
+                          {status === 'pending' && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -466,17 +442,6 @@ export default function TasksPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* 显示执行统计 */}
-              <div className="flex items-center gap-4 text-sm">
-                <span className="font-medium">执行进度: {selectedTask?.current_repeat} / {selectedTask?.repeat_count}</span>
-                <span className="text-green-600">
-                  成功: {new Set(results.filter(r => r.status === 'success').map(r => r.repeat_index)).size} 次
-                </span>
-                <span className="text-red-600">
-                  失败: {new Set(results.filter(r => r.status === 'failed').map(r => r.repeat_index)).size} 次
-                </span>
-              </div>
-
               {/* 按 repeat_index 分组显示结果 */}
               {results.length > 0 ? (
                 Object.entries(
@@ -493,39 +458,47 @@ export default function TasksPage() {
                     const firstResult = groupResults[0];
                     const status = firstResult.status;
 
-                    // 根据状态显示不同的图标和文本
-                    let statusIcon;
+                    // 根据状态显示不同的文本和颜色
                     let statusText;
                     let statusColor;
                     let showFiles = false;
                     let showError = false;
 
-                    if (status === 'success') {
-                      statusIcon = <CheckCircle2 className="w-5 h-5 text-green-600" />;
-                      statusText = `第 ${repeatIndex} 次执行成功`;
-                      statusColor = 'text-green-600';
-                      showFiles = true;
-                    } else if (status === 'fail' || status === 'failed' || status === 'submit_failed') {
-                      statusIcon = <XCircle className="w-5 h-5 text-destructive" />;
-                      if (status === 'submit_failed') {
+                    switch (status) {
+                      case 'success':
+                        statusText = `第 ${repeatIndex} 次执行成功`;
+                        statusColor = 'text-green-600';
+                        showFiles = true;
+                        break;
+                      case 'submit_failed':
                         statusText = `第 ${repeatIndex} 次提交失败`;
-                      } else {
+                        statusColor = 'text-destructive';
+                        showError = true;
+                        break;
+                      case 'fail':
                         statusText = `第 ${repeatIndex} 次执行失败`;
-                      }
-                      statusColor = 'text-destructive';
-                      showError = true;
-                    } else if (status === 'submit') {
-                      statusIcon = <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />;
-                      statusText = `第 ${repeatIndex} 次执行中`;
-                      statusColor = 'text-blue-600';
-                    } else if (status === 'pending') {
-                      statusIcon = <Clock className="w-5 h-5 text-orange-600" />;
-                      statusText = `第 ${repeatIndex} 次排队中`;
-                      statusColor = 'text-orange-600';
-                    } else {
-                      statusIcon = <AlertCircle className="w-5 h-5 text-muted-foreground" />;
-                      statusText = `第 ${repeatIndex} 次 ${status}`;
-                      statusColor = 'text-muted-foreground';
+                        statusColor = 'text-destructive';
+                        showError = true;
+                        break;
+                      case 'cancelled':
+                        statusText = `第 ${repeatIndex} 次已取消`;
+                        statusColor = 'text-muted-foreground';
+                        break;
+                      case 'submit':
+                        statusText = `第 ${repeatIndex} 次执行中`;
+                        statusColor = 'text-blue-600';
+                        break;
+                      case 'pending':
+                        statusText = `第 ${repeatIndex} 次排队中`;
+                        statusColor = 'text-orange-600';
+                        break;
+                      case 'retry_pending':
+                        statusText = `第 ${repeatIndex} 次准备重试`;
+                        statusColor = 'text-orange-600';
+                        break;
+                      default:
+                        statusText = `第 ${repeatIndex} 次 ${status}`;
+                        statusColor = 'text-muted-foreground';
                     }
 
                     return (
@@ -533,7 +506,7 @@ export default function TasksPage() {
                         <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-base flex items-center gap-2">
-                              {statusIcon}
+                              <ResultStatusIcon status={status} />
                               <span className={statusColor}>{statusText}</span>
                               {showFiles && groupResults.length > 1 && (
                                 <span className="text-sm font-normal text-muted-foreground">

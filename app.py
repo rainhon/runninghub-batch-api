@@ -254,15 +254,23 @@ def get_tasks(page: int = 1, page_size: int = 20):
 
         tasks = []
         for row in result or []:
+            # 查询每个任务的已完成次数
+            completed_result = database.execute_sql(
+                "SELECT COUNT(DISTINCT repeat_index) as count FROM results WHERE mission_id = ? AND status IN ('success', 'fail', 'submit_failed', 'cancelled')",
+                (row["id"],),
+                fetch_one=True
+            )
+            completed_count = completed_result['count'] if completed_result else 0
+
             tasks.append({
                 "id": row["id"],
                 "workflow": row["workflow"],
                 "status": row["status"],
                 "status_code": row["status_code"],
                 "task_id": row["task_id"],
-                "retries": row["retries"],
                 "repeat_count": row["repeat_count"],
-                "current_repeat": row["current_repeat"],
+                "current_repeat": row["current_repeat"],  # 已提交次数
+                "completed_repeat": completed_count,  # 已完成次数
                 "error_message": row.get("error_message"),
                 "nodes_list": json.loads(row["nodes_list"]) if row["nodes_list"] else [],
                 "created_at": row["created_at"],
@@ -312,7 +320,6 @@ def get_task_detail(task_id: int):
             "status": result["status"],
             "status_code": result["status_code"],
             "task_id": result["task_id"],
-            "retries": result["retries"],
             "repeat_count": result["repeat_count"],
             "current_repeat": result["current_repeat"],
             "error_message": result.get("error_message"),
@@ -364,21 +371,7 @@ def get_task_results(task_id: int):
         results = []
         for i in range(1, repeat_count + 1):
             if i in results_dict:
-                # 已有结果记录
                 results.append(results_dict[i])
-            else:
-                # 还没有结果记录，显示 pending（排队中）
-                results.append({
-                    "id": None,
-                    "mission_id": task_id,
-                    "repeat_index": i,
-                    "status": "pending",
-                    "error_message": None,
-                    "file_path": None,
-                    "file_url": None,
-                    "created_at": None,
-                    "updated_at": None,
-                })
 
         return {"code": 200, "data": results, "msg": "获取成功"}
     except Exception as e:

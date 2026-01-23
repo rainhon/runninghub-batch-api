@@ -227,10 +227,10 @@ class TaskManager:
                             execution_id = self.execution_counter
                             self.running_tasks.add(execution_id)
 
-                        # 在新线程中恢复轮询
+                        # 在新线程中恢复轮询（使用包装函数确保 finally 块执行）
                         poll_thread = threading.Thread(
-                            target=self._poll_task_status,
-                            args=(mission_id, runninghub_task_id, app_id, nodes, repeat_index, repeat_count),
+                            target=self._poll_wrapper_with_cleanup,
+                            args=(execution_id, mission_id, runninghub_task_id, app_id, nodes, repeat_index, repeat_count),
                             daemon=True
                         )
                         poll_thread.start()
@@ -602,6 +602,29 @@ class TaskManager:
             with self.lock:
                 if execution_id in self.running_tasks:
                     self.running_tasks.remove(execution_id)
+
+    def _poll_wrapper_with_cleanup(self, execution_id: int, mission_id: int, runninghub_service_task_id: str, app_id: str, nodes: list, repeat_index: int, repeat_count: int):
+        """轮询包装函数（用于恢复的任务）- 确保 execution_id 被正确清理
+
+        Args:
+            execution_id: 执行实例ID
+            mission_id: 任务ID
+            runninghub_service_task_id: RunningHub 任务ID
+            app_id: 应用ID
+            nodes: 节点配置
+            repeat_index: 第几次执行（1, 2, 3...）
+            repeat_count: 总共需要执行的次数
+        """
+        try:
+            logger.info(f"♻️ 恢复的轮询实例 #{execution_id} - 任务 #{mission_id} (第{repeat_index}次执行) 开始")
+            # 调用实际的轮询函数
+            self._poll_task_status(mission_id, runninghub_service_task_id, app_id, nodes, repeat_index, repeat_count)
+        finally:
+            # 确保无论轮询成功、失败还是异常，都从 running_tasks 中移除 execution_id
+            with self.lock:
+                if execution_id in self.running_tasks:
+                    self.running_tasks.remove(execution_id)
+                    logger.info(f"♻️ 恢复的轮询实例 #{execution_id} - 任务 #{mission_id} (第{repeat_index}次执行) 结束，已清理执行槽位")
 
     def _poll_task_status(self, mission_id: int, runninghub_service_task_id: str, app_id: str, nodes: list, repeat_index: int, repeat_count: int):
         """后台轮询任务状态（内部方法）

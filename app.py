@@ -2,7 +2,9 @@ from fastapi import FastAPI, Request, APIRouter, UploadFile, File, BackgroundTas
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import os
+import logging
 from pathlib import Path
 import uuid
 import hashlib
@@ -12,9 +14,36 @@ import json
 from datetime import datetime
 from typing import Optional
 from task_manager import task_manager  # 导入任务管理器
+import logging_config  # 导入日志配置
 
 
-app = FastAPI(title="runninghub任务管理")
+# ============== 生命周期管理 ==============
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理"""
+    # 启动时执行
+    # 初始化日志系统
+    logging_config.setup_logging(level=logging.INFO)
+
+    logger = logging_config.get_logger(__name__)
+    logger.info("正在初始化应用...")
+
+    # 启动任务管理器
+    task_manager.start()
+    task_manager.restore_tasks()
+
+    logger.info("应用初始化完成")
+
+    yield
+
+    # 关闭时执行
+    logger.info("应用正在关闭...")
+    task_manager.stop()
+    logger.info("应用已关闭")
+
+
+app = FastAPI(title="runninghub任务管理", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,19 +54,7 @@ app.add_middleware(
 
 api_router = APIRouter(prefix="/api")
 
-
-# ============== 生命周期管理 ==============
-
-@app.on_event("startup")
-async def startup_event():
-    """应用启动时初始化任务管理器"""
-    task_manager.start()
-    task_manager.restore_tasks()
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """应用关闭时停止任务管理器"""
-    task_manager.stop()
+logger = logging_config.get_logger(__name__)
 
 
 # ============== API 端点 ==============

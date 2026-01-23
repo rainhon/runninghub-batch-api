@@ -10,6 +10,11 @@ import database
 import runninghub
 import mock_runninghub
 import os
+import logging
+from logging_config import get_logger
+
+# 获取日志器
+logger = get_logger('task_manager')
 
 
 # 配置常量
@@ -21,10 +26,10 @@ POLL_INTERVAL = 5  # 轮询间隔（秒）
 USE_MOCK_SERVICE = os.getenv("USE_MOCK_SERVICE", "false").lower() == "true"
 
 if USE_MOCK_SERVICE:
-    print("🧪 使用 Mock RunningHub 服务（模拟模式）")
+    logger.info("🧪 使用 Mock RunningHub 服务（模拟模式）")
     runninghub_service = mock_runninghub
 else:
-    print("🔗 使用真实 RunningHub 服务")
+    logger.info("🔗 使用真实 RunningHub 服务")
     runninghub_service = runninghub
 
 
@@ -38,6 +43,8 @@ class TaskManager:
         self.lock = threading.Lock()
         self.processing_thread = None
         self.is_running = False
+        self.resource_monitor_thread = None
+        self._should_monitor = False
 
     def start(self):
         """启动队列处理线程"""
@@ -45,12 +52,20 @@ class TaskManager:
             self.is_running = True
             self.processing_thread = threading.Thread(target=self._process_queue, daemon=True)
             self.processing_thread.start()
-            print("✅ 任务管理器已启动")
+            logger.info("✅ 任务管理器已启动")
+
+        # 启动资源监控线程
+        if self.resource_monitor_thread is None or not self.resource_monitor_thread.is_alive():
+            self._should_monitor = True
+            self.resource_monitor_thread = threading.Thread(target=self._monitor_resources, daemon=True)
+            self.resource_monitor_thread.start()
+            logger.info("📊 资源监控已启动")
 
     def stop(self):
         """停止队列处理"""
         self.is_running = False
-        print("⏹️ 任务管理器已停止")
+        self._should_monitor = False
+        logger.info("⏹️ 任务管理器已停止")
 
     def add_task(self, mission_id: int, repeat_index: Optional[int] = None):
         """添加任务到队列
@@ -62,7 +77,7 @@ class TaskManager:
         with self.lock:
             # 存储元组 (mission_id, repeat_index)
             self.queue.append((mission_id, repeat_index))
-            print(f"📥 任务 #{mission_id} (第{repeat_index}次执行) 已加入队列，队列长度: {len(self.queue)}")
+            logger.info(f"📥 任务 #{mission_id} (第{repeat_index}次执行) 已加入队列，队列长度: {len(self.queue)}")
 
     def submit_mission(self, mission_id: int, repeat_count: int):
         """提交任务的所有重复执行到队列
@@ -76,7 +91,7 @@ class TaskManager:
         for i in range(1, repeat_count + 1):
             self.add_task(mission_id, i)
 
-        print(f"📋 任务 #{mission_id} 已提交到队列，共 {repeat_count} 次执行")
+        logger.info(f"📋 任务 #{mission_id} 已提交到队列，共 {repeat_count} 次执行")
 
     def cancel_mission(self, mission_id: int):
         """取消任务的排队执行
@@ -97,14 +112,14 @@ class TaskManager:
                 )
 
                 if not task:
-                    print(f"⚠️ 任务 #{mission_id} 不存在")
+                    logger.warning(f"⚠️ 任务 #{mission_id} 不存在")
                     return 0
 
                 current_status = task['status']
 
                 # 只能取消队列中或排队中的任务
                 if current_status not in ['queued', 'pending', 'running']:
-                    print(f"⚠️ 任务 #{mission_id} 状态为 {current_status}，无法取消")
+                    logger.warning(f"⚠️ 任务 #{mission_id} 状态为 {current_status}，无法取消")
                     return 0
 
                 # 查询已完成的执行
@@ -146,11 +161,11 @@ class TaskManager:
                     (mission_id,)
                 )
 
-                print(f"🚫 任务 #{mission_id} 已取消，移除了 {cancelled_count} 个排队中的执行")
+                logger.info(f"🚫 任务 #{mission_id} 已取消，移除了 {cancelled_count} 个排队中的执行")
                 return cancelled_count
 
         except Exception as e:
-            print(f"❌ 取消任务失败: {str(e)}")
+            logger.error(f"❌ 取消任务失败: {str(e)}")
             return 0
 
     def get_status(self) -> dict:
@@ -176,7 +191,7 @@ class TaskManager:
             )
 
             if submitting_results:
-                print(f"♻️ 发现 {len(submitting_results)} 个正在执行的任务，恢复轮询...")
+                logger.info(f"♻️ 发现 {len(submitting_results)} 个正在执行的任务，恢复轮询...")
 
                 # 统计每个任务的执行数量
                 mission_submit_counts = {}
@@ -204,7 +219,7 @@ class TaskManager:
                         nodes = json.loads(mission['nodes_list']) if mission['nodes_list'] else []
                         repeat_count = mission['repeat_count']
 
-                        print(f"♻️ 恢复轮询：任务 #{mission_id} 第{repeat_index}次执行 (runninghub_task_id: {runninghub_task_id})")
+                        logger.info(f"♻️ 恢复轮询：任务 #{mission_id} 第{repeat_index}次执行 (runninghub_task_id: {runninghub_task_id})")
 
                         # 为每个轮询任务分配执行ID并标记为运行中
                         with self.lock:
@@ -226,7 +241,7 @@ class TaskManager:
                         "UPDATE missions SET status = 'running', status_code = 804 WHERE id = ?",
                         (mission_id,)
                     )
-                    print(f"♻️ 任务 #{mission_id} 状态更新为 running ({count} 个执行正在轮询)")
+                    logger.info(f"♻️ 任务 #{mission_id} 状态更新为 running ({count} 个执行正在轮询)")
 
             # 1.5. 恢复待重试的任务（状态为 retry_pending）
             retry_pending_results = database.execute_sql(
@@ -235,7 +250,7 @@ class TaskManager:
             )
 
             if retry_pending_results:
-                print(f"♻️ 发现 {len(retry_pending_results)} 个待重试的任务，重新加入队列...")
+                logger.info(f"♻️ 发现 {len(retry_pending_results)} 个待重试的任务，重新加入队列...")
 
                 retry_mission_counts = {}
                 for result in retry_pending_results:
@@ -249,7 +264,7 @@ class TaskManager:
                     repeat_index = result['repeat_index']
                     retries = result['retries']
 
-                    print(f"♻️ 重新加入队列：任务 #{mission_id} 第{repeat_index}次执行 (已重试 {retries} 次)")
+                    logger.info(f"♻️ 重新加入队列：任务 #{mission_id} 第{repeat_index}次执行 (已重试 {retries} 次)")
                     # 重新加入队列
                     self.add_task(mission_id, repeat_index)
 
@@ -259,7 +274,7 @@ class TaskManager:
                         "UPDATE missions SET status = 'queued', status_code = 813 WHERE id = ?",
                         (mission_id,)
                     )
-                    print(f"♻️ 任务 #{mission_id} 状态更新为 queued ({count} 个执行待重试)")
+                    logger.info(f"♻️ 任务 #{mission_id} 状态更新为 queued ({count} 个执行待重试)")
 
             # 2. 恢复未提交的任务（队列中的任务）
             missions = database.execute_sql(
@@ -287,10 +302,10 @@ class TaskManager:
                             restored_count += 1
 
                     if restored_count > 0:
-                        print(f"♻️ 恢复任务 #{mission_id}：{restored_count}/{repeat_count} 次执行")
-                print(f"♻️ 总共恢复了 {len(missions)} 个未完成的任务")
+                        logger.info(f"♻️ 恢复任务 #{mission_id}：{restored_count}/{repeat_count} 次执行")
+                logger.info(f"♻️ 总共恢复了 {len(missions)} 个未完成的任务")
         except Exception as e:
-            print(f"⚠️ 恢复任务失败: {str(e)}")
+            logger.warning(f"⚠️ 恢复任务失败: {str(e)}")
             import traceback
             traceback.print_exc()
 
@@ -312,7 +327,7 @@ class TaskManager:
             )
 
             if not task:
-                print(f"⚠️ 任务 #{mission_id} 不存在")
+                logger.warning(f"⚠️ 任务 #{mission_id} 不存在")
                 return 0
 
             repeat_count = task['repeat_count']
@@ -332,7 +347,7 @@ class TaskManager:
                         failed_indices.append(r['repeat_index'])
 
             if not failed_indices:
-                print(f"⚠️ 任务 #{mission_id} 没有失败的执行")
+                logger.warning(f"⚠️ 任务 #{mission_id} 没有失败的执行")
                 return 0
 
             # 重置任务状态和错误信息
@@ -345,11 +360,11 @@ class TaskManager:
             for repeat_index in failed_indices:
                 self.add_task(mission_id, repeat_index)
 
-            print(f"🔄 任务 #{mission_id} 重试 {len(failed_indices)} 次失败的执行")
+            logger.info(f"🔄 任务 #{mission_id} 重试 {len(failed_indices)} 次失败的执行")
             return len(failed_indices)
 
         except Exception as e:
-            print(f"❌ 重试任务失败: {str(e)}")
+            logger.error(f"❌ 重试任务失败: {str(e)}")
             return 0
 
     # ========== 内部方法 ==========
@@ -443,7 +458,7 @@ class TaskManager:
                         execution_id = self.execution_counter
                         self.running_tasks.add(execution_id)
 
-                        print(f"🚀 从队列取出任务 #{mission_id} (第{repeat_index}次执行)，当前并发: {len(self.running_tasks)}/{MAX_CONCURRENT_TASKS}")
+                        logger.info(f"🚀 从队列取出任务 #{mission_id} (第{repeat_index}次执行)，当前并发: {len(self.running_tasks)}/{MAX_CONCURRENT_TASKS}")
 
                         # 在新线程中处理任务，传入 execution_id
                         task_thread = threading.Thread(
@@ -455,7 +470,7 @@ class TaskManager:
 
                 time.sleep(0.5)  # 避免 CPU 占用过高
             except Exception as e:
-                print(f"❌ 队列处理错误: {str(e)}")
+                logger.error(f"❌ 队列处理错误: {str(e)}")
                 import traceback
                 traceback.print_exc()
                 time.sleep(1)
@@ -474,7 +489,7 @@ class TaskManager:
         error_message = None
         try:
             # 已经在 _process_queue 中标记为运行中了，不需要再次标记
-            print(f"🔵 执行实例 #{execution_id} - 任务 #{mission_id} (第{repeat_index}次执行) 开始")
+            logger.info(f"🔵 执行实例 #{execution_id} - 任务 #{mission_id} (第{repeat_index}次执行) 开始")
 
             # 获取任务信息
             task = database.execute_sql(
@@ -484,12 +499,12 @@ class TaskManager:
             )
 
             if not task:
-                print(f"⚠️ 任务 #{mission_id} 不存在")
+                logger.warning(f"⚠️ 任务 #{mission_id} 不存在")
                 return
 
             # 检查任务是否已取消
             if task['status'] == 'cancelled':
-                print(f"🚫 任务 #{mission_id} 已取消，跳过执行")
+                logger.info(f"🚫 任务 #{mission_id} 已取消，跳过执行")
                 return
 
             app_id = task['workflow']
@@ -505,7 +520,7 @@ class TaskManager:
             )
             current_retries = result_info['retries'] if result_info else 0
 
-            print(f"▶️ 执行实例 #{execution_id} - 任务 #{mission_id} 第{repeat_index}次执行开始（重试 {current_retries} 次）")
+            logger.info(f"▶️ 执行实例 #{execution_id} - 任务 #{mission_id} 第{repeat_index}次执行开始（重试 {current_retries} 次）")
 
             # 提交到 RunningHub
             submit_result = runninghub_service.submit_task(app_id, nodes)
@@ -517,7 +532,7 @@ class TaskManager:
                     mission_id, repeat_index, 'submit_failed',
                     error_message=error_message
                 )
-                print(f"❌ 任务 #{mission_id} 第{repeat_index}次执行提交失败，已保存到 results")
+                logger.error(f"❌ 任务 #{mission_id} 第{repeat_index}次执行提交失败，已保存到 results")
                 raise Exception(error_message)
 
             runninghub_service_task_id = submit_result['data'].get('taskId')
@@ -533,14 +548,14 @@ class TaskManager:
                 mission_id, repeat_index, 'submit',
                 runninghub_task_id=runninghub_service_task_id
             )
-            print(f"✅ 任务 #{mission_id} 第{repeat_index}次执行已提交并保存到 results (task_id: {runninghub_service_task_id})")
+            logger.info(f"✅ 任务 #{mission_id} 第{repeat_index}次执行已提交并保存到 results (task_id: {runninghub_service_task_id})")
 
             # 轮询任务状态
             self._poll_task_status(mission_id, runninghub_service_task_id, app_id, nodes, repeat_index, repeat_count)
 
         except Exception as e:
             error_message = str(e)
-            print(f"❌ 执行实例 #{execution_id} - 任务 #{mission_id} 出错: {error_message}")
+            logger.error(f"❌ 执行实例 #{execution_id} - 任务 #{mission_id} 出错: {error_message}")
 
             # 获取当前重试次数和状态
             result_info = database.execute_sql(
@@ -561,7 +576,7 @@ class TaskManager:
 
             # 检查任务是否已取消
             if current_status == 'cancelled':
-                print(f"🚫 任务 #{mission_id} 已取消，不重试")
+                logger.info(f"🚫 任务 #{mission_id} 已取消，不重试")
                 return
 
             if current_retries < MAX_RETRIES:
@@ -570,7 +585,7 @@ class TaskManager:
                     mission_id, repeat_index, 'retry_pending',
                     retries=current_retries + 1  # 增加重试次数
                 )
-                print(f"🔄 任务 #{mission_id} 第 {repeat_index} 次执行出错，准备重试（{MAX_RETRIES - current_retries} 次剩余）")
+                logger.info(f"🔄 任务 #{mission_id} 第 {repeat_index} 次执行出错，准备重试（{MAX_RETRIES - current_retries} 次剩余）")
                 self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
             else:
                 # 达到重试上限，更新或插入 results 表
@@ -578,7 +593,7 @@ class TaskManager:
                     mission_id, repeat_index, 'fail',
                     error_message=error_message
                 )
-                print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
+                logger.error(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
 
                 # 检查是否所有任务都完成
                 self._check_and_update_mission_status(mission_id, repeat_count)
@@ -614,7 +629,7 @@ class TaskManager:
                             file_path=file_url, file_url=file_url
                         )
 
-                    print(f"✅ 任务 #{mission_id} 第 {repeat_index} 次执行成功")
+                    logger.info(f"✅ 任务 #{mission_id} 第 {repeat_index} 次执行成功")
 
                     # 检查是否所有任务都完成
                     self._check_and_update_mission_status(mission_id, repeat_count)
@@ -642,7 +657,7 @@ class TaskManager:
 
                     # 检查任务是否已取消
                     if current_status == 'cancelled':
-                        print(f"🚫 任务 #{mission_id} 已取消，不重试")
+                        logger.info(f"🚫 任务 #{mission_id} 已取消，不重试")
                         return
 
                     if current_retries < MAX_RETRIES:
@@ -651,7 +666,7 @@ class TaskManager:
                             mission_id, repeat_index, 'retry_pending',
                             retries=current_retries + 1  # 增加重试次数
                         )
-                        print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行失败，准备重试（{MAX_RETRIES - current_retries} 次剩余）: {error_msg}")
+                        logger.error(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行失败，准备重试（{MAX_RETRIES - current_retries} 次剩余）: {error_msg}")
                         self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
                     else:
                         # 达到重试上限，更新 results 表（使用更新或插入逻辑）
@@ -659,7 +674,7 @@ class TaskManager:
                             mission_id, repeat_index, 'fail',
                             error_message=error_msg
                         )
-                        print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
+                        logger.error(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行已达重试上限（{MAX_RETRIES} 次）")
 
                         # 检查是否所有任务都完成
                         self._check_and_update_mission_status(mission_id, repeat_count)
@@ -674,7 +689,7 @@ class TaskManager:
 
                 else:  # 未知 code，作为失败处理
                     error_msg = f"未知的状态码: {code}, 消息: {outputs_result.get('msg', '无')}"
-                    print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态码 {code}")
+                    logger.error(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态码 {code}")
 
                     # 获取当前重试次数
                     result_info = database.execute_sql(
@@ -694,7 +709,7 @@ class TaskManager:
 
                     # 检查任务是否已取消
                     if current_status == 'cancelled':
-                        print(f"🚫 任务 #{mission_id} 已取消，不重试")
+                        logger.info(f"🚫 任务 #{mission_id} 已取消，不重试")
                         return
 
                     if current_retries < MAX_RETRIES:
@@ -703,7 +718,7 @@ class TaskManager:
                             mission_id, repeat_index, 'retry_pending',
                             retries=current_retries + 1  # 增加重试次数
                         )
-                        print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态，准备重试（{MAX_RETRIES - current_retries} 次剩余）: {error_msg}")
+                        logger.error(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态，准备重试（{MAX_RETRIES - current_retries} 次剩余）: {error_msg}")
                         self.add_task(mission_id, repeat_index)  # 重新加入队列，使用相同的 repeat_index
                     else:
                         # 达到重试上限，更新 results 表（使用更新或插入逻辑）
@@ -711,7 +726,7 @@ class TaskManager:
                             mission_id, repeat_index, 'fail',
                             error_message=error_msg
                         )
-                        print(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态已达重试上限（{MAX_RETRIES} 次）")
+                        logger.error(f"❌ 任务 #{mission_id} 第 {repeat_index} 次执行遇到未知状态已达重试上限（{MAX_RETRIES} 次）")
 
                         # 检查是否所有任务都完成
                         self._check_and_update_mission_status(mission_id, repeat_count)
@@ -721,7 +736,7 @@ class TaskManager:
                 time.sleep(POLL_INTERVAL)  # 每 5 秒轮询一次
 
         except Exception as e:
-            print(f"❌ 轮询任务 {runninghub_service_task_id} 时出错: {str(e)}")
+            logger.error(f"❌ 轮询任务 {runninghub_service_task_id} 时出错: {str(e)}")
             database.execute_sql(
                 "UPDATE missions SET status = 'completed', status_code = 805, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                 (mission_id,)
@@ -763,7 +778,43 @@ class TaskManager:
                 "UPDATE missions SET status = 'completed', status_code = 0, error_message = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                 (mission_id,)
             )
-            print(f"✅ 任务 #{mission_id} 全部完成（共 {repeat_count} 次执行）")
+            logger.info(f"✅ 任务 #{mission_id} 全部完成（共 {repeat_count} 次执行）")
+
+    def _monitor_resources(self):
+        """资源监控线程（内部方法）- 定期记录资源使用情况"""
+        from logging_config import log_resource_usage
+
+        logger.info("📊 资源监控线程已启动")
+
+        while self._should_monitor:
+            try:
+                # 每 60 秒记录一次资源使用情况
+                log_resource_usage(logger)
+
+                # 检查资源使用是否异常
+                usage = log_resource_usage(logger)
+
+                # 警告阈值
+                if 'memory_mb' in usage:
+                    if usage['memory_mb'] > 1024:  # 内存超过 1GB
+                        logger.warning(f"⚠️ 内存使用过高: {usage['memory_mb']} MB")
+
+                    if usage['num_threads'] > 50:  # 线程数超过 50
+                        logger.warning(f"⚠️ 线程数过多: {usage['num_threads']}")
+
+                    if usage['num_open_files'] > 100:  # 打开文件数超过 100
+                        logger.warning(f"⚠️ 打开文件数过多: {usage['num_open_files']}")
+
+            except Exception as e:
+                logger.error(f"❌ 资源监控出错: {str(e)}")
+
+            # 休眠 60 秒
+            for _ in range(60):
+                if not self._should_monitor:
+                    break
+                time.sleep(1)
+
+        logger.info("📊 资源监控线程已停止")
 
 
 # 全局任务管理器实例

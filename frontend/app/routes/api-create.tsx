@@ -41,23 +41,31 @@ const TASK_TYPES = [
   },
 ];
 
-// 宽高比选项
-const ASPECT_RATIOS = [
+// 图片任务宽高比选项（香蕉 API）
+const IMAGE_ASPECT_RATIOS = [
   { value: 'auto', label: '自动' },
-  { value: '3:4', label: '3:4 (竖版)' },
   { value: '1:1', label: '1:1 (正方形)' },
   { value: '16:9', label: '16:9 (横版)' },
+  { value: '9:16', label: '9:16 (竖版)' },
   { value: '4:3', label: '4:3 (横版)' },
+  { value: '3:4', label: '3:4 (竖版)' },
   { value: '3:2', label: '3:2 (横版)' },
-  { value: '9:16', label: '9:16 (手机竖版)' },
+  { value: '2:3', label: '2:3 (竖版)' },
+  { value: '5:4', label: '5:4 (横版)' },
+  { value: '4:5', label: '4:5 (竖版)' },
+  { value: '21:9', label: '21:9 (超宽)' },
 ];
 
-// 时长选项
-const DURATIONS = [
-  { value: '5', label: '5秒' },
+// 视频任务宽高比选项（Sora2 API）
+const VIDEO_ASPECT_RATIOS = [
+  { value: '9:16', label: '9:16 (竖版)' },
+  { value: '16:9', label: '16:9 (横版)' },
+];
+
+// 视频时长选项（Sora2 API）
+const VIDEO_DURATIONS = [
   { value: '10', label: '10秒' },
   { value: '15', label: '15秒' },
-  { value: '20', label: '20秒' },
 ];
 
 export default function ApiCreatePage() {
@@ -104,9 +112,21 @@ export default function ApiCreatePage() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    // 根据任务类型限制图片数量
+    // 图生图：最多 5 张
+    // 图生视频：最多 1 张
+    const maxImages = taskType === 'image_to_image' ? 5 : 1;
+    const currentCount = uploadedImages.length;
+    const filesToUpload = Array.from(files);
+
+    if (currentCount + filesToUpload.length > maxImages) {
+      setError(`${taskType === 'image_to_image' ? '图生图' : '图生视频'}最多支持 ${maxImages} 张图片，当前已有 ${currentCount} 张`);
+      return;
+    }
+
     try {
       setSubmitting(true);
-      const uploadPromises = Array.from(files).map(file => api.uploadApiImage(file));
+      const uploadPromises = filesToUpload.map(file => api.uploadApiImage(file));
       const results = await Promise.all(uploadPromises);
 
       // 添加到已上传图片列表（保存完整的 URL）
@@ -145,32 +165,21 @@ export default function ApiCreatePage() {
         }
       }
     } else if (taskType === 'image_to_image') {
-      // 图生图：笛卡尔积（图片 × 提示词 × 重复次数）
-      if (uploadedImages.length === 0) {
-        // 没有图片时，只按提示词和重复次数
-        for (const prompt of validPrompts) {
-          for (let i = 0; i < repeatCount; i++) {
-            combinations.push({
-              prompt,
-              imageUrls: ''
-            });
-          }
-        }
-      } else {
-        // 有图片：笛卡尔积
-        for (const imageUrl of uploadedImages) {
-          for (const prompt of validPrompts) {
-            for (let i = 0; i < repeatCount; i++) {
-              combinations.push({
-                prompt,
-                imageUrls: imageUrl
-              });
-            }
-          }
+      // 图生图：所有图片作为数组传给每个子任务
+      // imageUrls 是数组格式，例如：["url1", "url2", "url3"]
+      const imageUrls = uploadedImages.length > 0 ? uploadedImages : [''];
+
+      for (const prompt of validPrompts) {
+        for (let i = 0; i < repeatCount; i++) {
+          combinations.push({
+            prompt,
+            imageUrls: imageUrls
+          });
         }
       }
     } else if (taskType === 'image_to_video') {
-      // 图生视频：笛卡尔积（图片 × 提示词 × 重复次数）
+      // 图生视频：每张图片单独创建一个子任务
+      // imageUrl 是单张图片的 URL
       if (uploadedImages.length === 0) {
         // 没有图片时，只按提示词和重复次数
         for (const prompt of validPrompts) {
@@ -182,7 +191,7 @@ export default function ApiCreatePage() {
           }
         }
       } else {
-        // 有图片：笛卡尔积
+        // 有图片：笛卡尔积（每张图片 × 每个提示词 × 重复次数）
         for (const imageUrl of uploadedImages) {
           for (const prompt of validPrompts) {
             for (let i = 0; i < repeatCount; i++) {
@@ -214,6 +223,30 @@ export default function ApiCreatePage() {
     if (!taskName.trim()) {
       setError('请输入任务名称');
       return;
+    }
+
+    // 验证提示词长度（5-4000 字符）
+    const validPrompts = prompts.filter(p => p.trim().length > 0);
+    for (const prompt of validPrompts) {
+      const trimmedPrompt = prompt.trim();
+      if (trimmedPrompt.length < 5) {
+        setError(`提示词长度不能少于 5 个字符，当前提示词: "${trimmedPrompt.substring(0, 20)}${trimmedPrompt.length > 20 ? '...' : ''}"`);
+        return;
+      }
+      if (trimmedPrompt.length > 4000) {
+        setError(`提示词长度不能超过 4000 个字符，当前提示词有 ${trimmedPrompt.length} 个字符`);
+        return;
+      }
+    }
+
+    // 验证图片要求（图生图/图生视频需要图片）
+    if (taskType === 'image_to_image' || taskType === 'image_to_video') {
+      if (uploadedImages.length === 0) {
+        setError(taskType === 'image_to_image'
+          ? '图生图任务需要至少上传 1 张参考图片'
+          : '图生视频任务需要上传 1 张参考图片');
+        return;
+      }
     }
 
     const batchList = parseBatchInput();
@@ -300,7 +333,7 @@ export default function ApiCreatePage() {
               value={config.aspectRatio || 'auto'}
               onChange={(e) => setConfig({ ...config, aspectRatio: e.target.value as any })}
             >
-              {ASPECT_RATIOS.map(ratio => (
+              {IMAGE_ASPECT_RATIOS.map((ratio) => (
                 <option key={ratio.value} value={ratio.value}>
                   {ratio.label}
                 </option>
@@ -320,7 +353,7 @@ export default function ApiCreatePage() {
                 value={config.duration || '10'}
                 onChange={(e) => setConfig({ ...config, duration: e.target.value })}
               >
-                {DURATIONS.map(d => (
+                {VIDEO_DURATIONS.map((d) => (
                   <option key={d.value} value={d.value}>
                     {d.label}
                   </option>
@@ -336,13 +369,11 @@ export default function ApiCreatePage() {
                 value={config.aspectRatio || '9:16'}
                 onChange={(e) => setConfig({ ...config, aspectRatio: e.target.value as any })}
               >
-                {ASPECT_RATIOS
-                  .filter(r => r.value === '9:16' || r.value === '16:9' || r.value === '1:1')
-                  .map(ratio => (
-                    <option key={ratio.value} value={ratio.value}>
-                      {ratio.label}
-                    </option>
-                  ))}
+                {VIDEO_ASPECT_RATIOS.map((ratio) => (
+                  <option key={ratio.value} value={ratio.value}>
+                    {ratio.label}
+                  </option>
+                ))}
               </select>
             </div>
           </>
@@ -354,10 +385,25 @@ export default function ApiCreatePage() {
           {needsImage && (
             <div className="space-y-2">
               <Label>上传参考图片</Label>
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                <p className="text-xs text-blue-800 dark:text-blue-300 font-medium mb-1">
+                  {taskType === 'image_to_image' ? '📸 图生图批量生成说明' : '🎬 图生视频批量生成说明'}
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-400">
+                  {taskType === 'image_to_image'
+                    ? '• 所有上传的图片将作为一组，配合每个提示词生成\n• 每个子任务包含所有图片（最多5张）\n• 例如：3张图片 + 2个提示词 = 6个结果（每组图片用不同提示词生成）'
+                    : '• 每张图片单独配合每个提示词生成视频\n• 最多上传1张图片\n• 例如：1张图片 + 2个提示词 = 2个视频'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {taskType === 'image_to_image'
+                    ? '最多支持 5 张图片，每张不超过 10MB'
+                    : '最多支持 1 张图片，不超过 10MB'}
+                </p>
+              </div>
               <Input
                 type="file"
                 accept="image/*"
-                multiple
+                multiple={taskType === 'image_to_image'}
                 onChange={handleImageUpload}
                 disabled={submitting}
                 className="cursor-pointer"
@@ -368,6 +414,12 @@ export default function ApiCreatePage() {
                 <div className="space-y-2">
                   <div className="text-sm text-muted-foreground">
                     已上传 {uploadedImages.length} 张图片
+                    {taskType === 'image_to_image' && uploadedImages.length < 5 && `（还可上传 ${5 - uploadedImages.length} 张）`}
+                    {taskType === 'image_to_image' && (
+                      <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                        → 这 {uploadedImages.length} 张图片将作为一组处理
+                      </span>
+                    )}
                   </div>
                   <div className="grid grid-cols-4 gap-2">
                     {uploadedImages.map((imageUrl, idx) => (
@@ -398,6 +450,9 @@ export default function ApiCreatePage() {
               提示词
               <span className="text-destructive">*</span>
             </Label>
+            <p className="text-xs text-muted-foreground">
+              提示词长度限制：5-4000 字符
+            </p>
 
             {/* 提示词列表 */}
             {prompts.map((prompt, index) => (
@@ -405,10 +460,20 @@ export default function ApiCreatePage() {
                 <div className="flex-1">
                   <textarea
                     className="flex min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    placeholder={`输入提示词 ${index + 1}`}
+                    placeholder={`输入提示词 ${index + 1}（5-4000字符）`}
                     value={prompt}
                     onChange={(e) => updatePrompt(index, e.target.value)}
                   />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-xs text-muted-foreground">
+                      {prompt.trim().length}/4000
+                    </span>
+                    {prompt.trim().length > 0 && prompt.trim().length < 5 && (
+                      <span className="text-xs text-destructive">
+                        至少需要 5 个字符
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {prompts.length > 1 && (
                   <Button
@@ -458,15 +523,50 @@ export default function ApiCreatePage() {
           </p>
         </div>
 
-        {/* 预览 */}
+        {/* 批量生成逻辑说明 */}
         {parseBatchInput().length > 0 && (
           <div className="p-4 bg-muted rounded-lg">
-            <div className="text-sm font-medium mb-2">任务预览</div>
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>• 任务类型: {currentTaskConfig?.name}</p>
-              <p>• 总数量: {parseBatchInput().length} 个</p>
-              {config.aspectRatio && <p>• 宽高比: {config.aspectRatio}</p>}
-              {config.duration && <p>• 时长: {config.duration}秒</p>}
+            <div className="text-sm font-medium mb-2">📊 批量生成预览</div>
+            <div className="text-sm text-muted-foreground space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <span>任务类型:</span>
+                <span className="font-medium text-foreground">{currentTaskConfig?.name}</span>
+
+                <span>提示词数量:</span>
+                <span className="font-medium text-foreground">{prompts.filter(p => p.trim().length > 0).length} 个</span>
+
+                {needsImage && (
+                  <>
+                    <span>图片数量:</span>
+                    <span className="font-medium text-foreground">{uploadedImages.length} 张</span>
+                  </>
+                )}
+
+                <span>重复次数:</span>
+                <span className="font-medium text-foreground">{repeatCount} 次</span>
+              </div>
+
+              <div className="border-t border-border pt-2 mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-foreground">预计生成:</span>
+                  <span className="text-lg font-bold text-primary">{parseBatchInput().length} 个子任务</span>
+                </div>
+              </div>
+
+              {/* 生成逻辑说明 */}
+              <div className="bg-background rounded-md p-2 text-xs">
+                <p className="font-medium mb-1">生成逻辑:</p>
+                {taskType === 'text_to_image' || taskType === 'text_to_video' ? (
+                  <p>每个提示词独立生成，重复 {repeatCount} 次</p>
+                ) : taskType === 'image_to_image' ? (
+                  <p>所有 {uploadedImages.length} 张图片作为一组，配合每个提示词生成，重复 {repeatCount} 次</p>
+                ) : (
+                  <p>每张图片单独配合每个提示词生成，重复 {repeatCount} 次</p>
+                )}
+              </div>
+
+              {config.aspectRatio && <p className="text-xs">• 宽高比: {config.aspectRatio}</p>}
+              {config.duration && <p className="text-xs">• 时长: {config.duration}秒</p>}
             </div>
           </div>
         )}

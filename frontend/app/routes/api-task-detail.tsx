@@ -26,6 +26,95 @@ const TASK_TYPE_NAMES: Record<string, string> = {
   image_to_video: '图生视频',
 };
 
+// 输入参数渲染组件
+function RenderInputParams({ inputParams }: { inputParams: string }) {
+  try {
+    const params = JSON.parse(inputParams || '{}');
+
+    return (
+      <div className="space-y-1">
+        {Object.entries(params).map(([key, value]) => {
+          // 特殊处理不同的参数类型
+          if (key === 'imageUrls' && Array.isArray(value)) {
+            return (
+              <div key={key} className="flex flex-col gap-1">
+                <span className="font-medium text-foreground">{key}:</span>
+                {value.length === 0 ? (
+                  <span className="text-muted-foreground">(空数组)</span>
+                ) : (
+                  <div className="space-y-1">
+                    {value.map((url, index) => (
+                      <div key={index} className="flex items-center gap-2 text-xs">
+                        <span className="text-muted-foreground">[{index}]:</span>
+                        {url ? (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline break-all"
+                            title="点击在新标签页打开"
+                          >
+                            {url.length > 60 ? url.substring(0, 60) + '...' : url}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">(空)</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          } else if (key === 'imageUrl' && typeof value === 'string') {
+            return (
+              <div key={key} className="flex flex-col gap-1">
+                <span className="font-medium text-foreground">{key}:</span>
+                {value ? (
+                  <a
+                    href={value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline break-all text-xs"
+                    title="点击在新标签页打开"
+                  >
+                    {value}
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground">(空)</span>
+                )}
+              </div>
+            );
+          } else if (key === 'prompt' && typeof value === 'string') {
+            return (
+              <div key={key} className="flex flex-col gap-1">
+                <span className="font-medium text-foreground">{key}:</span>
+                <span className="text-muted-foreground">
+                  {value.length > 100 ? value.substring(0, 100) + '...' : value}
+                </span>
+              </div>
+            );
+          } else {
+            return (
+              <div key={key} className="flex flex-col gap-1">
+                <span className="font-medium text-foreground">{key}:</span>
+                <span className="text-muted-foreground">
+                  {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                </span>
+              </div>
+            );
+          }
+        })}
+      </div>
+    );
+  } catch (e) {
+    return (
+      <pre className="text-xs overflow-x-auto">
+        {inputParams || '(空)'}
+      </pre>
+    );
+  }
+}
+
 export default function ApiTaskDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -114,9 +203,9 @@ export default function ApiTaskDetailPage() {
             {/* 输入参数 */}
             <div className="text-sm">
               <span className="text-muted-foreground">输入参数:</span>
-              <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-x-auto">
-                {JSON.stringify(JSON.parse(item.input_json || '{}'), null, 2)}
-              </pre>
+              <div className="mt-1 p-2 bg-muted rounded text-xs">
+                <RenderInputParams inputParams={item.input_params} />
+              </div>
             </div>
 
             {/* 错误信息 */}

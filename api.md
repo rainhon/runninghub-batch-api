@@ -1,4 +1,21 @@
 ### sora2 图生视频
+
+imageUrl
+IMAGE
+必填
+最多支持 1 项图片，每张 10 MB
+duration
+LIST
+必填
+枚举值: [10, 15]
+aspectRatio
+LIST
+必填
+枚举值: [9:16, 16:9]
+prompt
+STRING
+必填
+文本长度限制: 5 - 4000
 ```
 import os
 import requests
@@ -73,6 +90,18 @@ if __name__ == "__main__":
     main()
 ```
 ### sora2 文生视频
+duration
+LIST
+必填
+枚举值: [10, 15]
+prompt
+STRING
+必填
+文本长度限制: 5 - 4000
+aspectRatio
+LIST
+必填
+枚举值: [9:16, 16:9]
 ```
 import os
 import requests
@@ -147,6 +176,18 @@ if __name__ == "__main__":
 ```
 
 ### 香蕉图生图
+prompt
+STRING
+必填
+文本长度限制: 5 - 4000
+aspectRatio
+LIST
+必填
+枚举值: [auto, 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 5:4, 4:5, 21:9]
+imageUrls
+IMAGE
+必填
+最多支持 5 项图片，每张 10 MB
 ```
 import os
 import requests
@@ -223,6 +264,14 @@ if __name__ == "__main__":
 ```
 
 ### 香蕉文生图
+prompt
+STRING
+必填
+文本长度限制: 5 - 4000
+aspectRatio
+LIST
+必填
+枚举值: [auto, 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 5:4, 4:5, 21:9]
 ```
 import os
 import requests

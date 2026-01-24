@@ -8064,3 +8064,101 @@
 2026-01-24 16:24:19 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 8.61 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
 2026-01-24 16:25:20 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 8.57 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
 2026-01-24 16:26:21 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 8.57 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:27:21 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 8.57 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:28:22 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 8.57 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:29:22 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 8.05 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:30:23 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 7.38 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:31:24 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 7.38 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:32:25 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 7.38 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:33:25 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 7.21 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:34:26 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.69 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:35:27 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.67 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:36:27 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.65 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:37:28 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.67 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:38:28 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.65 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:39:29 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.65 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:40:29 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.66 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:41:30 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 7.05 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:42:30 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.66 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:43:31 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 6.64 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:44:32 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 7.03 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:45:32 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 7.02 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:45:46 [INFO] [api.v1.api_missions:upload_image:255] [MainThread] ✅ 图片上传成功: eb06557c-6ff4-432b-81f3-604d224d94b7.png (3094769 bytes)
+2026-01-24 16:46:33 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.31 MB (0.01 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:47:33 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.97 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:48:34 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.99 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:49:35 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 16.0 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:50:35 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 16.0 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:51:36 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 16.01 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:52:16 [INFO] [api.v1.api_missions:upload_image:255] [MainThread] ✅ 图片上传成功: 6f05b1f8-5bc5-4af0-8b22-cb3fc6fc6282.png (145431 bytes)
+2026-01-24 16:52:36 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 16.2 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:52:44 [INFO] [api_task_service:create_api_mission:114] [MainThread] 📋 API任务 #15 已创建，共 4 个子任务
+2026-01-24 16:52:45 [INFO] [api_task_service:create_api_mission:125] [MainThread] 📋 API任务 #15 已创建 4 个子任务
+2026-01-24 16:52:45 [INFO] [api_task_service:add_to_queue:171] [MainThread] 📥 任务 #15 的 4 个子任务已加入队列
+2026-01-24 16:52:45 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_image
+2026-01-24 16:52:45 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_12_1769244765 (类型: image_to_image)
+2026-01-24 16:52:45 [INFO] [api_task_service:_submit_and_start_polling:389] [API-Task-Consumer] ✅ 子任务 #1 已提交 (task_id: mock_api_task_12_1769244765)
+2026-01-24 16:52:45 [INFO] [api_task_service:_polling_worker:490] [Polling-Item-285] 🔄 轮询线程启动：子任务 #1
+2026-01-24 16:52:45 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-285] 🔶 使用 Mock 服务查询任务: mock_api_task_12_1769244765
+2026-01-24 16:52:45 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_image
+2026-01-24 16:52:45 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_13_1769244765 (类型: image_to_image)
+2026-01-24 16:52:45 [INFO] [api_task_service:_submit_and_start_polling:389] [API-Task-Consumer] ✅ 子任务 #2 已提交 (task_id: mock_api_task_13_1769244765)
+2026-01-24 16:52:45 [INFO] [api_task_service:_polling_worker:490] [Polling-Item-286] 🔄 轮询线程启动：子任务 #2
+2026-01-24 16:52:45 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-286] 🔶 使用 Mock 服务查询任务: mock_api_task_13_1769244765
+2026-01-24 16:52:45 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_image
+2026-01-24 16:52:45 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_14_1769244765 (类型: image_to_image)
+2026-01-24 16:52:45 [INFO] [api_task_service:_submit_and_start_polling:389] [API-Task-Consumer] ✅ 子任务 #3 已提交 (task_id: mock_api_task_14_1769244765)
+2026-01-24 16:52:45 [INFO] [api_task_service:_polling_worker:490] [Polling-Item-287] 🔄 轮询线程启动：子任务 #3
+2026-01-24 16:52:45 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-287] 🔶 使用 Mock 服务查询任务: mock_api_task_14_1769244765
+2026-01-24 16:52:45 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_image
+2026-01-24 16:52:45 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_15_1769244765 (类型: image_to_image)
+2026-01-24 16:52:46 [INFO] [api_task_service:_submit_and_start_polling:389] [API-Task-Consumer] ✅ 子任务 #4 已提交 (task_id: mock_api_task_15_1769244765)
+2026-01-24 16:52:46 [INFO] [api_task_service:_polling_worker:490] [Polling-Item-288] 🔄 轮询线程启动：子任务 #4
+2026-01-24 16:52:46 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-288] 🔶 使用 Mock 服务查询任务: mock_api_task_15_1769244765
+2026-01-24 16:52:48 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-285] 🔶 使用 Mock 服务查询任务: mock_api_task_12_1769244765
+2026-01-24 16:52:48 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-286] 🔶 使用 Mock 服务查询任务: mock_api_task_13_1769244765
+2026-01-24 16:52:48 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-287] 🔶 使用 Mock 服务查询任务: mock_api_task_14_1769244765
+2026-01-24 16:52:49 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-288] 🔶 使用 Mock 服务查询任务: mock_api_task_15_1769244765
+2026-01-24 16:52:51 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-285] 🔶 使用 Mock 服务查询任务: mock_api_task_12_1769244765
+2026-01-24 16:52:51 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-286] 🔶 使用 Mock 服务查询任务: mock_api_task_13_1769244765
+2026-01-24 16:52:51 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-287] 🔶 使用 Mock 服务查询任务: mock_api_task_14_1769244765
+2026-01-24 16:52:51 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-287] ✅ Mock: 任务 mock_api_task_14_1769244765 成功完成
+2026-01-24 16:52:52 [INFO] [api_task_service:_polling_worker:513] [Polling-Item-287] ✅ 子任务 #3 成功: https://picsum.photos/seed/157/768/1024
+2026-01-24 16:52:52 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-288] 🔶 使用 Mock 服务查询任务: mock_api_task_15_1769244765
+2026-01-24 16:52:52 [INFO] [api_task_service:_update_progress:640] [Polling-Item-287] 📊 API任务 #15 进度: 1 完成, 0 失败
+2026-01-24 16:52:52 [INFO] [api_task_service:_polling_worker:608] [Polling-Item-287] ⏹️ 轮询线程结束：子任务 #3
+2026-01-24 16:52:54 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-285] 🔶 使用 Mock 服务查询任务: mock_api_task_12_1769244765
+2026-01-24 16:52:54 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-285] ✅ Mock: 任务 mock_api_task_12_1769244765 成功完成
+2026-01-24 16:52:54 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-286] 🔶 使用 Mock 服务查询任务: mock_api_task_13_1769244765
+2026-01-24 16:52:54 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-286] ✅ Mock: 任务 mock_api_task_13_1769244765 成功完成
+2026-01-24 16:52:54 [INFO] [api_task_service:_polling_worker:513] [Polling-Item-285] ✅ 子任务 #1 成功: https://picsum.photos/seed/987/768/1024
+2026-01-24 16:52:54 [INFO] [api_task_service:_update_progress:640] [Polling-Item-285] 📊 API任务 #15 进度: 2 完成, 0 失败
+2026-01-24 16:52:54 [INFO] [api_task_service:_polling_worker:608] [Polling-Item-285] ⏹️ 轮询线程结束：子任务 #1
+2026-01-24 16:52:55 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-288] 🔶 使用 Mock 服务查询任务: mock_api_task_15_1769244765
+2026-01-24 16:52:55 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-288] ✅ Mock: 任务 mock_api_task_15_1769244765 成功完成
+2026-01-24 16:52:55 [INFO] [api_task_service:_polling_worker:513] [Polling-Item-286] ✅ 子任务 #2 成功: https://picsum.photos/seed/402/768/1024
+2026-01-24 16:52:55 [INFO] [api_task_service:_update_progress:640] [Polling-Item-286] 📊 API任务 #15 进度: 3 完成, 0 失败
+2026-01-24 16:52:55 [INFO] [api_task_service:_polling_worker:608] [Polling-Item-286] ⏹️ 轮询线程结束：子任务 #2
+2026-01-24 16:52:55 [INFO] [api_task_service:_polling_worker:513] [Polling-Item-288] ✅ 子任务 #4 成功: https://picsum.photos/seed/657/768/1024
+2026-01-24 16:52:55 [INFO] [api_task_service:_update_progress:640] [Polling-Item-288] 📊 API任务 #15 进度: 4 完成, 0 失败
+2026-01-24 16:52:55 [INFO] [api_task_service:_polling_worker:608] [Polling-Item-288] ⏹️ 轮询线程结束：子任务 #4
+2026-01-24 16:52:55 [INFO] [api_task_service:_monitor_mission_completion:480] [Monitor-Mission-15] ✅ 任务 #15 全部完成
+2026-01-24 16:53:37 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 20.63 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:54:37 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 20.67 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:55:38 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 19.76 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:56:39 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 19.84 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:57:39 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 19.84 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:58:40 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 19.88 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 16:59:41 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 20.77 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:00:41 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 18.69 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:01:42 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 19.6 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:02:42 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 19.6 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:03:43 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 19.6 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:04:43 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.71 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:05:44 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.71 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:06:44 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.71 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:07:45 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.71 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:08:45 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.71 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:09:46 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 15.71 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:10:47 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 17.18 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%
+2026-01-24 17:11:47 [INFO] [app_task_service:log_resource_usage:165] [Thread-2 (_monitor_resources)] 资源使用 - 内存: 18.23 MB (0.02 GB), 线程数: 5, 打开文件: 3, CPU: 0.0%

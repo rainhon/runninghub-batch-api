@@ -926,79 +926,114 @@ export function ImageUpload({ value, onChange, maxCount = 10 }: ImageUploadProps
 
 ## 七、开发任务清单
 
-### Phase 1: 数据库和基础架构 (Week 1)
+### ✅ Phase 1: 数据库和基础架构 (已完成 - 2026-01-23)
 
-- [ ] **数据库迁移**
-  - [ ] 创建 `api_missions` 表
-  - [ ] 创建 `api_mission_items` 表
-  - [ ] 创建 `api_templates` 表
-  - [ ] 创建索引
+- [x] **数据库表设计**
+  - [x] 创建 `api_missions` 表（API任务主表）
+  - [x] 创建 `api_mission_items` 表（API任务子项表）
+  - [x] 创建 `api_templates` 表（API任务模板表）
+  - [x] 添加 `retry_count` 字段到 `api_mission_items` 表
+  - [x] 创建所有必要的索引
 
-- [ ] **后端核心模块**
-  - [ ] 实现 `api_task_manager.py`
-  - [ ] 扩展 `database.py` 添加 API 任务相关方法
-  - [ ] 单元测试
+- [x] **后端架构重构**
+  - [x] 重构为分层架构：API → Services → Repositories → Database
+  - [x] 创建目录结构：api/, core/, services/, repositories/, integrations/, utils/
+  - [x] 实现 `api/v1/` 模块，包含所有新架构路由
+  - [x] 重构 `app.py`，使用 `api_router` 集成新架构
+  - [x] 统一响应码格式：所有接口使用 `code: 0` 表示成功
 
-- [ ] **API 认证配置**
-  - [ ] 配置 RUNNINGHUB_API_KEY 环境变量
-  - [ ] 测试 API 连通性
+### ✅ Phase 2: 后端 API 实现 (已完成 - 2026-01-24)
 
-### Phase 2: 后端 API 实现 (Week 2-3)
+- [x] **API 任务管理模块**
+  - [x] 实现 `services/api_task_service.py`
+  - [x] 实现 `repositories/api_mission_repository.py`
+  - [x] 实现 `integrations/runninghub_client.py`
+  - [x] 实现 `integrations/api_client_wrapper.py` (支持真实/Mock API切换)
+  - [x] 实现 `integrations/mock_api_client.py` (Mock模拟服务，支持持久化)
 
-- [ ] **API 任务管理 API**
-  - [ ] POST /api/api-missions（创建）
-  - [ ] GET /api/api-missions（列表）
-  - [ ] GET /api/api-missions/{id}（详情）
-  - [ ] POST /api/api-missions/{id}/cancel（取消）
-  - [ ] POST /api/api-missions/{id}/retry（重试）
-  - [ ] GET /api/api-missions/{id}/download（下载）
-  - [ ] DELETE /api/api-missions/{id}（删除）
+- [x] **队列与并发架构**
+  - [x] **子任务队列架构** - 队列直接存放子任务数据而非任务ID
+  - [x] **消费者模式** - 消费者线程管理并发数（50个并发）
+  - [x] **独立轮询任务** - 每个子任务有独立的轮询线程
+  - [x] **任务恢复机制** - 应用重启时从数据库恢复队列和轮询任务
 
-- [ ] **图片上传 API**
-  - [ ] POST /api/upload-image
-  - [ ] GET /api/images/{filename}
-  - [ ] 文件大小限制
-  - [ ] 文件类型验证
+- [x] **重试机制**
+  - [x] 提交失败自动重试（最多5次）
+  - [x] 远程API失败自动重试
+  - [x] 轮询网络错误继续等待（不重试）
+  - [x] 数据库字段 `retry_count` 跟踪重试次数
 
-- [ ] **API 模板管理**
-  - [ ] POST /api/api-templates
-  - [ ] GET /api/api-templates
-  - [ ] DELETE /api/api-templates/{id}
+- [x] **持久化与恢复**
+  - [x] 应用状态通过 SQLite 数据库持久化
+  - [x] Mock 服务通过 JSON 文件持久化 (`mock_api_state.json`)
+  - [x] 应用启动时自动恢复未完成任务
 
-- [ ] **集成测试**
-  - [ ] 测试四种任务类型
-  - [ ] 测试并发控制（50个任务）
-  - [ ] 测试轮询逻辑
-  - [ ] 测试错误处理
+- [x] **后端 API 接口**
+  - [x] POST /api/v1/api_missions/submit（提交任务）
+  - [x] GET /api/v1/api_missions（列表）
+  - [x] GET /api/v1/api_missions/{id}（详情）
+  - [x] GET /api/v1/api_missions/{id}/items（子任务列表）
+  - [x] POST /api/v1/api_missions/{id}/cancel（取消）
+  - [x] POST /api/v1/api_missions/{id}/retry（重试）
+  - [x] GET /api/v1/api_missions/{id}/download（下载结果）
+  - [x] DELETE /api/v1/api_missions/{id}（删除）
 
-### Phase 3: 前端页面开发 (Week 4-5)
+- [x] **文件上传 API**
+  - [x] POST /api/v1/media/upload
+  - [x] GET /api/v1/media/files
+  - [x] 文件大小限制（10MB）
+  - [x] 文件类型验证（支持 JPEG, PNG, GIF, WebP）
+  - [x] 文件哈希去重
 
-- [ ] **API 任务创建页面**
-  - [ ] 任务类型选择器
-  - [ ] 四种任务类型表单
-  - [ ] 批量输入组件（文本/图片）
-  - [ ] 模板选择功能
-  - [ ] 参数预览
+- [x] **API 模板管理**
+  - [x] POST /api/v1/templates（保存模板）
+  - [x] GET /api/v1/templates（获取模板列表）
+  - [x] GET /api/v1/templates/{id}（获取模板详情）
+  - [x] DELETE /api/v1/templates/{id}（删除模板）
 
-- [ ] **API 任务列表页面**
-  - [ ] 任务卡片组件
-  - [ ] 进度条展示
-  - [ ] 状态筛选
-  - [ ] 分页功能
-  - [ ] 自动刷新
+### ✅ Phase 3: 前端页面开发 (已完成 - 2026-01-24)
 
-- [ ] **API 任务详情页面**
-  - [ ] 子任务列表
-  - [ ] 结果预览
-  - [ ] 批量操作
+- [x] **API 任务创建页面** (`api-create.tsx`)
+  - [x] 任务类型选择器（文生图/图生图/文生视频/图生视频）
+  - [x] 四种任务类型表单
+  - [x] 批量输入组件（文本/图片）
+  - [x] 模板选择功能
+  - [x] 参数预览
+  - [x] 移除统一提示词字段
 
-- [ ] **API 模板管理页面**
-  - [ ] 模板列表
-  - [ ] 保存模板
-  - [ ] 使用模板
-  - [ ] 删除模板
+- [x] **API 任务列表页面** (`api-tasks.tsx`)
+  - [x] 任务卡片组件
+  - [x] 进度条展示
+  - [x] 状态筛选
+  - [x] 分页功能
+  - [x] 自动刷新
+  - [x] 操作按钮（查看、重试、取消、删除、下载）
 
-### Phase 4: 优化和测试 (Week 6)
+- [x] **API 任务详情页面** (`api-task-detail.tsx`)
+  - [x] 子任务列表
+  - [x] 结果预览
+  - [x] 状态展示
+  - [x] 自动刷新
+
+- [x] **API 模板管理页面** (`templates.tsx`)
+  - [x] 模板列表
+  - [x] 保存模板
+  - [x] 从模板创建任务
+  - [x] 删除模板
+
+- [x] **前端 API 客户端**
+  - [x] 更新 `frontend/app/lib/api.ts`，所有路径改为 `/api/v1/*`
+  - [x] 验证前后端数据结构一致性
+  - [x] 类型定义 `frontend/app/types/index.ts`
+
+### 🔄 Phase 4: 优化和测试 (进行中 - 2026-01-24)
+
+- [x] **核心功能优化**
+  - [x] 子任务队列架构优化
+  - [x] 重试机制实现
+  - [x] 持久化与恢复实现
+  - [x] Mock 服务持久化
+  - [x] 资源监控日志修复（去除重复日志）
 
 - [ ] **性能优化**
   - [ ] 数据库查询优化
@@ -1018,8 +1053,9 @@ export function ImageUpload({ value, onChange, maxCount = 10 }: ImageUploadProps
   - [ ] 文生视频批量测试
   - [ ] 图生视频批量测试
   - [ ] 混合任务类型测试
+  - [ ] Mock 服务测试 (`tests/test_mock_api.py` 已创建)
 
-### Phase 5: 文档和部署 (Week 7)
+### ⏳ Phase 5: 文档和部署 (待开始)
 
 - [ ] **文档编写**
   - [ ] API 文档
@@ -1113,6 +1149,31 @@ UPLOAD_DIR = "/path/to/uploads"
 
 ---
 
-**文档版本**: 1.0
+**文档版本**: 1.2
 **创建日期**: 2026-01-23
-**最后更新**: 2026-01-23
+**最后更新**: 2026-01-24
+
+## 更新日志
+
+### v1.2 (2026-01-24)
+- ✅ 完成前端页面开发（任务创建、列表、详情、模板管理）
+- ✅ 实现子任务队列架构（队列存放子任务数据而非任务ID）
+- ✅ 实现消费者模式管理并发（50个并发）
+- ✅ 实现独立轮询任务（每个子任务独立轮询线程）
+- ✅ 实现自动重试机制（最多5次重试）
+- ✅ 实现持久化与恢复（应用重启自动恢复队列和轮询任务）
+- ✅ Mock 服务支持持久化（JSON文件存储）
+- ✅ 修复资源监控重复日志问题
+- ✅ 创建数据库迁移脚本 `migrate_add_retry_count.py`
+- ✅ 创建 Mock 服务测试脚本 `tests/test_mock_api.py`
+
+### v1.1 (2026-01-24)
+- ✅ 完成后端架构重构，采用分层架构设计
+- ✅ 完成所有后端 API 实现（API任务、媒体上传、模板管理）
+- ✅ 完成前端 API 路径更新，统一使用 `/api/v1/*` 前缀
+- ✅ 验证前后端数据结构一致性
+- ✅ 统一响应码格式为 `code: 0` 表示成功
+- ✅ 应用已正常运行，可以开始前端开发
+
+### v1.0 (2026-01-23)
+- 初始版本，完整的开发计划

@@ -40,7 +40,7 @@ class SaveTemplateRequest(BaseModel):
 
 # ========== API 任务管理接口 ==========
 
-@router.post("/missions")
+@router.post("/submit")
 async def create_api_mission(request: CreateApiMissionRequest):
     """创建 API 任务"""
     try:
@@ -60,7 +60,7 @@ async def create_api_mission(request: CreateApiMissionRequest):
         return {
             "code": 0,
             "data": {
-                "api_mission_id": mission_id,
+                "mission_id": mission_id,
                 "total_count": mission['total_count'],
                 "status": mission['status']
             }
@@ -72,7 +72,7 @@ async def create_api_mission(request: CreateApiMissionRequest):
         raise HTTPException(status_code=500, detail=f"创建任务失败: {str(e)}")
 
 
-@router.get("/missions")
+@router.get("")
 async def get_api_missions(page: int = 1, page_size: int = 20, status: Optional[str] = None):
     """获取 API 任务列表"""
     try:
@@ -86,7 +86,7 @@ async def get_api_missions(page: int = 1, page_size: int = 20, status: Optional[
         raise HTTPException(status_code=500, detail=f"获取任务列表失败: {str(e)}")
 
 
-@router.get("/missions/{api_mission_id}")
+@router.get("/{api_mission_id}")
 async def get_api_mission_detail(api_mission_id: int):
     """获取 API 任务详情"""
     try:
@@ -104,7 +104,25 @@ async def get_api_mission_detail(api_mission_id: int):
         raise HTTPException(status_code=500, detail=f"获取任务详情失败: {str(e)}")
 
 
-@router.post("/missions/{api_mission_id}/cancel")
+@router.get("/{api_mission_id}/items")
+async def get_api_mission_items(api_mission_id: int):
+    """获取 API 任务的子任务列表"""
+    try:
+        items = database.execute_sql(
+            "SELECT * FROM api_mission_items WHERE api_mission_id = ? ORDER BY item_index",
+            (api_mission_id,),
+            fetch_all=True
+        )
+        return {
+            "code": 0,
+            "data": items
+        }
+    except Exception as e:
+        logger.error(f"获取子任务列表失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取子任务列表失败: {str(e)}")
+
+
+@router.post("/{api_mission_id}/cancel")
 async def cancel_api_mission(api_mission_id: int):
     """取消 API 任务"""
     try:
@@ -120,7 +138,7 @@ async def cancel_api_mission(api_mission_id: int):
         raise HTTPException(status_code=500, detail=f"取消任务失败: {str(e)}")
 
 
-@router.post("/missions/{api_mission_id}/retry")
+@router.post("/{api_mission_id}/retry")
 async def retry_api_mission(api_mission_id: int):
     """重试失败的 API 任务子项"""
     try:
@@ -138,7 +156,7 @@ async def retry_api_mission(api_mission_id: int):
         raise HTTPException(status_code=500, detail=f"重试任务失败: {str(e)}")
 
 
-@router.delete("/missions/{api_mission_id}")
+@router.delete("/{api_mission_id}")
 async def delete_api_mission(api_mission_id: int):
     """删除 API 任务"""
     try:
@@ -155,7 +173,7 @@ async def delete_api_mission(api_mission_id: int):
         raise HTTPException(status_code=500, detail=f"删除任务失败: {str(e)}")
 
 
-@router.get("/missions/{api_mission_id}/download")
+@router.get("/{api_mission_id}/download")
 async def download_api_mission_results(api_mission_id: int):
     """批量下载 API 任务结果（返回 ZIP 文件）"""
     try:
@@ -231,8 +249,8 @@ async def upload_image(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             buffer.write(content)
 
-        # 返回访问 URL
-        file_url = f"http://localhost:7777/api/v1/images/{unique_filename}"
+        # 返回访问 URL（完整路径，包含 /api/v1/api_missions 前缀）
+        file_url = f"http://localhost:7777/api/v1/api_missions/images/{unique_filename}"
 
         logger.info(f"✅ 图片上传成功: {unique_filename} ({len(content)} bytes)")
 

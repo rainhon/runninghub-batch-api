@@ -2,42 +2,78 @@
 API 任务服务模块
 支持四种 API 任务类型：文生图、图生图、文生视频、图生视频
 最多支持 50 个并发任务
+子任务失败自动重试，最多重试 5 次
 """
 import time
 import threading
 import json
-import os
 from collections import deque
-from typing import List, Dict, Optional
-import requests
+from typing import Dict
 import repositories as database
-from core import API_TASK_TYPES, MAX_CONCURRENT_API_TASKS, API_POLL_INTERVAL, get_api_key
+from core import API_TASK_TYPES, MAX_CONCURRENT_API_TASKS, get_api_key
 from utils import get_logger
 
 # 获取日志器
 logger = get_logger('api_task_service')
 
+# 最大重试次数
+MAX_RETRY_COUNT = 5
+
+
+class PollingTask:
+    """轮询任务：管理单个子任务的轮询"""
+
+    def __init__(self, item_id: int, item_index: int, mission_id: int,
+                 task_type: str, runninghub_task_id: str):
+        self.item_id = item_id
+        self.item_index = item_index
+        self.mission_id = mission_id
+        self.task_type = task_type
+        self.runninghub_task_id = runninghub_task_id
+        self.should_stop = False
+
 
 class ApiTaskManager:
-    """API任务管理器"""
+    """API任务管理器 - 子任务队列模式"""
 
     def __init__(self):
-        self.queue = deque()  # 任务队列
-        self.running_items = set()  # 正在运行的子项ID
+        # 子任务队列（直接存放待提交的子任务数据）
+        self.item_queue = deque()
+
+        # 正在运行的子任务 {(mission_id, item_id): polling_task}
+        self.running_tasks = {}
+
+        # 轮询任务线程列表 {item_id: thread}
+        self.polling_threads = {}
+
+        # 并发控制
+        self.max_concurrent = MAX_CONCURRENT_API_TASKS  # 最大并发数
+        self.current_concurrent = 0  # 当前并发数
+
+        # 线程安全锁
         self.lock = threading.Lock()
-        self.processing_thread = None
+        self.queue_lock = threading.Lock()
+
+        # 消费者线程
+        self.consumer_thread = None
         self.is_running = False
 
     def start(self):
-        """启动处理线程"""
-        if self.processing_thread is None or not self.processing_thread.is_alive():
+        """启动消费者线程并恢复未完成的任务"""
+        if not self.is_running:
             self.is_running = True
-            self.processing_thread = threading.Thread(
-                target=self._process_queue,
-                daemon=True
+
+            # 恢复未完成的任务
+            self._restore_tasks()
+
+            # 启动消费者线程
+            self.consumer_thread = threading.Thread(
+                target=self._consumer_loop,
+                daemon=True,
+                name="API-Task-Consumer"
             )
-            self.processing_thread.start()
-            logger.info("✅ API任务管理器已启动")
+            self.consumer_thread.start()
+            logger.info("✅ API任务管理器已启动（消费者线程）")
 
     def stop(self):
         """停止处理"""
@@ -94,47 +130,7 @@ class ApiTaskManager:
         return mission_id
 
     def add_to_queue(self, mission_id: int):
-        """添加任务到队列"""
-        with self.lock:
-            self.queue.append(mission_id)
-            logger.info(f"📥 API任务 #{mission_id} 已加入队列")
-
-    def get_queue_status(self) -> Dict:
-        """获取队列状态"""
-        with self.lock:
-            return {
-                "queue_length": len(self.queue),
-                "running_items": len(self.running_items),
-                "max_concurrent": MAX_CONCURRENT_API_TASKS
-            }
-
-    def _process_queue(self):
-        """处理队列（内部方法）"""
-        while self.is_running:
-            try:
-                with self.lock:
-                    # 检查是否有任务在队列中且未达到并发上限
-                    if len(self.queue) > 0 and len(self.running_items) < MAX_CONCURRENT_API_TASKS:
-                        mission_id = self.queue.popleft()
-                        logger.info(f"🚀 从队列取出 API任务 #{mission_id}")
-
-                        # 在新线程中处理任务
-                        thread = threading.Thread(
-                            target=self._execute_mission,
-                            args=(mission_id,),
-                            daemon=True
-                        )
-                        thread.start()
-
-                time.sleep(0.5)  # 避免 CPU 占用过高
-            except Exception as e:
-                logger.error(f"❌ 队列处理错误: {str(e)}")
-                import traceback
-                traceback.print_exc()
-                time.sleep(1)
-
-    def _execute_mission(self, mission_id: int):
-        """执行单个API任务（内部方法）"""
+        """添加任务的所有子任务到队列"""
         try:
             # 获取任务信息
             mission = database.execute_sql(
@@ -144,19 +140,13 @@ class ApiTaskManager:
             )
 
             if not mission:
-                logger.warning(f"⚠️ API任务 #{mission_id} 不存在")
+                logger.warning(f"⚠️ 任务 #{mission_id} 不存在")
                 return
-
-            # 更新状态为运行中
-            database.execute_sql(
-                "UPDATE api_missions SET status = 'running' WHERE id = ?",
-                (mission_id,)
-            )
 
             task_type = mission['task_type']
             config = json.loads(mission['config_json'])
 
-            # 获取待处理的子任务
+            # 获取所有待处理的子任务
             items = database.execute_sql(
                 "SELECT * FROM api_mission_items WHERE api_mission_id = ? AND status = 'pending' ORDER BY item_index",
                 (mission_id,),
@@ -164,95 +154,231 @@ class ApiTaskManager:
             )
 
             if not items:
-                logger.warning(f"⚠️ API任务 #{mission_id} 没有待处理的子任务")
-                database.execute_sql(
-                    "UPDATE api_missions SET status = 'completed' WHERE id = ?",
-                    (mission_id,)
-                )
+                logger.warning(f"⚠️ 任务 #{mission_id} 没有待处理的子任务")
                 return
 
-            logger.info(f"▶️ 开始处理 API任务 #{mission_id}，共 {len(items)} 个子任务")
+            # 将所有子任务加入队列
+            with self.queue_lock:
+                for item in items:
+                    item_data = {
+                        'mission_id': mission_id,
+                        'item': item,
+                        'task_type': task_type,
+                        'config': config
+                    }
+                    self.item_queue.append(item_data)
 
-            # 处理每个子任务
-            for item in items:
-                # 检查是否已取消
+            logger.info(f"📥 任务 #{mission_id} 的 {len(items)} 个子任务已加入队列")
+
+            # 更新任务状态
+            database.execute_sql(
+                "UPDATE api_missions SET status = 'queued' WHERE id = ?",
+                (mission_id,)
+            )
+
+        except Exception as e:
+            logger.error(f"❌ 添加任务 #{mission_id} 到队列失败: {str(e)}")
+
+    def _restore_tasks(self):
+        """恢复未完成的任务（应用重启时调用）"""
+        try:
+            logger.info("🔄 开始恢复未完成的任务...")
+
+            # 1. 恢复 pending 状态的子任务到队列
+            pending_items = database.execute_sql(
+                """SELECT i.*, m.task_type, m.config_json
+                   FROM api_mission_items i
+                   JOIN api_missions m ON i.api_mission_id = m.id
+                   WHERE i.status = 'pending'
+                   ORDER BY i.api_mission_id, i.item_index""",
+                fetch_all=True
+            )
+
+            restored_count = 0
+            for item in pending_items:
+                item_data = {
+                    'mission_id': item['api_mission_id'],
+                    'item': item,
+                    'task_type': item['task_type'],
+                    'config': json.loads(item['config_json'])
+                }
+                with self.queue_lock:
+                    self.item_queue.append(item_data)
+                restored_count += 1
+
+            logger.info(f"📥 恢复 {restored_count} 个待处理的子任务到队列")
+
+            # 2. 恢复 processing 状态且有 runninghub_task_id 的子任务的轮询
+            processing_items = database.execute_sql(
+                """SELECT i.*, m.task_type, m.config_json
+                   FROM api_mission_items i
+                   JOIN api_missions m ON i.api_mission_id = m.id
+                   WHERE i.status = 'processing' AND i.runninghub_task_id IS NOT NULL
+                   ORDER BY i.api_mission_id, i.item_index""",
+                fetch_all=True
+            )
+
+            restored_polling_count = 0
+            for item in processing_items:
+                try:
+                    # 创建轮询任务
+                    polling_task = PollingTask(
+                        item_id=item['id'],
+                        item_index=item['item_index'],
+                        mission_id=item['api_mission_id'],
+                        task_type=item['task_type'],
+                        runninghub_task_id=item['runninghub_task_id']
+                    )
+
+                    # 添加到运行中任务
+                    key = (item['api_mission_id'], item['id'])
+                    with self.lock:
+                        self.running_tasks[key] = polling_task
+                        self.current_concurrent += 1
+
+                    # 启动轮询线程
+                    polling_thread = threading.Thread(
+                        target=self._polling_worker,
+                        args=(polling_task,),
+                        daemon=True,
+                        name=f"Polling-Item-{item['id']}"
+                    )
+                    self.polling_threads[item['id']] = polling_thread
+                    polling_thread.start()
+
+                    restored_polling_count += 1
+                    logger.info(f"🔄 恢复轮询：子任务 #{item['item_index']} (task_id: {item['runninghub_task_id']})")
+
+                except Exception as e:
+                    logger.error(f"❌ 恢复子任务 #{item['item_index']} 轮询失败: {str(e)}")
+
+            logger.info(f"🔄 恢复 {restored_polling_count} 个轮询任务")
+
+            # 3. 恢复任务状态
+            missions_to_restore = database.execute_sql(
+                """SELECT DISTINCT m.id
+                   FROM api_missions m
+                   JOIN api_mission_items i ON m.id = i.api_mission_id
+                   WHERE i.status IN ('pending', 'processing')""",
+                fetch_all=True
+            )
+
+            for mission in missions_to_restore:
+                mission_id = mission['id']
+                # 确保任务状态正确
                 mission_status = database.execute_sql(
                     "SELECT status FROM api_missions WHERE id = ?",
                     (mission_id,),
                     fetch_one=True
                 )
-                if mission_status and mission_status['status'] == 'cancelled':
-                    logger.info(f"🚫 API任务 #{mission_id} 已取消，停止处理")
-                    return
 
-                # 标记子任务为处理中
-                with self.lock:
-                    self.running_items.add(item['id'])
+                if mission_status and mission_status['status'] in ['queued', 'completed', 'failed']:
+                    database.execute_sql(
+                        "UPDATE api_missions SET status = 'running' WHERE id = ?",
+                        (mission_id,)
+                    )
 
-                # 提交到 RunningHub API
-                self._submit_item(mission_id, task_type, config, item)
+                    # 启动监控线程
+                    monitor_thread = threading.Thread(
+                        target=self._monitor_mission_completion,
+                        args=(mission_id,),
+                        daemon=True,
+                        name=f"Monitor-Mission-{mission_id}"
+                    )
+                    monitor_thread.start()
 
-                # 等待完成或失败
-                self._poll_item(mission_id, item)
-
-                # 从运行中移除
-                with self.lock:
-                    self.running_items.discard(item['id'])
-
-                # 更新进度
-                self._update_progress(mission_id)
-
-            # 所有任务完成
-            database.execute_sql(
-                "UPDATE api_missions SET status = 'completed' WHERE id = ?",
-                (mission_id,)
-            )
-            logger.info(f"✅ API任务 #{mission_id} 全部完成")
+            logger.info(f"✅ 任务恢复完成：队列 {restored_count} 个，轮询 {restored_polling_count} 个")
 
         except Exception as e:
-            logger.error(f"❌ 执行 API任务 #{mission_id} 出错: {str(e)}")
+            logger.error(f"❌ 恢复任务时出错: {str(e)}")
             import traceback
             traceback.print_exc()
 
-            # 标记任务为失败
-            database.execute_sql(
-                "UPDATE api_missions SET status = 'failed' WHERE id = ?",
-                (mission_id,)
-            )
+    def get_queue_status(self) -> Dict:
+        """获取队列状态"""
+        with self.lock:
+            return {
+                "queue_length": len(self.item_queue),
+                "running_tasks": len(self.running_tasks),
+                "current_concurrent": self.current_concurrent,
+                "max_concurrent": self.max_concurrent
+            }
 
-    def _submit_item(self, mission_id: int, task_type: str, config: Dict, item: Dict):
-        """提交单个子任务到 RunningHub API"""
+    def _consumer_loop(self):
+        """消费者循环：从子任务队列中取出并提交执行"""
+        logger.info("🔄 消费者线程已启动")
+
+        while self.is_running:
+            try:
+                # 从队列中取出子任务并提交（控制并发）
+                with self.queue_lock:
+                    # 检查是否还有子任务且未达到并发上限
+                    while self.item_queue and self.current_concurrent < self.max_concurrent:
+                        # 取出一个子任务
+                        item_data = self.item_queue.popleft()
+
+                        # 提交任务
+                        try:
+                            self._submit_and_start_polling(item_data)
+                            self.current_concurrent += 1
+                        except Exception as e:
+                            logger.error(f"❌ 提交子任务失败: {str(e)}")
+
+                time.sleep(0.5)  # 避免 CPU 占用过高
+
+            except Exception as e:
+                logger.error(f"❌ 消费者循环错误: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                time.sleep(1)
+
+        logger.info("⏹️ 消费者线程已停止")
+
+    def _submit_and_start_polling(self, item_data: Dict):
+        """提交子任务并启动独立的轮询线程"""
+        mission_id = item_data['mission_id']
+        item = item_data['item']
+        task_type = item_data['task_type']
+        config = item_data['config']
+
         try:
-            # 构建 API 请求参数
+            # 更新任务状态为运行中（第一次提交时）
+            mission = database.execute_sql(
+                "SELECT status FROM api_missions WHERE id = ?",
+                (mission_id,),
+                fetch_one=True
+            )
+            if mission and mission['status'] == 'queued':
+                database.execute_sql(
+                    "UPDATE api_missions SET status = 'running' WHERE id = ?",
+                    (mission_id,)
+                )
+                # 启动监控线程
+                monitor_thread = threading.Thread(
+                    target=self._monitor_mission_completion,
+                    args=(mission_id,),
+                    daemon=True,
+                    name=f"Monitor-Mission-{mission_id}"
+                )
+                monitor_thread.start()
+
+            # 提交到 RunningHub API
             api_config = API_TASK_TYPES[task_type]
             input_params = json.loads(item['input_params'])
 
             payload = {}
-
-            # 添加固定参数
             for key, value in config.items():
-                if key != "batch_input":
-                    payload[key] = value
-
-            # 添加本次输入参数
+                payload[key] = value
             payload.update(input_params)
 
-            # 提交到 RunningHub
-            url = api_config["url"]
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {get_api_key()}"
-            }
+            # 调用 API
+            from integrations.api_client_wrapper import submit_api_task
+            result = submit_api_task(task_type, payload, api_config["url"])
 
-            logger.info(f"📤 提交子任务 #{item['item_index']} 到 RunningHub API: {api_config['name']}")
-
-            response = requests.post(url, headers=headers, json=payload, timeout=30)
-
-            if response.status_code == 200:
-                result = response.json()
+            if result.get("code") == 200:
                 runninghub_task_id = result.get("taskId")
 
-                # 更新子任务状态
+                # 更新数据库
                 database.execute_sql(
                     """UPDATE api_mission_items
                        SET status = 'processing', runninghub_task_id = ?
@@ -261,48 +387,115 @@ class ApiTaskManager:
                 )
 
                 logger.info(f"✅ 子任务 #{item['item_index']} 已提交 (task_id: {runninghub_task_id})")
+
+                # 创建轮询任务
+                polling_task = PollingTask(
+                    item_id=item['id'],
+                    item_index=item['item_index'],
+                    mission_id=mission_id,
+                    task_type=task_type,
+                    runninghub_task_id=runninghub_task_id
+                )
+
+                # 添加到运行中任务
+                key = (mission_id, item['id'])
+                with self.lock:
+                    self.running_tasks[key] = polling_task
+
+                # 启动独立的轮询线程
+                polling_thread = threading.Thread(
+                    target=self._polling_worker,
+                    args=(polling_task,),
+                    daemon=True,
+                    name=f"Polling-Item-{item['id']}"
+                )
+                self.polling_threads[item['id']] = polling_thread
+                polling_thread.start()
+
             else:
-                raise Exception(f"提交失败: {response.status_code}, {response.text}")
+                raise Exception(f"提交失败: {result.get('message', '未知错误')}")
 
         except Exception as e:
             logger.error(f"❌ 提交子任务 #{item['item_index']} 失败: {str(e)}")
-            database.execute_sql(
-                """UPDATE api_mission_items
-                   SET status = 'failed', error_message = ?
-                   WHERE id = ?""",
-                (str(e), item['id'])
+
+            # 检查是否需要重试
+            current_item = database.execute_sql(
+                "SELECT retry_count FROM api_mission_items WHERE id = ?",
+                (item['id'],),
+                fetch_one=True
             )
-            raise  # 重新抛出异常，让上层处理
 
-    def _poll_item(self, mission_id: int, item: Dict):
-        """轮询单个子任务状态"""
+            if current_item:
+                retry_count = current_item.get('retry_count', 0)
+
+                if retry_count < MAX_RETRY_COUNT:
+                    # 增加重试次数并重新加入队列
+                    new_retry_count = retry_count + 1
+                    database.execute_sql(
+                        """UPDATE api_mission_items
+                           SET status = 'pending', retry_count = ?, error_message = ?
+                           WHERE id = ?""",
+                        (new_retry_count, f"提交失败: {str(e)} (重试 {new_retry_count}/{MAX_RETRY_COUNT})", item['id'])
+                    )
+
+                    # 重新加入队列
+                    with self.queue_lock:
+                        self.item_queue.append(item_data)
+
+                    logger.warning(f"⚠️ 子任务 #{item['item_index']} 提交失败，重新加入队列 (重试 {new_retry_count}/{MAX_RETRY_COUNT})")
+                else:
+                    # 达到最大重试次数，标记为永久失败
+                    database.execute_sql(
+                        """UPDATE api_mission_items
+                           SET status = 'failed', error_message = ?
+                           WHERE id = ?""",
+                        (f"提交失败 (已达最大重试次数 {MAX_RETRY_COUNT}): {str(e)}", item['id'])
+                    )
+                    logger.error(f"❌ 子任务 #{item['item_index']} 提交失败，已达最大重试次数: {str(e)}")
+
+            # 不抛出异常，让消费者继续处理其他任务
+            pass
+
+    def _monitor_mission_completion(self, mission_id: int):
+        """监控任务完成状态"""
         try:
-            runninghub_task_id = item['runninghub_task_id']
-            if not runninghub_task_id:
-                logger.warning(f"⚠️ 子任务 #{item['item_index']} 没有 runninghub_task_id，跳过轮询")
-                return
-
-            query_url = "https://www.runninghub.cn/openapi/v2/query"
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {get_api_key()}"
-            }
-
-            logger.info(f"🔄 开始轮询子任务 #{item['item_index']} (task_id: {runninghub_task_id})")
-
-            max_polls = 120  # 最多轮询 10 分钟（120 * 5秒）
-            poll_count = 0
-
-            while poll_count < max_polls:
-                response = requests.post(
-                    query_url,
-                    headers=headers,
-                    json={"taskId": runninghub_task_id},
-                    timeout=30
+            while self.is_running:
+                # 检查是否还有待处理或运行中的子任务
+                status_result = database.execute_sql(
+                    """SELECT COUNT(*) as count
+                       FROM api_mission_items
+                       WHERE api_mission_id = ? AND status IN ('pending', 'processing')""",
+                    (mission_id,),
+                    fetch_one=True
                 )
 
-                if response.status_code == 200:
-                    result = response.json()
+                remaining_count = status_result['count'] if status_result else 0
+
+                if remaining_count == 0:
+                    # 所有子任务完成
+                    database.execute_sql(
+                        "UPDATE api_missions SET status = 'completed' WHERE id = ?",
+                        (mission_id,)
+                    )
+                    logger.info(f"✅ 任务 #{mission_id} 全部完成")
+                    break
+
+                time.sleep(2)  # 每2秒检查一次
+
+        except Exception as e:
+            logger.error(f"❌ 监控任务 #{mission_id} 出错: {str(e)}")
+
+    def _polling_worker(self, polling_task: PollingTask):
+        """轮询工作线程：独立管理单个子任务的轮询"""
+        logger.info(f"🔄 轮询线程启动：子任务 #{polling_task.item_index}")
+
+        try:
+            from integrations.api_client_wrapper import query_api_task
+
+            while not polling_task.should_stop and self.is_running:
+                try:
+                    # 查询任务状态
+                    result = query_api_task(polling_task.runninghub_task_id)
                     status = result.get("status")
 
                     if status == "SUCCESS":
@@ -314,38 +507,114 @@ class ApiTaskManager:
                                 """UPDATE api_mission_items
                                    SET status = 'completed', result_url = ?
                                    WHERE id = ?""",
-                                (result_url, item['id'])
+                                (result_url, polling_task.item_id)
                             )
 
-                            logger.info(f"✅ 子任务 #{item['item_index']} 成功: {result_url}")
+                            logger.info(f"✅ 子任务 #{polling_task.item_index} 成功: {result_url}")
                         else:
-                            raise Exception("任务完成但无结果")
+                            database.execute_sql(
+                                """UPDATE api_mission_items
+                                   SET status = 'failed', error_message = ?
+                                   WHERE id = ?""",
+                                ("任务完成但无结果", polling_task.item_id)
+                            )
 
-                        break
+                        break  # 退出轮询
 
-                    elif status == "RUNNING" or status == "QUEUED":
-                        # 继续轮询
-                        poll_count += 1
-                        time.sleep(API_POLL_INTERVAL)
+                    elif status == "FAILED":
+                        # 失败 - 检查是否需要重试
+                        error_message = result.get("errorMessage", "未知错误")
+
+                        item = database.execute_sql(
+                            "SELECT retry_count FROM api_mission_items WHERE id = ?",
+                            (polling_task.item_id,),
+                            fetch_one=True
+                        )
+
+                        if item:
+                            retry_count = item.get('retry_count', 0)
+
+                            if retry_count < MAX_RETRY_COUNT:
+                                # 增加重试次数并重新加入队列
+                                new_retry_count = retry_count + 1
+                                database.execute_sql(
+                                    """UPDATE api_mission_items
+                                       SET status = 'pending', retry_count = ?, runninghub_task_id = NULL, error_message = ?
+                                       WHERE id = ?""",
+                                    (new_retry_count, f"任务失败: {error_message} (重试 {new_retry_count}/{MAX_RETRY_COUNT})", polling_task.item_id)
+                                )
+
+                                # 重新构建子任务数据并加入队列
+                                mission = database.execute_sql(
+                                    "SELECT * FROM api_missions WHERE id = ?",
+                                    (polling_task.mission_id,),
+                                    fetch_one=True
+                                )
+
+                                if mission:
+                                    item_data = {
+                                        'mission_id': polling_task.mission_id,
+                                        'item': database.execute_sql(
+                                            "SELECT * FROM api_mission_items WHERE id = ?",
+                                            (polling_task.item_id,),
+                                            fetch_one=True
+                                        ),
+                                        'task_type': polling_task.task_type,
+                                        'config': json.loads(mission['config_json'])
+                                    }
+
+                                    with self.queue_lock:
+                                        self.item_queue.append(item_data)
+
+                                    logger.warning(f"⚠️ 子任务 #{polling_task.item_index} 失败，重新加入队列 (重试 {new_retry_count}/{MAX_RETRY_COUNT})")
+                            else:
+                                # 达到最大重试次数，标记为永久失败
+                                database.execute_sql(
+                                    """UPDATE api_mission_items
+                                       SET status = 'failed', error_message = ?
+                                       WHERE id = ?""",
+                                    (f"任务失败 (已达最大重试次数 {MAX_RETRY_COUNT}): {error_message}", polling_task.item_id)
+                                )
+                                logger.error(f"❌ 子任务 #{polling_task.item_index} 失败，已达最大重试次数: {error_message}")
+
+                        break  # 退出轮询
+
+                    elif status in ["RUNNING", "QUEUED", "PENDING"]:
+                        # 仍在运行中，继续轮询
+                        pass
 
                     else:
-                        # 失败
-                        error_message = result.get("errorMessage", "未知错误")
-                        raise Exception(f"任务失败: {error_message}")
-                else:
-                    raise Exception(f"查询失败: {response.status_code}")
+                        # 未知状态
+                        logger.debug(f"子任务 #{polling_task.item_index} 未知状态: {status}")
 
-            if poll_count >= max_polls:
-                raise Exception("轮询超时")
+                    # 等待下次轮询
+                    time.sleep(3)  # 每3秒轮询一次
+
+                except Exception as e:
+                    logger.error(f"❌ 轮询子任务 #{polling_task.item_index} 出错: {str(e)}")
+                    # 轮询失败继续尝试，不放弃任务
+                    time.sleep(10)  # 出错后等待更长时间再重试
+
+            # 轮询结束，清理资源
+            key = (polling_task.mission_id, polling_task.item_id)
+            with self.lock:
+                self.running_tasks.pop(key, None)
+                self.polling_threads.pop(polling_task.item_id, None)
+                self.current_concurrent -= 1
+
+            # 更新进度
+            self._update_progress(polling_task.mission_id)
+
+            logger.info(f"⏹️ 轮询线程结束：子任务 #{polling_task.item_index}")
 
         except Exception as e:
-            logger.error(f"❌ 轮询子任务 #{item['item_index']} 出错: {str(e)}")
-            database.execute_sql(
-                """UPDATE api_mission_items
-                   SET status = 'failed', error_message = ?
-                   WHERE id = ?""",
-                (str(e), item['id'])
-            )
+            logger.error(f"❌ 轮询线程异常: {str(e)}")
+            key = (polling_task.mission_id, polling_task.item_id)
+            with self.lock:
+                self.running_tasks.pop(key, None)
+                self.polling_threads.pop(polling_task.item_id, None)
+                self.current_concurrent -= 1
+
 
     def _update_progress(self, mission_id: int):
         """更新任务进度"""
@@ -373,3 +642,20 @@ class ApiTaskManager:
 
 # 全局实例
 api_task_manager = ApiTaskManager()
+
+
+# 便捷函数：供 API 路由直接调用
+def create_mission(name: str, description: str, task_type: str, config: dict) -> int:
+    """创建 API 任务"""
+    return api_task_manager.create_api_mission(name, description, task_type, config)
+
+
+def add_to_queue(mission_id: int):
+    """添加任务到队列"""
+    api_task_manager.add_to_queue(mission_id)
+
+
+def get_queue_status() -> dict:
+    """获取队列状态"""
+    return api_task_manager.get_queue_status()
+

@@ -127,13 +127,13 @@ export default function TemplatesPage() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-sm">{template.appId}</TableCell>
+                    <TableCell className="font-mono text-sm">{template.app_id}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{template.nodes.length}</Badge>
                     </TableCell>
-                    <TableCell>{template.repeatCount}</TableCell>
+                    <TableCell>{template.repeat_count}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(template.createdAt).toLocaleString('zh-CN')}
+                      {new Date(template.created_at).toLocaleString('zh-CN')}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">

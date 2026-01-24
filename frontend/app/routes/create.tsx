@@ -36,9 +36,9 @@ export default function CreateTaskPage() {
   useEffect(() => {
     const template = location.state?.template as TaskTemplate;
     if (template) {
-      setAppId(template.appId);
+      setAppId(template.app_id);
       setNodes(template.nodes);
-      setRepeatCount(template.repeatCount);
+      setRepeatCount(template.repeat_count);
 
       // 初始化节点值
       const initialValues: Record<string, any> = {};

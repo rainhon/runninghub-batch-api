@@ -1,5 +1,9 @@
 import { request } from './request';
-import type { NodeInfo, Task, TaskResult, SubmitTaskRequest, MediaFile, TaskTemplate, SaveTemplateRequest } from '../types';
+import type {
+  NodeInfo, Task, TaskResult, SubmitTaskRequest, MediaFile, TaskTemplate, SaveTemplateRequest,
+  ApiMission, ApiMissionDetail, ApiMissionListResponse, CreateApiMissionRequest,
+  ApiMissionItem, ApiTemplate, SaveApiTemplateRequest
+} from '../types';
 
 // 从环境变量获取 baseURL
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7777';
@@ -81,4 +85,77 @@ export const api = {
 
   // 删除模板
   deleteTemplate: (templateId: number) => request.delete(`/api/v1/templates/${templateId}`),
+
+  // ============== API 任务管理 API ==============
+
+  // 提交 API 任务
+  submitApiMission: (data: CreateApiMissionRequest) =>
+    request.post<{ mission_id: number }>('/api/v1/api_missions/submit', data),
+
+  // 获取 API 任务列表（分页）
+  getApiMissions: (page: number = 1, pageSize: number = 20, status?: string) =>
+    request.get<ApiMissionListResponse>(
+      `/api/v1/api_missions?page=${page}&page_size=${pageSize}${status ? `&status=${status}` : ''}`
+    ),
+
+  // 获取 API 任务详情
+  getApiMissionDetail: (missionId: number) =>
+    request.get<ApiMissionDetail>(`/api/v1/api_missions/${missionId}`),
+
+  // 获取 API 任务的子任务列表
+  getApiMissionItems: (missionId: number) =>
+    request.get<ApiMissionItem[]>(`/api/v1/api_missions/${missionId}/items`),
+
+  // 取消 API 任务
+  cancelApiMission: (missionId: number) =>
+    request.post<{ cancelled_count: number }>(`/api/v1/api_missions/${missionId}/cancel`),
+
+  // 重试失败的子任务
+  retryApiMission: (missionId: number) =>
+    request.post<{ retry_count: number }>(`/api/v1/api_missions/${missionId}/retry`),
+
+  // 下载 API 任务结果（返回文件 URL）
+  downloadApiMissionResults: (missionId: number) => {
+    return `${baseURL}/api/v1/api_missions/${missionId}/download`;
+  },
+
+  // 删除 API 任务
+  deleteApiMission: (missionId: number) =>
+    request.delete(`/api/v1/api_missions/${missionId}`),
+
+  // 上传 API 任务图片
+  uploadApiImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return request.post<{ filename: string; url: string; size: number }>(
+      '/api/v1/api_missions/images/upload',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+
+  // ============== API 模板管理 API ==============
+
+  // 保存 API 模板
+  saveApiTemplate: (data: SaveApiTemplateRequest) =>
+    request.post<{ template_id: number }>('/api/v1/api_templates', data),
+
+  // 获取 API 模板列表
+  getApiTemplates: (taskType?: string) =>
+    request.get<ApiTemplate[]>(
+      `/api/v1/api_templates${taskType ? `?task_type=${taskType}` : ''}`
+    ),
+
+  // 获取 API 模板详情
+  getApiTemplateDetail: (templateId: number) =>
+    request.get<ApiTemplate>(`/api/v1/api_templates/${templateId}`),
+
+  // 删除 API 模板
+  deleteApiTemplate: (templateId: number) =>
+    request.delete(`/api/v1/api_templates/${templateId}`),
 };

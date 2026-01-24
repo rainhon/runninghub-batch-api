@@ -40,9 +40,9 @@ export function Header() {
           {/* API 任务 - 新功能 */}
           <div className="w-px h-6 bg-border" />
 
-          <Link to="/api-task">
+          <Link to="/api-create">
             <Button
-              variant={location.pathname === '/api-task' ? 'default' : 'ghost'}
+              variant={location.pathname === '/api-create' ? 'default' : 'ghost'}
               size="sm"
               className="gap-2"
             >

@@ -222,3 +222,31 @@
 2026-01-23 18:29:01 [ERROR] [task_manager:log_resource_usage:154] [Thread-2 (_monitor_resources)] 获取资源使用情况失败: No module named 'psutil'
 2026-01-23 18:31:50 [ERROR] [app_task_service:log_resource_usage:163] [Thread-2 (_monitor_resources)] 获取资源使用情况失败: No module named 'psutil'
 2026-01-23 18:31:50 [ERROR] [app_task_service:log_resource_usage:163] [Thread-2 (_monitor_resources)] 获取资源使用情况失败: No module named 'psutil'
+2026-01-24 11:14:21 [ERROR] [api.v1.api_missions:create_api_mission:71] [MainThread] 创建任务失败: module 'services.api_task_service' has no attribute 'create_mission'
+2026-01-24 11:15:57 [ERROR] [api.v1.api_missions:create_api_mission:71] [MainThread] 创建任务失败: module 'services.api_task_service' has no attribute 'create_mission'
+2026-01-24 11:22:45 [ERROR] [app_task_service:_poll_task_status:706] [Thread-8 (_execute_task_with_id)] ❌ 任务 #310 第 5 次执行遇到未知状态码 777
+2026-01-24 11:22:45 [ERROR] [app_task_service:_poll_task_status:735] [Thread-8 (_execute_task_with_id)] ❌ 任务 #310 第 5 次执行遇到未知状态，准备重试（5 次剩余）: 未知的状态码: 777, 消息: ttt
+2026-01-24 11:22:55 [ERROR] [app_task_service:_poll_task_status:706] [Thread-9 (_execute_task_with_id)] ❌ 任务 #310 第 5 次执行遇到未知状态码 777
+2026-01-24 11:22:55 [ERROR] [api.v1.api_missions:create_api_mission:71] [MainThread] 创建任务失败: module 'services.api_task_service' has no attribute 'create_mission'
+2026-01-24 11:22:55 [ERROR] [app_task_service:_poll_task_status:735] [Thread-9 (_execute_task_with_id)] ❌ 任务 #310 第 5 次执行遇到未知状态，准备重试（4 次剩余）: 未知的状态码: 777, 消息: ttt
+2026-01-24 11:25:01 [ERROR] [api_task_service:_submit_item:258] [Thread-4 (_execute_mission)] ❌ 提交子任务 #1 失败: dictionary update sequence element #0 has length 1; 2 is required
+2026-01-24 11:25:02 [ERROR] [api_task_service:_execute_mission:211] [Thread-4 (_execute_mission)] ❌ 执行 API任务 #1 出错: dictionary update sequence element #0 has length 1; 2 is required
+2026-01-24 11:46:27 [ERROR] [api_task_service:_poll_item:327] [Thread-4 (_execute_mission)] ❌ 轮询子任务 #4 出错: 任务失败: 参数验证失败
+2026-01-24 11:47:38 [ERROR] [api.v1.api_missions:download_api_mission_results:224] [MainThread] 下载结果失败: 'latin-1' codec can't encode characters in position 21-23: ordinal not in range(256)
+2026-01-24 11:49:53 [ERROR] [api_task_service:_submit_item:262] [Thread-4 (_execute_mission)] ❌ 提交子任务 #1 失败: 提交失败: 缺少必需参数: imageUrl
+2026-01-24 11:49:53 [ERROR] [api_task_service:_execute_mission:211] [Thread-4 (_execute_mission)] ❌ 执行 API任务 #6 出错: 提交失败: 缺少必需参数: imageUrl
+2026-01-24 11:53:59 [ERROR] [api_task_service:_submit_item:262] [Thread-5 (_execute_mission)] ❌ 提交子任务 #1 失败: 提交失败: 缺少必需参数: imageUrl
+2026-01-24 11:53:59 [ERROR] [api_task_service:_execute_mission:211] [Thread-5 (_execute_mission)] ❌ 执行 API任务 #7 出错: 提交失败: 缺少必需参数: imageUrl
+2026-01-24 15:12:21 [ERROR] [api.v1.api_missions:download_api_mission_results:224] [MainThread] 下载结果失败: 'latin-1' codec can't encode characters in position 21-23: ordinal not in range(256)
+2026-01-24 15:22:14 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-44] ❌ 子任务 #2 失败: 资源不足
+2026-01-24 15:28:44 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-80] ❌ 子任务 #34 失败: API 服务暂时不可用
+2026-01-24 15:28:45 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-62] ❌ 子任务 #16 失败: API 服务暂时不可用
+2026-01-24 15:28:47 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-78] ❌ 子任务 #32 失败: 模型服务异常
+2026-01-24 15:28:49 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-66] ❌ 子任务 #20 失败: 模型服务异常
+2026-01-24 15:28:50 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-76] ❌ 子任务 #30 失败: 模型服务异常
+2026-01-24 15:28:51 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-87] ❌ 子任务 #41 失败: 参数验证失败
+2026-01-24 15:28:51 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-54] ❌ 子任务 #8 失败: 资源不足
+2026-01-24 15:28:52 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-60] ❌ 子任务 #14 失败: API 服务暂时不可用
+2026-01-24 15:28:54 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-51] ❌ 子任务 #5 失败: 内容审核未通过
+2026-01-24 15:28:55 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-74] ❌ 子任务 #28 失败: 生成超时
+2026-01-24 15:28:57 [ERROR] [api_task_service:_polling_worker:378] [Polling-Item-79] ❌ 子任务 #33 失败: 资源不足

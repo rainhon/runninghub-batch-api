@@ -50,7 +50,6 @@ class TaskManager:
             self._should_monitor = True
             self.resource_monitor_thread = threading.Thread(target=self._monitor_resources, daemon=True)
             self.resource_monitor_thread.start()
-            logger.info("📊 资源监控已启动")
 
     def stop(self):
         """停止队列处理"""
@@ -802,10 +801,7 @@ class TaskManager:
 
         while self._should_monitor:
             try:
-                # 每 60 秒记录一次资源使用情况
-                log_resource_usage(logger)
-
-                # 检查资源使用是否异常
+                # 记录并检查资源使用情况
                 usage = log_resource_usage(logger)
 
                 # 警告阈值

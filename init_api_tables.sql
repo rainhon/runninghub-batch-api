@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS api_mission_items (
     result_url TEXT,                                -- 结果文件URL
     error_message TEXT,                             -- 错误信息
     runninghub_task_id TEXT,                        -- RunningHub返回的任务ID
+    retry_count INTEGER DEFAULT 0,                  -- 重试次数
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (api_mission_id) REFERENCES api_missions(id) ON DELETE CASCADE

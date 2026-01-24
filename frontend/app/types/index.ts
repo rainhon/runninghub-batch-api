@@ -112,11 +112,11 @@ export interface TaskTemplate {
   id: number;
   name: string;
   description: string;
-  appId: string;
+  app_id: string;  // 后端使用下划线命名
   nodes: NodeInfo[];
-  repeatCount: number;
-  createdAt: string;
-  updatedAt: string;
+  repeat_count: number;  // 后端使用下划线命名
+  created_at: string;  // 后端使用下划线命名
+  updated_at: string;  // 后端使用下划线命名
 }
 
 // 保存模板请求
@@ -126,4 +126,98 @@ export interface SaveTemplateRequest {
   app_id: string;
   nodes: NodeInfo[];
   repeat_count?: number;
+}
+
+// ==================== API 任务相关类型 ====================
+
+// API 任务类型
+export type ApiTaskType = 'text_to_image' | 'image_to_image' | 'text_to_video' | 'image_to_video';
+
+// API 任务状态
+export type ApiMissionStatus = 'queued' | 'running' | 'completed' | 'cancelled' | 'failed';
+
+// API 子任务状态
+export type ApiItemStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+// API 任务配置
+export interface ApiMissionConfig {
+  // 固定参数
+  aspectRatio?: 'auto' | '3:4' | '1:1' | '16:9' | '4:3' | '3:2' | '9:16';
+  duration?: string;
+  prompt?: string;
+  // 图片相关参数
+  imageUrl?: string;   // 单个图片 URL（用于图生视频）
+  imageUrls?: string;  // 图片 URL（用于图生图）
+  // 批量输入
+  batch_input?: any[];
+}
+
+// API 任务信息
+export interface ApiMission {
+  id: number;
+  name: string;
+  description?: string;
+  task_type: ApiTaskType;
+  status: ApiMissionStatus;
+  total_count: number;
+  completed_count: number;
+  failed_count: number;
+  progress: number;  // 完成百分比
+  config_json: string;  // JSON string
+  created_at: string;
+  updated_at: string;
+}
+
+// API 子任务信息
+export interface ApiMissionItem {
+  id: number;
+  api_mission_id: number;
+  item_index: number;
+  input_params: string;  // JSON string
+  status: ApiItemStatus;
+  result_url?: string;
+  error_message?: string;
+  runninghub_task_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// API 任务详情（包含子任务列表）
+export interface ApiMissionDetail extends ApiMission {
+  items: ApiMissionItem[];
+}
+
+// 创建 API 任务请求
+export interface CreateApiMissionRequest {
+  name: string;
+  description?: string;
+  task_type: ApiTaskType;
+  config: ApiMissionConfig;
+}
+
+// API 任务列表响应
+export interface ApiMissionListResponse {
+  items: ApiMission[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+// API 模板（与任务模板区分）
+export interface ApiTemplate {
+  id: number;
+  name: string;
+  description?: string;
+  task_type: ApiTaskType;
+  config_json: string;  // JSON string
+  created_at: string;
+  updated_at: string;
+}
+
+// 保存 API 模板请求
+export interface SaveApiTemplateRequest {
+  name: string;
+  description?: string;
+  task_type: ApiTaskType;
+  config: ApiMissionConfig;
 }

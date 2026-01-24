@@ -370,7 +370,7 @@ export default function CreateTaskPage() {
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       <Card>
         <CardHeader>
-          <CardTitle>创建 AI 任务</CardTitle>
+          <CardTitle>创建 App 任务</CardTitle>
           <CardDescription>输入 App ID，配置节点参数后提交任务</CardDescription>
         </CardHeader>
         <CardContent>

@@ -30,7 +30,7 @@ instance.interceptors.response.use(
     const { code, data, msg } = response.data;
 
     // 假设 code: 200 表示成功
-    if (code === 200) {
+    if (code === 0) {
       return response.data;
     } else {
       // 业务错误

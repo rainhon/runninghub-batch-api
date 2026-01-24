@@ -1,5 +1,5 @@
 """
-统一日志配置模块
+日志工具模块
 为整个应用提供统一的日志记录功能
 """
 import os
@@ -9,9 +9,8 @@ from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from pathlib import Path
 
-
 # 日志目录
-LOG_DIR = Path(__file__).parent / 'logs'
+LOG_DIR = Path(__file__).parent.parent / 'logs'
 LOG_DIR.mkdir(exist_ok=True)
 
 # 日志文件路径
@@ -57,6 +56,16 @@ def setup_logging(
     main_handler.setFormatter(file_formatter)
     root_logger.addHandler(main_handler)
 
+    # 同时输出到控制台
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(level)
+    console_formatter = logging.Formatter(
+        '%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
+        DATE_FORMAT
+    )
+    console_handler.setFormatter(console_formatter)
+    root_logger.addHandler(console_handler)
+
     # 错误日志文件（只记录 ERROR 及以上）
     error_handler = RotatingFileHandler(
         ERROR_LOG_FILE,
@@ -76,7 +85,7 @@ def setup_logging(
     logging.getLogger('httpcore').setLevel(logging.WARNING)
 
     # 记录启动信息
-    logger = logging.getLogger(__name__)
+    logger = get_logger(__name__)
     logger.info("=" * 60)
     logger.info(f"应用启动 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info(f"日志级别: {logging.getLevelName(level)}")

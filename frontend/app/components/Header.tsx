@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router';
 import { Button } from './ui/button';
-import { PlusCircle, List, Sparkles, FileText } from 'lucide-react';
+import { PlusCircle, List, Sparkles, FileText, Zap } from 'lucide-react';
 
 export function Header() {
   const location = useLocation();
@@ -14,6 +14,7 @@ export function Header() {
         </Link>
 
         <nav className="flex flex-wrap items-center gap-2 justify-end">
+          {/* App 任务 */}
           <Link to="/create">
             <Button
               variant={location.pathname === '/create' ? 'default' : 'ghost'}
@@ -21,7 +22,7 @@ export function Header() {
               className="gap-2"
             >
               <PlusCircle className="w-4 h-4 flex-shrink-0" />
-              创建任务
+              App任务
             </Button>
           </Link>
 
@@ -32,9 +33,37 @@ export function Header() {
               className="gap-2"
             >
               <List className="w-4 h-4 flex-shrink-0" />
-              任务列表
+              App列表
             </Button>
           </Link>
+
+          {/* API 任务 - 新功能 */}
+          <div className="w-px h-6 bg-border" />
+
+          <Link to="/api-task">
+            <Button
+              variant={location.pathname === '/api-task' ? 'default' : 'ghost'}
+              size="sm"
+              className="gap-2"
+            >
+              <Zap className="w-4 h-4 flex-shrink-0" />
+              API任务
+            </Button>
+          </Link>
+
+          <Link to="/api-tasks">
+            <Button
+              variant={location.pathname === '/api-tasks' ? 'default' : 'ghost'}
+              size="sm"
+              className="gap-2"
+            >
+              <List className="w-4 h-4 flex-shrink-0" />
+              API列表
+            </Button>
+          </Link>
+
+          {/* 模板 - 共享 */}
+          <div className="w-px h-6 bg-border" />
 
           <Link to="/templates">
             <Button

@@ -1,20 +1,18 @@
 """
-任务管理模块
+App 任务服务模块
 负责任务队列管理、状态轮询和生命周期管理
 """
 import time
 import threading
 from collections import deque
 from typing import Optional
-import database
-import runninghub
-import mock_runninghub
+import repositories as database
+import integrations
 import os
-import logging
-from logging_config import get_logger
+from utils import get_logger
 
 # 获取日志器
-logger = get_logger('task_manager')
+logger = get_logger('app_task_service')
 
 
 # 配置常量
@@ -22,15 +20,8 @@ MAX_CONCURRENT_TASKS = 2  # 最大并行任务数
 MAX_RETRIES = 5  # 最大重试次数
 POLL_INTERVAL = 5  # 轮询间隔（秒）
 
-# 是否使用模拟服务（通过环境变量控制）
-USE_MOCK_SERVICE = os.getenv("USE_MOCK_SERVICE", "false").lower() == "true"
-
-if USE_MOCK_SERVICE:
-    logger.info("🧪 使用 Mock RunningHub 服务（模拟模式）")
-    runninghub_service = mock_runninghub
-else:
-    logger.info("🔗 使用真实 RunningHub 服务")
-    runninghub_service = runninghub
+# 使用外部集成服务
+runninghub_service = integrations.runninghub_service
 
 
 class TaskManager:
@@ -805,7 +796,7 @@ class TaskManager:
 
     def _monitor_resources(self):
         """资源监控线程（内部方法）- 定期记录资源使用情况"""
-        from logging_config import log_resource_usage
+        from utils import log_resource_usage
 
         logger.info("📊 资源监控线程已启动")
 
@@ -840,5 +831,8 @@ class TaskManager:
         logger.info("📊 资源监控线程已停止")
 
 
-# 全局任务管理器实例
-task_manager = TaskManager()
+# 全局 App 任务服务实例
+app_task_manager = TaskManager()
+
+# 保持向后兼容，创建 task_manager 别名
+task_manager = app_task_manager

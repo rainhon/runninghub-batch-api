@@ -1,0 +1,37 @@
+"""
+核心模块
+包含配置、类型定义等核心功能
+"""
+from .config import (
+    RUNNINGHUB_API_KEY,
+    RUNNINGHUB_BASE_URL,
+    USE_MOCK_SERVICE,
+    MAX_CONCURRENT_APP_TASKS,
+    MAX_CONCURRENT_API_TASKS,
+    API_TASK_TYPES,
+    POLL_INTERVAL,
+    API_POLL_INTERVAL,
+    UPLOAD_DIR,
+    DB_FILE_PATH,
+    MAX_UPLOAD_SIZE,
+    ALLOWED_IMAGE_TYPES,
+    get_api_key,
+    validate_config
+)
+
+__all__ = [
+    'RUNNINGHUB_API_KEY',
+    'RUNNINGHUB_BASE_URL',
+    'USE_MOCK_SERVICE',
+    'MAX_CONCURRENT_APP_TASKS',
+    'MAX_CONCURRENT_API_TASKS',
+    'API_TASK_TYPES',
+    'POLL_INTERVAL',
+    'API_POLL_INTERVAL',
+    'UPLOAD_DIR',
+    'DB_FILE_PATH',
+    'MAX_UPLOAD_SIZE',
+    'ALLOWED_IMAGE_TYPES',
+    'get_api_key',
+    'validate_config'
+]

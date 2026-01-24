@@ -253,21 +253,21 @@ export default function TasksPage() {
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">任务管理</h1>
-          <p className="text-muted-foreground mt-1">查看和管理 AI 任务</p>
+          <h1 className="text-3xl font-bold">App 任务管理</h1>
+          <p className="text-muted-foreground mt-1">查看和管理 AI 应用任务</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => loadTasks(currentPage, true)} disabled={refreshing}>
             <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             刷新
           </Button>
-          <Button onClick={() => navigate('/create')}>创建任务</Button>
+          <Button onClick={() => navigate('/create')}>创建 App 任务</Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>任务列表</CardTitle>
+          <CardTitle>App 任务列表</CardTitle>
           <CardDescription>当前共有 {total} 个任务，每 10 秒自动刷新</CardDescription>
         </CardHeader>
         <CardContent>

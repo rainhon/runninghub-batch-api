@@ -36,27 +36,35 @@ class MockRunningHub:
                 "nodeInfoList": [
                     {
                         "nodeId": "node_001",
+                        "fieldName": "prompt",  # 添加 fieldName
                         "nodeName": "输入文本",
                         "nodeType": "input",
                         "nodeTitle": "请输入内容",
                         "valueType": "text",
+                        "fieldType": "TEXT",
                         "isRequired": True,
                         "placeholder": "请输入要处理的文本"
                     },
                     {
                         "nodeId": "node_002",
-                        "nodeName": "AI处理",
-                        "nodeType": "ai_model",
-                        "nodeTitle": "AI文本处理",
-                        "modelId": "gpt-4",
-                        "modelName": "GPT-4"
+                        "fieldName": "style",  # 添加 fieldName
+                        "nodeName": "风格选择",
+                        "nodeType": "input",
+                        "nodeTitle": "选择风格",
+                        "valueType": "text",
+                        "fieldType": "TEXT",
+                        "isRequired": True,
+                        "placeholder": "请选择风格"
                     },
                     {
                         "nodeId": "node_003",
-                        "nodeName": "输出结果",
-                        "nodeType": "output",
-                        "nodeTitle": "处理结果",
-                        "outputType": "text"
+                        "fieldName": "image",  # 添加 fieldName
+                        "nodeName": "参考图片",
+                        "nodeType": "input",
+                        "nodeTitle": "上传参考图片",
+                        "valueType": "image",
+                        "fieldType": "IMAGE",
+                        "isRequired": False
                     }
                 ]
             }
@@ -186,13 +194,15 @@ class MockRunningHub:
         """
         import os
         file_name = os.path.basename(file_path)
+        file_id = f"mock_file_{int(time.time())}"
 
         return {
             "code": 0,
             "msg": "文件上传成功",
             "data": {
                 "fileName": f"mock_{file_name}",
-                "fileId": f"mock_file_{int(time.time())}",
+                "fileId": file_id,
+                "url": f"https://mock.runninghub.cn/files/{file_id}",
                 "fileHash": "mock_hash_" + str(random.randint(1000, 9999))
             }
         }

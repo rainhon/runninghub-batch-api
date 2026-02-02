@@ -1,31 +1,60 @@
+"""
+RunningHub AI 应用集成服务
+专门用于 App 任务（调用 AI 应用）
+"""
 import http.client
 import json
-import mimetypes
-from codecs import encode
-import time
-import os
 import ssl
 import requests
-from dotenv import load_dotenv
 import urllib3
+from core import get_api_key
+from utils import get_logger
 
 # 禁用 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# 加载环境变量
-load_dotenv()
+# 获取日志器
+logger = get_logger(__name__)
 
 API_HOST = "www.runninghub.cn"
-API_KEY = os.getenv("RUNNINGHUB_API_KEY")
-if not API_KEY:
-    raise ValueError("环境变量 RUNNINGHUB_API_KEY 未设置，请在 .env 文件中配置")
+
+
+def _use_mock():
+    """判断是否使用 Mock 服务（动态读取环境变量）"""
+    import os
+    return os.getenv("USE_MOCK_SERVICE", "false").lower() == "true"
+
+
+def get_api_key_for_app():
+    """获取 App 任务专用的 API Key"""
+    return get_api_key(task_type="app")
+
+
 def get_nodo(webappId):
+    """
+    获取 AI 应用的节点配置
+
+    Args:
+        webappId: 应用 ID
+
+    Returns:
+        节点信息列表
+    """
+    # Mock 模式
+    if _use_mock():
+        from integrations import mock_runninghub
+        logger.info(f"使用 Mock 服务获取应用配置: {webappId}")
+        return mock_runninghub.get_nodo(webappId)
+
+    # 真实 API 调用
+    api_key = get_api_key_for_app()
+
     # 创建不验证 SSL 的上下文
     context = ssl._create_unverified_context()
     conn = http.client.HTTPSConnection(API_HOST, context=context)
     payload = ''
     headers = {}
-    conn.request("GET", f"/api/webapp/apiCallDemo?apiKey={API_KEY}&webappId={webappId}", payload, headers)
+    conn.request("GET", f"/api/webapp/apiCallDemo?apiKey={api_key}&webappId={webappId}", payload, headers)
     res = conn.getresponse()
     # 读取响应内容
     data = res.read()
@@ -33,19 +62,36 @@ def get_nodo(webappId):
     data_json = json.loads(data.decode("utf-8"))
     # 取出 nodeInfoList
     node_info_list = data_json.get("data", {}).get("nodeInfoList", [])
-    print("✅ 提取的 nodeInfoList:")
+    print("✅ 提取的 nodeInfoList (使用 App Task API Key):")
     print(json.dumps(node_info_list, indent=2, ensure_ascii=False))
     return node_info_list
+
+
 def upload_file(file_path):
     """
-    上传文件到 RunningHub 平台
+    上传文件到 RunningHub 平台（用于 App 任务）
+
+    Args:
+        file_path: 文件路径
+
+    Returns:
+        上传结果
     """
+    # Mock 模式
+    if _use_mock():
+        from integrations import mock_runninghub
+        logger.info(f"使用 Mock 服务上传文件: {file_path}")
+        return mock_runninghub.upload_file(file_path)
+
+    # 真实 API 调用
+    api_key = get_api_key_for_app()
+
     url = "https://www.runninghub.cn/task/openapi/upload"
     headers = {
         'Host': 'www.runninghub.cn'
     }
     data = {
-        'apiKey': API_KEY,
+        'apiKey': api_key,
         'fileType': 'input'
     }
     with open(file_path, 'rb') as f:
@@ -53,15 +99,34 @@ def upload_file(file_path):
         # 禁用 SSL 验证
         response = requests.post(url, headers=headers, files=files, data=data, verify=False)
     return response.json()
-# 1️⃣ 提交任务
+
+
 def submit_task(webapp_id, node_info_list):
+    """
+    提交 App 任务到 RunningHub
+
+    Args:
+        webapp_id: 应用 ID
+        node_info_list: 节点信息列表
+
+    Returns:
+        提交结果
+    """
+    # Mock 模式
+    if _use_mock():
+        from integrations import mock_runninghub
+        logger.info(f"使用 Mock 服务提交任务: {webapp_id}")
+        return mock_runninghub.submit_task(webapp_id, node_info_list)
+
+    # 真实 API 调用
+    api_key = get_api_key_for_app()
+
     # 创建不验证 SSL 的上下文
     context = ssl._create_unverified_context()
     conn = http.client.HTTPSConnection(API_HOST, context=context)
     payload = json.dumps({
         "webappId": webapp_id,
-        "apiKey": API_KEY,
-        # "quickCreateCode": quick_create_code,
+        "apiKey": api_key,
         "nodeInfoList": node_info_list
     })
     headers = {
@@ -73,12 +138,32 @@ def submit_task(webapp_id, node_info_list):
     data = json.loads(res.read().decode("utf-8"))
     conn.close()
     return data
+
+
 def query_task_outputs(task_id):
+    """
+    查询 App 任务输出
+
+    Args:
+        task_id: 任务 ID
+
+    Returns:
+        任务输出结果
+    """
+    # Mock 模式
+    if _use_mock():
+        from integrations import mock_runninghub
+        logger.info(f"使用 Mock 服务查询任务输出: {task_id}")
+        return mock_runninghub.query_task_outputs(task_id)
+
+    # 真实 API 调用
+    api_key = get_api_key_for_app()
+
     # 创建不验证 SSL 的上下文
     context = ssl._create_unverified_context()
     conn = http.client.HTTPSConnection(API_HOST, context=context)
     payload = json.dumps({
-        "apiKey": API_KEY,
+        "apiKey": api_key,
         "taskId": task_id
     })
     headers = {
@@ -90,6 +175,9 @@ def query_task_outputs(task_id):
     data = json.loads(res.read().decode("utf-8"))
     conn.close()
     return data
+
+
+# 测试代码（已注释）
 # if __name__ == "__main__":
 #     print("下面两个输入用于获得AI应用所需要的信息，api_key为用户的密钥从api调用——进入控制台中获得，webappId为（此为示例，具体的webappId为你所选择的AI应用界面上方的链接https://www.runninghub.cn/ai-detail/1937084629516193794，最后的数字为webappId）")
 #     Api_key = input("请输入你的 api_key: ").strip()

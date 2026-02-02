@@ -17,11 +17,28 @@ UPLOAD_DIR = BASE_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 # RunningHub API 配置
-RUNNINGHUB_API_KEY = os.getenv("RUNNINGHUB_API_KEY", "")
+# App 任务专用 API Key（用于调用 AI 应用）
+RUNNINGHUB_APP_TASK_KEY = os.getenv("RUNNINGHUB_APP_TASK_KEY", "")
+
+# 直接 API 任务专用 API Key（用于直接 API 调用）
+RUNNINGHUB_DIRECT_API_KEY = os.getenv("RUNNINGHUB_DIRECT_API_KEY", "")
+
+# 兼容旧配置（如果新的未设置，尝试使用旧的）
+if not RUNNINGHUB_APP_TASK_KEY:
+    RUNNINGHUB_APP_TASK_KEY = os.getenv("RUNNINGHUB_API_KEY", "")
+if not RUNNINGHUB_DIRECT_API_KEY:
+    RUNNINGHUB_DIRECT_API_KEY = os.getenv("RUNNINGHUB_API_KEY", "")
+
 RUNNINGHUB_BASE_URL = "https://www.runninghub.cn"
 
-# 是否使用 Mock 服务
-USE_MOCK_SERVICE = os.getenv("USE_MOCK_SERVICE", "false").lower() == "true"
+
+def _get_use_mock_service() -> bool:
+    """动态获取是否使用 Mock 服务"""
+    return os.getenv("USE_MOCK_SERVICE", "false").lower() == "true"
+
+
+# 为了向后兼容,保留这个变量,但改为函数调用
+USE_MOCK_SERVICE = _get_use_mock_service()
 
 # App 任务配置
 MAX_CONCURRENT_APP_TASKS = 2
@@ -70,19 +87,46 @@ MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 
 
-def get_api_key() -> str:
-    """获取 RunningHub API Key"""
-    if not RUNNINGHUB_API_KEY:
-        raise ValueError("RUNNINGHUB_API_KEY 环境变量未设置")
-    return RUNNINGHUB_API_KEY
+def get_api_key(task_type: str = "app") -> str:
+    """
+    获取 RunningHub API Key
+
+    Args:
+        task_type: 任务类型
+            - "app": App 任务（调用 AI 应用）
+            - "direct": 直接 API 任务
+
+    Returns:
+        API Key 字符串
+
+    Note:
+        在 Mock 模式下（USE_MOCK_SERVICE=true），会返回一个模拟的 API Key
+    """
+    # 动态检查 Mock 模式
+    if _get_use_mock_service():
+        return "mock_api_key_for_testing"
+
+    if task_type == "app":
+        if not RUNNINGHUB_APP_TASK_KEY:
+            raise ValueError("RUNNINGHUB_APP_TASK_KEY 环境变量未设置")
+        return RUNNINGHUB_APP_TASK_KEY
+    elif task_type == "direct":
+        if not RUNNINGHUB_DIRECT_API_KEY:
+            raise ValueError("RUNNINGHUB_DIRECT_API_KEY 环境变量未设置")
+        return RUNNINGHUB_DIRECT_API_KEY
+    else:
+        raise ValueError(f"不支持的 task_type: {task_type}")
 
 
 def validate_config() -> None:
     """验证配置是否完整"""
     errors = []
 
-    if not RUNNINGHUB_API_KEY:
-        errors.append("RUNNINGHUB_API_KEY 未配置")
+    if not RUNNINGHUB_APP_TASK_KEY:
+        errors.append("RUNNINGHUB_APP_TASK_KEY 未配置")
+
+    if not RUNNINGHUB_DIRECT_API_KEY:
+        errors.append("RUNNINGHUB_DIRECT_API_KEY 未配置")
 
     if errors:
         raise ValueError(f"配置验证失败: {', '.join(errors)}")

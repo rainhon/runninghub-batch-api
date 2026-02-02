@@ -8,4 +8,7 @@ export default [
   route("api-create", "routes/api-create.tsx"),
   route("api-tasks", "routes/api-tasks.tsx"),
   route("api-tasks/:id", "routes/api-task-detail.tsx"),
+  route("app-create", "routes/app-create.tsx"),
+  route("app-tasks", "routes/app-tasks.tsx"),
+  route("app-tasks/:id", "routes/app-task-detail.tsx"),
 ] satisfies RouteConfig;

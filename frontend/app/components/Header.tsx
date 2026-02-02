@@ -14,10 +14,10 @@ export function Header() {
         </Link>
 
         <nav className="flex flex-wrap items-center gap-2 justify-end">
-          {/* App 任务 */}
-          <Link to="/create">
+          {/* App 任务 - 批量输入模式 */}
+          <Link to="/app-create">
             <Button
-              variant={location.pathname === '/create' ? 'default' : 'ghost'}
+              variant={location.pathname === '/app-create' ? 'default' : 'ghost'}
               size="sm"
               className="gap-2"
             >
@@ -26,9 +26,9 @@ export function Header() {
             </Button>
           </Link>
 
-          <Link to="/tasks">
+          <Link to="/app-tasks">
             <Button
-              variant={location.pathname === '/tasks' ? 'default' : 'ghost'}
+              variant={location.pathname === '/app-tasks' ? 'default' : 'ghost'}
               size="sm"
               className="gap-2"
             >
@@ -37,7 +37,7 @@ export function Header() {
             </Button>
           </Link>
 
-          {/* API 任务 - 新功能 */}
+          {/* API 任务 */}
           <div className="w-px h-6 bg-border" />
 
           <Link to="/api-create">

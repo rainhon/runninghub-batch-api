@@ -3,7 +3,8 @@
 包含配置、类型定义等核心功能
 """
 from .config import (
-    RUNNINGHUB_API_KEY,
+    RUNNINGHUB_APP_TASK_KEY,
+    RUNNINGHUB_DIRECT_API_KEY,
     RUNNINGHUB_BASE_URL,
     USE_MOCK_SERVICE,
     MAX_CONCURRENT_APP_TASKS,
@@ -20,7 +21,8 @@ from .config import (
 )
 
 __all__ = [
-    'RUNNINGHUB_API_KEY',
+    'RUNNINGHUB_APP_TASK_KEY',
+    'RUNNINGHUB_DIRECT_API_KEY',
     'RUNNINGHUB_BASE_URL',
     'USE_MOCK_SERVICE',
     'MAX_CONCURRENT_APP_TASKS',

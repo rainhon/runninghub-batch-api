@@ -221,3 +221,67 @@ export interface SaveApiTemplateRequest {
   task_type: ApiTaskType;
   config: ApiMissionConfig;
 }
+
+// ==================== App 任务相关类型 ====================
+
+// App 任务状态
+export type AppMissionStatus = 'queued' | 'running' | 'completed' | 'cancelled' | 'failed';
+
+// App 子任务状态
+export type AppItemStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+// App 任务配置
+export interface AppMissionConfig {
+  [key: string]: any;  // 灵活的配置，根据 App 的节点而定
+}
+
+// App 任务信息
+export interface AppMission {
+  id: number;
+  name: string;
+  description?: string;
+  app_id: string;
+  status: AppMissionStatus;
+  total_count: number;
+  completed_count: number;
+  failed_count: number;
+  config_json: string;  // JSON string
+  created_at: string;
+  updated_at: string;
+}
+
+// App 子任务信息
+export interface AppMissionItem {
+  id: number;
+  app_mission_id: number;
+  item_index: number;
+  input_params: string;  // JSON string
+  status: AppItemStatus;
+  result_url?: string;
+  result_path?: string;
+  error_message?: string;
+  runninghub_task_id?: string;
+  retry_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// App 任务详情
+export interface AppMissionDetail extends AppMission {}
+
+// 创建 App 任务请求
+export interface CreateAppMissionRequest {
+  name: string;
+  description?: string;
+  app_id: string;
+  config: AppMissionConfig;  // 固定配置
+  batch_input: AppMissionConfig[];  // 批量输入
+}
+
+// App 任务列表响应
+export interface AppMissionListResponse {
+  missions: AppMission[];
+  total: number;
+  page: number;
+  page_size: number;
+}

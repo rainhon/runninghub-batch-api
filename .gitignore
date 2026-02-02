@@ -16,5 +16,5 @@ uploads
 pics
 
 .claude
-runninghub.db
+runninghub.db*
 mock_api_state.json

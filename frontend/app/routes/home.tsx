@@ -31,11 +31,11 @@ export default function Home() {
             </div>
             <CardTitle>创建 App 任务</CardTitle>
             <CardDescription>
-              输入 App ID，配置节点参数，创建新的 AI 应用任务
+              批量输入模式 - 为每个参数添加多个值，自动生成所有组合（笛卡尔积）
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link to="/create">
+            <Link to="/app-create">
               <Button className="w-full">
                 <PlusCircle className="w-4 h-4 mr-2" />
                 创建 App 任务
@@ -55,7 +55,7 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link to="/tasks">
+            <Link to="/app-tasks">
               <Button variant="outline" className="w-full">
                 <List className="w-4 h-4 mr-2" />
                 查看 App 列表
@@ -78,7 +78,7 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link to="/api-task">
+            <Link to="/api-create">
               <Button className="w-full" variant="secondary">
                 <Zap className="w-4 h-4 mr-2" />
                 创建 API 任务

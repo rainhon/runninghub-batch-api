@@ -1,3 +1,7 @@
+# 首先加载环境变量（必须在所有其他导入之前）
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -7,9 +11,10 @@ import logging
 from pathlib import Path
 import repositories as database
 import integrations.runninghub as runninghub
-from services import task_manager, api_task_manager
+from services import api_task_manager, app_task_manager_v2
 from utils import setup_logging, get_logger
 from api import api_router
+from core import USE_MOCK_SERVICE, get_api_key
 
 
 # ============== 生命周期管理 ==============
@@ -24,13 +29,13 @@ async def lifespan(app: FastAPI):
     logger = get_logger(__name__)
     logger.info("正在初始化应用...")
 
-    # 启动任务管理器
-    task_manager.start()
-    task_manager.restore_tasks()
-
     # 启动 API 任务管理器
     api_task_manager.start()
     logger.info("✅ API任务管理器已启动")
+
+    # 启动 App 任务管理器 V2
+    app_task_manager_v2.start()
+    logger.info("✅ App任务管理器V2已启动")
 
     logger.info("应用初始化完成")
 
@@ -38,8 +43,8 @@ async def lifespan(app: FastAPI):
 
     # 关闭时执行
     logger.info("应用正在关闭...")
-    task_manager.stop()
     api_task_manager.stop()
+    app_task_manager_v2.stop()
     logger.info("应用已关闭")
 
 
@@ -60,12 +65,20 @@ logger = get_logger(__name__)
 
 @app.get("/api/test")
 def test():
-    """测试数据库连接"""
+    """测试数据库连接和配置"""
     try:
-        result = database.execute_sql("SELECT COUNT(*) as count FROM medias", fetch_one=True)
-        return {"code": 0, "data": result, "msg": "数据库连接正常"}
+        result = database.execute_sql("SELECT COUNT(*) as count FROM media_files", fetch_one=True)
+        return {
+            "code": 0,
+            "data": {
+                "database": result,
+                "mock_mode": USE_MOCK_SERVICE,
+                "test_api_key": get_api_key("app")[:20] + "..."  # 只显示前20个字符
+            },
+            "msg": "数据库连接正常"
+        }
     except Exception as e:
-        return {"code": 500, "data": None, "msg": f"数据库连接失败: {str(e)}"}
+        return {"code": 500, "data": None, "msg": f"失败: {str(e)}"}
 
 @app.get('/api/app/read/{app_id}')
 def read_workflow(app_id: str):

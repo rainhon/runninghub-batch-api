@@ -54,12 +54,15 @@ def query_api_task(task_id: str) -> Dict[str, Any]:
 def _submit_real_task(api_url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     """调用真实 API 提交任务"""
     try:
+        # API 任务使用 "direct" 类型的 key
+        api_key = get_api_key(task_type="direct")
+
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {get_api_key()}"
+            "Authorization": f"Bearer {api_key}"
         }
 
-        logger.info(f"📤 提交到真实 API: {api_url}")
+        logger.info(f"📤 提交到真实 API (使用 Direct API Key): {api_url}")
         logger.debug(f"   参数: {payload}")
 
         response = requests.post(api_url, headers=headers, json=payload, timeout=30)
@@ -87,10 +90,13 @@ def _submit_real_task(api_url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
 def _query_real_task(task_id: str) -> Dict[str, Any]:
     """调用真实 API 查询任务"""
     try:
+        # API 任务使用 "direct" 类型的 key
+        api_key = get_api_key(task_type="direct")
+
         query_url = "https://www.runninghub.cn/openapi/v2/query"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {get_api_key()}"
+            "Authorization": f"Bearer {api_key}"
         }
 
         response = requests.post(

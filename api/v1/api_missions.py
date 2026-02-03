@@ -23,11 +23,13 @@ router = APIRouter(prefix="/api_missions", tags=["API 任务管理"])
 # ========== 请求/响应模型 ==========
 
 class CreateApiMissionRequest(BaseModel):
-    """创建 API 任务请求"""
+    """创建 API 任务请求（支持平台选择）"""
     name: str
     description: Optional[str] = None
     task_type: str  # text_to_image, image_to_image, text_to_video, image_to_video
     config: Dict  # 包含 fixed_config 和 batch_input
+    platform_strategy: Optional[str] = "specified"  # specified, failover, priority
+    platform_id: Optional[str] = None  # 指定的平台 ID
 
 
 class SaveTemplateRequest(BaseModel):
@@ -42,17 +44,51 @@ class SaveTemplateRequest(BaseModel):
 
 @router.post("/submit")
 async def create_api_mission(request: CreateApiMissionRequest):
-    """创建 API 任务"""
+    """创建 API 任务（支持多平台）"""
     try:
+        # 验证平台策略
+        if request.platform_strategy not in ["specified", "failover", "priority"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"不支持的平台策略: {request.platform_strategy}，支持的策略: specified, failover, priority"
+            )
+
+        # 验证平台选择
+        if request.platform_strategy == "specified" and not request.platform_id:
+            raise HTTPException(
+                status_code=400,
+                detail="指定平台模式下必须提供 platform_id"
+            )
+
+        # 如果指定了平台，验证该平台是否支持任务类型
+        if request.platform_id:
+            from core import get_platform_config
+            try:
+                platform_config = get_platform_config(request.platform_id)
+                supported_types = platform_config.get('supported_task_types', [])
+                if request.task_type not in supported_types:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"平台 {request.platform_id} 不支持任务类型 {request.task_type}"
+                    )
+            except ValueError:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"平台不存在: {request.platform_id}"
+                )
+
+        # 创建任务（传递平台参数）
         mission_id = api_task_service.create_mission(
             name=request.name,
             description=request.description,
             task_type=request.task_type,
-            config=request.config
+            config=request.config,
+            platform_strategy=request.platform_strategy,
+            platform_id=request.platform_id
         )
 
         mission = database.execute_sql(
-            "SELECT total_count, status FROM api_missions WHERE id = ?",
+            "SELECT total_count, status, platform_strategy, platform_id FROM api_missions WHERE id = ?",
             (mission_id,),
             fetch_one=True
         )
@@ -62,7 +98,9 @@ async def create_api_mission(request: CreateApiMissionRequest):
             "data": {
                 "mission_id": mission_id,
                 "total_count": mission['total_count'],
-                "status": mission['status']
+                "status": mission['status'],
+                "platform_strategy": mission['platform_strategy'],
+                "platform_id": mission['platform_id']
             }
         }
     except ValueError as e:

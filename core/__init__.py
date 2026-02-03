@@ -20,6 +20,18 @@ from .config import (
     validate_config
 )
 
+from .platforms import (
+    PLATFORMS_CONFIG,
+    get_platform_config,
+    get_enabled_platforms,
+    get_platforms_for_task_type,
+    get_platform_api_key,
+    get_platform_endpoint,
+    TASK_TYPE_CONFIG,
+    get_task_type_config,
+    get_all_task_types
+)
+
 __all__ = [
     'RUNNINGHUB_APP_TASK_KEY',
     'RUNNINGHUB_DIRECT_API_KEY',
@@ -35,5 +47,14 @@ __all__ = [
     'MAX_UPLOAD_SIZE',
     'ALLOWED_IMAGE_TYPES',
     'get_api_key',
-    'validate_config'
+    'validate_config',
+    'PLATFORMS_CONFIG',
+    'get_platform_config',
+    'get_enabled_platforms',
+    'get_platforms_for_task_type',
+    'get_platform_api_key',
+    'get_platform_endpoint',
+    'TASK_TYPE_CONFIG',
+    'get_task_type_config',
+    'get_all_task_types'
 ]

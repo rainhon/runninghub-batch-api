@@ -41,7 +41,8 @@
 ┌─────────────────────────────────────────────────────────────┐
 │               平台路由层 (Platform Router)                    │
 │  • 指定平台模式: 直接路由到选定平台                          │
-│  • 轮询模式: 依次尝试每个平台直到成功                         │
+│  • 故障转移模式: 任务失败时自动切换到下一个平台重试            │
+│  • 优先级模式: 使用优先级最高的平台                          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -59,8 +60,8 @@
 ```typescript
 enum PlatformStrategy {
   SPECIFIED = "specified",    // 用户指定平台
-  ROUND_ROBIN = "round_robin", // 系统轮询
-  PRIORITY = "priority"        // 按优先级尝试
+  FAILOVER = "failover",      // 故障转移（失败时自动切换平台）
+  PRIORITY = "priority"       // 按优先级尝试
 }
 
 interface PlatformConfig {
@@ -78,106 +79,182 @@ interface PlatformConfig {
 
 ---
 
-## 二、数据库设计
+## 二、配置文件设计
 
-### 2.1 新增表：platforms
+### 2.1 平台配置文件 (core/platforms.py)
 
-```sql
--- 平台配置表
-CREATE TABLE IF NOT EXISTS platforms (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    platform_id TEXT NOT NULL UNIQUE,        -- 平台唯一标识
-    name TEXT NOT NULL,                      -- 平台名称
-    display_name TEXT NOT NULL,              -- 显示名称
-    enabled INTEGER DEFAULT 1,               -- 是否启用 (0=禁用, 1=启用)
-    priority INTEGER DEFAULT 5,              -- 优先级 (1-10)
-    supported_task_types TEXT NOT NULL,      -- 支持的任务类型 JSON 数组
-    api_key TEXT,                            -- API 密钥 (加密存储)
-    api_endpoint TEXT,                       -- API 端点
-    rate_limit INTEGER DEFAULT 60,           -- 速率限制 (请求/分钟)
-    timeout INTEGER DEFAULT 300,             -- 超时时间 (秒)
-    cost_per_task REAL DEFAULT 0.0,          -- 每次任务成本
-    config_json TEXT,                        -- 其他配置 JSON
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+将平台配置放在配置文件中，便于管理和版本控制。
 
--- 创建索引
-CREATE INDEX idx_platforms_enabled ON platforms(enabled);
-CREATE INDEX idx_platforms_priority ON platforms(priority);
+```python
+# core/platforms.py
+
+from typing import Dict, List, Any
+
+# 平台配置列表
+PLATFORMS_CONFIG: List[Dict[str, Any]] = [
+    {
+        "platform_id": "runninghub",
+        "name": "RunningHub",
+        "display_name": "RunningHub",
+        "enabled": True,
+        "priority": 10,
+        "supported_task_types": ["text_to_image", "image_to_image", "text_to_video", "image_to_video"],
+        "api_key_env": "RUNNINGHUB_DIRECT_API_KEY",  # 环境变量名
+        "api_endpoint": "https://www.runninghub.cn/openapi/v2",
+        "rate_limit": 60,  # 请求/分钟
+        "timeout": 300,   # 秒
+        "cost_per_task": 0.0,
+        "endpoints": {
+            "text_to_image": "/rhart-image-v1/text-to-image",
+            "image_to_image": "/rhart-image-v1/image-to-image",
+            "text_to_video": "/rhart-video-v1/text-to-video",
+            "image_to_video": "/rhart-video-v1/image-to-video"
+        }
+    },
+    {
+        "platform_id": "midjourney",
+        "name": "Midjourney",
+        "display_name": "Midjourney",
+        "enabled": False,  # 默认禁用，需要配置后启用
+        "priority": 8,
+        "supported_task_types": ["text_to_image", "image_to_image"],
+        "api_key_env": "MIDJOURNEY_API_KEY",
+        "api_endpoint": "https://api.midjourney.com/v1",
+        "rate_limit": 30,
+        "timeout": 600,
+        "cost_per_task": 0.0,
+        "endpoints": {
+            "text_to_image": "/txt2img",
+            "image_to_image": "/img2img"
+        }
+    },
+    {
+        "platform_id": "stability",
+        "name": "Stability AI",
+        "display_name": "Stability AI",
+        "enabled": False,
+        "priority": 7,
+        "supported_task_types": ["text_to_image", "image_to_image"],
+        "api_key_env": "STABILITY_API_KEY",
+        "api_endpoint": "https://api.stability.ai/v1",
+        "rate_limit": 50,
+        "timeout": 300,
+        "cost_per_task": 0.0,
+        "endpoints": {
+            "text_to_image": "/text-to-image",
+            "image_to_image": "/image-to-image"
+        }
+    },
+    {
+        "platform_id": "replicate",
+        "name": "Replicate",
+        "display_name": "Replicate",
+        "enabled": False,
+        "priority": 6,
+        "supported_task_types": ["text_to_image", "image_to_video"],
+        "api_key_env": "REPLICATE_API_KEY",
+        "api_endpoint": "https://api.replicate.com/v1",
+        "rate_limit": 100,
+        "timeout": 600,
+        "cost_per_task": 0.0,
+        "endpoints": {
+            "text_to_image": "/predictions",
+            "image_to_video": "/predictions"
+        }
+    }
+]
+
+
+def get_platform_config(platform_id: str) -> Dict[str, Any]:
+    """获取指定平台的配置"""
+    for platform in PLATFORMS_CONFIG:
+        if platform["platform_id"] == platform_id:
+            return platform
+    raise ValueError(f"未找到平台配置: {platform_id}")
+
+
+def get_enabled_platforms() -> List[Dict[str, Any]]:
+    """获取所有启用的平台"""
+    return [p for p in PLATFORMS_CONFIG if p.get("enabled", False)]
+
+
+def get_platforms_for_task_type(task_type: str) -> List[Dict[str, Any]]:
+    """获取支持指定任务类型的平台（按优先级排序）"""
+    platforms = get_enabled_platforms()
+    filtered = [p for p in platforms if task_type in p.get("supported_task_types", [])]
+    # 按优先级降序排序
+    return sorted(filtered, key=lambda x: x.get("priority", 0), reverse=True)
+
+
+def get_platform_api_key(platform_id: str) -> str:
+    """获取平台的 API Key"""
+    import os
+    from core import _get_use_mock_service
+
+    # Mock 模式返回测试 Key
+    if _get_use_mock_service():
+        return f"mock_{platform_id}_api_key"
+
+    config = get_platform_config(platform_id)
+    env_key = config.get("api_key_env")
+
+    if not env_key:
+        raise ValueError(f"平台 {platform_id} 未配置 api_key_env")
+
+    api_key = os.getenv(env_key, "")
+    if not api_key:
+        raise ValueError(f"环境变量 {env_key} 未设置")
+
+    return api_key
 ```
 
-### 2.2 修改表：api_missions
+### 2.2 更新 core/config.py
+
+```python
+# core/config.py 添加
+
+from core import platforms
+
+# 导出平台配置
+from .platforms import (
+    PLATFORMS_CONFIG,
+    get_platform_config,
+    get_enabled_platforms,
+    get_platforms_for_task_type,
+    get_platform_api_key
+)
+
+__all__ = [
+    # ... 现有的导出
+    'PLATFORMS_CONFIG',
+    'get_platform_config',
+    'get_enabled_platforms',
+    'get_platforms_for_task_type',
+    'get_platform_api_key'
+]
+```
+
+### 2.3 数据库修改（最小化）
+
+只需要在现有表中添加平台记录字段，不需要创建新表。
 
 ```sql
--- 添加平台相关字段
+-- 修改 api_missions 表
 ALTER TABLE api_missions ADD COLUMN platform_strategy TEXT DEFAULT 'specified';
-ALTER TABLE api_missions ADD COLUMN platform_id TEXT;  -- 用户指定的平台
-ALTER TABLE api_missions ADD COLUMN platform_attempt TEXT;  -- 实际尝试的平台列表 JSON
-ALTER TABLE api_missions ADD COLUMN platform_success TEXT;  -- 最终成功的平台
+ALTER TABLE api_missions ADD COLUMN platform_id TEXT;
+
+-- 修改 api_mission_items 表
+ALTER TABLE api_mission_items ADD COLUMN platform_id TEXT;
+ALTER TABLE api_mission_items ADD COLUMN platform_attempt TEXT;  -- 尝试的平台列表 JSON
 
 -- 创建索引
-CREATE INDEX idx_api_missions_platform ON api_missions(platform_id);
-CREATE INDEX idx_api_missions_strategy ON api_missions(platform_strategy);
-```
-
-### 2.3 新增表：platform_stats
-
-```sql
--- 平台统计表
-CREATE TABLE IF NOT EXISTS platform_stats (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    platform_id TEXT NOT NULL,
-    task_type TEXT NOT NULL,
-    total_tasks INTEGER DEFAULT 0,           -- 总任务数
-    success_tasks INTEGER DEFAULT 0,         -- 成功任务数
-    failed_tasks INTEGER DEFAULT 0,          -- 失败任务数
-    avg_duration REAL,                       -- 平均耗时 (秒)
-    total_cost REAL DEFAULT 0.0,             -- 总成本
-    last_used TIMESTAMP,                     -- 最后使用时间
-    date DATE NOT NULL,                      -- 统计日期
-    UNIQUE(platform_id, task_type, date)
-);
-
--- 创建索引
-CREATE INDEX idx_platform_stats_date ON platform_stats(date);
-CREATE INDEX idx_platform_stats_platform ON platform_stats(platform_id);
-```
-
-### 2.4 初始化数据
-
-```sql
--- 初始化 RunningHub 平台
-INSERT INTO platforms (
-    platform_id, name, display_name, enabled, priority,
-    supported_task_types, api_endpoint, rate_limit, timeout
-) VALUES (
-    'runninghub',
-    'RunningHub',
-    'RunningHub',
-    1,
-    10,
-    '["text_to_image", "image_to_image", "text_to_video", "image_to_video"]',
-    'https://www.runninghub.cn/openapi/v2',
-    60,
-    300
-);
-
--- 初始化其他平台 (示例)
-INSERT INTO platforms (
-    platform_id, name, display_name, enabled, priority,
-    supported_task_types, rate_limit, timeout
-) VALUES
-('midjourney', 'Midjourney', 'Midjourney', 0, 8, '["text_to_image", "image_to_image"]', 30, 600),
-('stability', 'Stability AI', 'Stability AI', 0, 7, '["text_to_image", "image_to_image"]', 50, 300),
-('replicate', 'Replicate', 'Replicate', 0, 6, '["text_to_image", "image_to_video"]', 100, 600);
+CREATE INDEX IF NOT EXISTS idx_api_missions_platform ON api_missions(platform_id);
+CREATE INDEX IF NOT EXISTS idx_api_mission_items_platform ON api_mission_items(platform_id);
 ```
 
 ---
 
-## 三、后端实现
-
-### 3.1 平台适配器接口
+## 二、配置文件设计
 
 ```python
 # integrations/platform_adapters/base.py
@@ -349,7 +426,8 @@ class RunningHubAdapter(BasePlatformAdapter):
 # services/platform_manager.py
 
 from typing import Dict, Any, List, Optional
-import repositories as database
+import json
+from core import get_platforms_for_task_type, get_platform_api_key, get_platform_config
 from utils import get_logger
 
 logger = get_logger(__name__)
@@ -363,24 +441,23 @@ class PlatformManager:
 
     def _load_adapters(self):
         """加载所有平台适配器"""
-        # 加载 RunningHub 适配器
         from integrations.platform_adapters.runninghub import RunningHubAdapter
+        from core import get_enabled_platforms
 
-        # 从数据库获取启用的平台
-        platforms = database.execute_sql(
-            "SELECT * FROM platforms WHERE enabled = 1 ORDER BY priority DESC",
-            fetch_all=True
-        )
+        # 从配置获取启用的平台
+        platforms = get_enabled_platforms()
 
-        for platform in platforms:
-            platform_id = platform['platform_id']
+        for platform_config in platforms:
+            platform_id = platform_config['platform_id']
+
+            # 构建适配器配置
             config = {
                 'platform_id': platform_id,
-                'api_key': platform.get('api_key'),
-                'api_endpoint': platform.get('api_endpoint'),
-                'timeout': platform.get('timeout', 300),
-                'rate_limit': platform.get('rate_limit', 60),
-                'priority': platform.get('priority', 5)
+                'api_key': get_platform_api_key(platform_id),
+                'api_endpoint': platform_config.get('api_endpoint'),
+                'timeout': platform_config.get('timeout', 300),
+                'rate_limit': platform_config.get('rate_limit', 60),
+                'priority': platform_config.get('priority', 5)
             }
 
             # 根据平台 ID 创建对应的适配器
@@ -388,42 +465,34 @@ class PlatformManager:
                 self.adapters[platform_id] = RunningHubAdapter(config)
             # 其他平台的适配器可以在这里添加
             # elif platform_id == 'midjourney':
+            #     from integrations.platform_adapters.midjourney import MidjourneyAdapter
             #     self.adapters[platform_id] = MidjourneyAdapter(config)
 
-            logger.info(f"✅ 已加载平台适配器: {platform['display_name']}")
+            logger.info(f"✅ 已加载平台适配器: {platform_config['display_name']}")
 
     def get_available_platforms(self, task_type: str = None) -> List[Dict[str, Any]]:
         """获取可用的平台列表"""
-        platforms = database.execute_sql(
-            """SELECT * FROM platforms WHERE enabled = 1
-               ORDER BY priority DESC""",
-            fetch_all=True
-        )
-
         if task_type:
-            # 过滤支持指定任务类型的平台
-            result = []
-            for p in platforms:
-                supported_types = eval(p['supported_task_types'])
-                if task_type in supported_types:
-                    result.append(p)
-            return result
-
-        return platforms
+            return get_platforms_for_task_type(task_type)
+        else:
+            from core import get_enabled_platforms
+            return get_enabled_platforms()
 
     def get_platform_adapter(self, platform_id: str):
         """获取平台适配器实例"""
         return self.adapters.get(platform_id)
 
     def select_platform(self, task_type: str, strategy: str = 'specified',
-                       preferred_platform: str = None) -> Optional[str]:
+                       preferred_platform: str = None,
+                       attempted_platforms: List[str] = None) -> Optional[str]:
         """
         选择平台
 
         Args:
             task_type: 任务类型
-            strategy: 选择策略 (specified/round_robin/priority)
+            strategy: 选择策略 (specified/failover/priority)
             preferred_platform: 用户指定的平台
+            attempted_platforms: 已经尝试过的平台列表（用于 failover 策略）
 
         Returns:
             平台 ID
@@ -443,34 +512,25 @@ class PlatformManager:
                 # 回退到第一个可用平台
                 return available[0]['platform_id']
 
-        elif strategy == 'round_robin':
-            # 轮询模式 - 根据使用统计选择
-            platform_stats = database.execute_sql(
-                """SELECT platform_id, COUNT(*) as task_count
-                   FROM platform_stats
-                   WHERE task_type = ?
-                   GROUP BY platform_id""",
-                (task_type,),
-                fetch_all=True
-            )
+        elif strategy == 'failover':
+            # 故障转移模式 - 轮询尝试不同平台
+            # 如果指定了首选平台，先尝试它
+            if preferred_platform and preferred_platform in [p['platform_id'] for p in available]:
+                if not attempted_platforms or preferred_platform not in attempted_platforms:
+                    return preferred_platform
 
-            # 选择使用次数最少的平台
-            min_count = float('inf')
-            selected_platform = None
+            # 获取未尝试过的平台（按优先级排序）
+            attempted = attempted_platforms or []
+            remaining = [p for p in available if p['platform_id'] not in attempted]
 
-            for p in available:
-                p_id = p['platform_id']
-                stats = next((s for s in platform_stats if s['platform_id'] == p_id), None)
-                count = stats['task_count'] if stats else 0
-
-                if count < min_count:
-                    min_count = count
-                    selected_platform = p_id
-
-            return selected_platform or available[0]['platform_id']
+            if remaining:
+                return remaining[0]['platform_id']
+            else:
+                logger.error(f"所有平台都已尝试失败: {attempted}")
+                return None
 
         else:  # priority
-            # 优先级模式 - 返回优先级最高的平台
+            # 优先级模式 - 返回优先级最高的平台（已按优先级排序）
             return available[0]['platform_id']
 
     def submit_task_with_platform(self, task_type: str, params: Dict[str, Any],
@@ -491,6 +551,8 @@ class PlatformManager:
         Returns:
             提交结果
         """
+        import repositories as database
+
         # 选择平台
         selected_platform = platform_id or self.select_platform(task_type, strategy)
 
@@ -514,11 +576,7 @@ class PlatformManager:
         # 标准化参数
         normalized_params = adapter.normalize_params(task_type, params)
 
-        # 提交任务
-        try:
-            result = adapter.submit_task(task_type, normalized_params)
-
-            # 记录尝试的平台
+            # 记录使用的平台
             database.execute_sql(
                 """UPDATE api_mission_items
                    SET platform_id = ?, platform_attempt = ?
@@ -540,53 +598,6 @@ class PlatformManager:
                 "message": f"提交异常: {str(e)}"
             }
 
-    def update_platform_stats(self, platform_id: str, task_type: str,
-                              success: bool, duration: float = 0, cost: float = 0):
-        """更新平台统计"""
-        from datetime import date
-        today = date.today()
-
-        # 检查是否存在今天的统计记录
-        existing = database.execute_sql(
-            """SELECT * FROM platform_stats
-               WHERE platform_id = ? AND task_type = ? AND date = ?""",
-            (platform_id, task_type, today),
-            fetch_one=True
-        )
-
-        if existing:
-            # 更新现有记录
-            if success:
-                database.execute_sql(
-                    """UPDATE platform_stats
-                       SET total_tasks = total_tasks + 1,
-                           success_tasks = success_tasks + 1,
-                           avg_duration = ?,
-                           total_cost = total_cost + ?,
-                           last_used = CURRENT_TIMESTAMP
-                       WHERE id = ?""",
-                    (duration, cost, existing['id'])
-                )
-            else:
-                database.execute_sql(
-                    """UPDATE platform_stats
-                       SET total_tasks = total_tasks + 1,
-                           failed_tasks = failed_tasks + 1,
-                           last_used = CURRENT_TIMESTAMP
-                       WHERE id = ?""",
-                    (existing['id'],)
-                )
-        else:
-            # 创建新记录
-            database.execute_sql(
-                """INSERT INTO platform_stats
-                   (platform_id, task_type, total_tasks, success_tasks,
-                    failed_tasks, avg_duration, total_cost, date)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (platform_id, task_type, 1, 1 if success else 0, 0 if success else 1,
-                 duration, cost, today)
-            )
-
 
 # 全局平台管理器实例
 platform_manager = PlatformManager()
@@ -600,7 +611,7 @@ platform_manager = PlatformManager()
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from services.platform_manager import platform_manager
+from core import get_platforms_for_task_type, get_enabled_platforms
 
 router = APIRouter(prefix="/platforms", tags=["平台管理"])
 
@@ -618,28 +629,25 @@ class PlatformInfo(BaseModel):
 @router.get("", response_model=List[PlatformInfo])
 async def get_platforms(task_type: Optional[str] = None):
     """获取平台列表"""
-    platforms = platform_manager.get_available_platforms(task_type)
+    if task_type:
+        platforms = get_platforms_for_task_type(task_type)
+    else:
+        platforms = get_enabled_platforms()
 
     return [
         {
             "platform_id": p['platform_id'],
             "name": p['name'],
             "display_name": p['display_name'],
-            "enabled": bool(p['enabled']),
-            "priority": p['priority'],
-            "supported_task_types": eval(p['supported_task_types']),
-            "rate_limit": p['rate_limit'],
-            "timeout": p['timeout'],
+            "enabled": p.get('enabled', False),
+            "priority": p.get('priority', 0),
+            "supported_task_types": p.get('supported_task_types', []),
+            "rate_limit": p.get('rate_limit', 60),
+            "timeout": p.get('timeout', 300),
             "cost_per_task": p.get('cost_per_task')
         }
         for p in platforms
     ]
-
-@router.get("/{platform_id}/stats")
-async def get_platform_stats(platform_id: str, days: int = 7):
-    """获取平台统计"""
-    # 实现统计查询
-    pass
 ```
 
 ### 3.5 更新任务创建接口
@@ -653,7 +661,7 @@ class CreateApiMissionRequest(BaseModel):
     description: Optional[str] = None
     task_type: str  # text_to_image, image_to_image, etc.
     config: Dict = {}
-    platform_strategy: str = "specified"  # specified, round_robin, priority
+    platform_strategy: str = "specified"  # specified, failover, priority
     platform_id: Optional[str] = None  # 指定的平台 ID
 
 @router.post("/submit")
@@ -700,365 +708,107 @@ async def create_api_mission(request: CreateApiMissionRequest):
 
 ## 四、前端实现
 
-### 4.1 新建 API 任务创建页面（多 Tab）
+### 4.1 更新现有 API 任务创建页面
+
+**不再创建新页面**，直接修改现有的 `frontend/app/routes/api-create.tsx`，添加以下功能：
+
+#### 添加平台选择组件
 
 ```typescript
-// frontend/app/routes/api-create-multi.tsx
+// 在现有页面中添加平台选择区域
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { api } from '../lib/api';
+// 1. 添加状态管理
+const [platforms, setPlatforms] = useState<any[]>([]);
+const [platformStrategy, setPlatformStrategy] = useState('specified');
+const [selectedPlatform, setSelectedPlatform] = useState('runninghub');
 
-// 任务类型配置
-const TASK_TYPES = {
-  text_to_image: {
-    label: '文生图',
-    icon: '📝',
-    description: '输入文字生成图片',
-    color: 'bg-blue-500'
-  },
-  image_to_image: {
-    label: '图生图',
-    icon: '🖼️',
-    description: '根据参考图生成新图片',
-    color: 'bg-purple-500'
-  },
-  text_to_video: {
-    label: '文生视频',
-    icon: '🎬',
-    description: '输入文字生成视频',
-    color: 'bg-green-500'
-  },
-  image_to_video: {
-    label: '图生视频',
-    icon: '🎞️',
-    description: '根据图片生成视频',
-    color: 'bg-orange-500'
+// 2. 加载平台列表
+useEffect(() => {
+  loadPlatforms();
+}, [taskType]);
+
+const loadPlatforms = async () => {
+  try {
+    const result = await api.getPlatforms(taskType);
+    setPlatforms(result.data || []);
+    if (result.data && result.data.length > 0) {
+      setSelectedPlatform(result.data[0].platform_id);
+    }
+  } catch (err) {
+    console.error('加载平台失败:', err);
   }
 };
 
-// 平台选择策略
-const PLATFORM_STRATEGIES = {
-  specified: {
-    label: '指定平台',
-    description: '手动选择使用的平台'
-  },
-  round_robin: {
-    label: '自动轮询',
-    description: '系统自动选择负载最低的平台'
-  },
-  priority: {
-    label: '优先级模式',
-    description: '使用优先级最高的平台'
-  }
-};
+// 3. 在表单中添加平台选择 UI
+<Card>
+  <CardHeader>
+    <CardTitle>平台设置</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {/* 平台策略选择 */}
+    <div className="mb-4">
+      <label className="text-sm font-medium">平台策略</label>
+      <select
+        className="w-full mt-1 p-2 border rounded"
+        value={platformStrategy}
+        onChange={(e) => setPlatformStrategy(e.target.value)}
+      >
+        <option value="specified">指定平台</option>
+        <option value="failover">故障转移</option>
+        <option value="priority">优先级模式</option>
+      </select>
+    </div>
 
-export default function ApiCreateMultiPage() {
-  const navigate = useNavigate();
-
-  const [activeTab, setActiveTab] = useState('text_to_image');
-  const [platforms, setPlatforms] = useState<any[]>([]);
-  const [loadingPlatforms, setLoadingPlatforms] = useState(true);
-
-  const [taskName, setTaskName] = useState('');
-  const [taskDescription, setTaskDescription] = useState('');
-  const [platformStrategy, setPlatformStrategy] = useState('specified');
-  const [selectedPlatform, setSelectedPlatform] = useState('runninghub');
-
-  const [batchInput, setBatchInput] = useState<any[]>([{}]);
-  const [submitting, setSubmitting] = useState(false);
-
-  // 加载平台列表
-  useEffect(() => {
-    loadPlatforms();
-  }, [activeTab]);
-
-  const loadPlatforms = async () => {
-    try {
-      const result = await api.getPlatforms(activeTab);
-      setPlatforms(result.data || []);
-
-      // 默认选择第一个平台
-      if (result.data && result.data.length > 0) {
-        setSelectedPlatform(result.data[0].platform_id);
-      }
-    } catch (err) {
-      console.error('加载平台失败:', err);
-    } finally {
-      setLoadingPlatforms(false);
-    }
-  };
-
-  // 添加批量输入项
-  const addBatchItem = () => {
-    setBatchInput([...batchInput, {}]);
-  };
-
-  // 更新批量输入项
-  const updateBatchItem = (index: number, key: string, value: any) => {
-    const newBatch = [...batchInput];
-    newBatch[index] = { ...newBatch[index], [key]: value };
-    setBatchInput(newBatch);
-  };
-
-  // 提交任务
-  const handleSubmit = async () => {
-    setSubmitting(true);
-    try {
-      await api.createApiMission({
-        name: taskName,
-        description: taskDescription,
-        task_type: activeTab,
-        config: {
-          batch_input: batchInput
-        },
-        platform_strategy: platformStrategy,
-        platform_id: platformStrategy === 'specified' ? selectedPlatform : undefined
-      });
-
-      navigate('/api-tasks');
-    } catch (err: any) {
-      alert(`提交失败: ${err.message}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // 渲染任务类型表单
-  const renderTaskForm = (taskType: string) => {
-    const config = TASK_TYPES[taskType];
-
-    return (
-      <div className="space-y-6">
-        {/* 平台选择 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">选择平台</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* 策略选择 */}
-            <div>
-              <label className="text-sm font-medium">平台选择策略</label>
-              <div className="grid grid-cols-3 gap-4 mt-2">
-                {Object.entries(PLATFORM_STRATEGIES).map(([key, strategy]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setPlatformStrategy(key)}
-                    className={`p-4 rounded-lg border-2 text-left transition
-                      ${platformStrategy === key
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                      }`}
-                  >
-                    <div className="font-medium">{strategy.label}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {strategy.description}
-                    </div>
-                  </button>
-                ))}
+    {/* 指定平台时显示平台列表 */}
+    {platformStrategy === 'specified' && (
+      <div>
+        <label className="text-sm font-medium">选择平台</label>
+        <div className="grid grid-cols-2 gap-3 mt-2">
+          {platforms.map((platform) => (
+            <button
+              key={platform.platform_id}
+              type="button"
+              onClick={() => setSelectedPlatform(platform.platform_id)}
+              className={`p-3 rounded-lg border-2 text-left transition ${
+                selectedPlatform === platform.platform_id
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="font-medium">{platform.display_name}</div>
+              <div className="text-xs text-muted-foreground">
+                优先级 {platform.priority}
               </div>
-            </div>
-
-            {/* 指定平台 */}
-            {platformStrategy === 'specified' && (
-              <div>
-                <label className="text-sm font-medium">选择平台</label>
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                  {platforms.map((platform) => (
-                    <button
-                      key={platform.platform_id}
-                      type="button"
-                      onClick={() => setSelectedPlatform(platform.platform_id)}
-                      className={`p-4 rounded-lg border-2 text-left transition
-                        ${selectedPlatform === platform.platform_id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{platform.display_name}</span>
-                        <Badge variant="outline">优先级 {platform.priority}</Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        速率限制: {platform.rate_limit} 请求/分钟
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 批量输入 */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">批量输入</CardTitle>
-              <Button type="button" onClick={addBatchItem} size="sm">
-                + 添加
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {batchInput.map((item, index) => (
-              <div key={index} className="p-4 border rounded-lg space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">任务 #{index + 1}</h4>
-                  {batchInput.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setBatchInput(batchInput.filter((_, i) => i !== index))}
-                    >
-                      删除
-                    </Button>
-                  )}
-                </div>
-
-                {/* 根据任务类型渲染不同的输入字段 */}
-                {taskType === 'text_to_image' && (
-                  <>
-                    <div>
-                      <label className="text-sm">提示词</label>
-                      <textarea
-                        className="w-full mt-1 p-2 border rounded"
-                        rows={3}
-                        placeholder="描述你想要生成的图片..."
-                        value={item.prompt || ''}
-                        onChange={(e) => updateBatchItem(index, 'prompt', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm">宽高比</label>
-                      <select
-                        className="w-full mt-1 p-2 border rounded"
-                        value={item.aspectRatio || '16:9'}
-                        onChange={(e) => updateBatchItem(index, 'aspectRatio', e.target.value)}
-                      >
-                        <option value="16:9">16:9 (横屏)</option>
-                        <option value="9:16">9:16 (竖屏)</option>
-                        <option value="1:1">1:1 (正方形)</option>
-                        <option value="4:3">4:3 (标准)</option>
-                        <option value="3:4">3:4 (竖版标准)</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                {taskType === 'image_to_image' && (
-                  <>
-                    <div>
-                      <label className="text-sm">参考图片</label>
-                      <input
-                        type="file"
-                        className="w-full mt-1"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) updateBatchItem(index, 'image', file);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm">提示词</label>
-                      <textarea
-                        className="w-full mt-1 p-2 border rounded"
-                        rows={3}
-                        placeholder="描述你想要生成的变化..."
-                        value={item.prompt || ''}
-                        onChange={(e) => updateBatchItem(index, 'prompt', e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {/* 其他任务类型的输入... */}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* 提交按钮 */}
-        <div className="flex gap-4">
-          <Button onClick={handleSubmit} disabled={submitting} className="flex-1">
-            {submitting ? '提交中...' : '提交任务'}
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/api-tasks')}>
-            取消
-          </Button>
+            </button>
+          ))}
         </div>
       </div>
-    );
-  };
+    )}
+  </CardContent>
+</Card>
+```
 
-  return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>创建 API 任务</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* 基本信息 */}
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">任务名称</label>
-              <input
-                type="text"
-                className="w-full mt-1 p-2 border rounded"
-                placeholder="给你的任务起个名字..."
-                value={taskName}
-                onChange={(e) => setTaskName(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">任务描述（可选）</label>
-              <textarea
-                className="w-full mt-1 p-2 border rounded"
-                rows={2}
-                placeholder="描述一下你的任务..."
-                value={taskDescription}
-                onChange={(e) => setTaskDescription(e.target.value)}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+#### 修改表单提交逻辑
 
-      {/* 任务类型 Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          {Object.entries(TASK_TYPES).map(([key, config]) => (
-            <TabsTrigger key={key} value={key} className="flex items-center gap-2">
-              <span>{config.icon}</span>
-              <span>{config.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+```typescript
+// 在提交时添加平台参数
+const handleSubmit = async () => {
+  try {
+    await api.createApiMission({
+      name: taskName,
+      description: taskDescription,
+      task_type: taskType,
+      config: config,
+      // 新增平台参数
+      platform_strategy: platformStrategy,
+      platform_id: platformStrategy === 'specified' ? selectedPlatform : undefined
+    });
 
-        {Object.entries(TASK_TYPES).map(([key, config]) => (
-          <TabsContent key={key} value={key}>
-            <Card>
-              <CardHeader>
-                <CardTitle>{config.icon} {config.label}</CardTitle>
-                <p className="text-sm text-muted-foreground">{config.description}</p>
-              </CardHeader>
-              <CardContent>
-                {renderTaskForm(key)}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
-    </div>
-  );
-}
+    navigate('/api-tasks');
+  } catch (err) {
+    // 错误处理
+  }
+};
 ```
 
 ### 4.2 更新 API 客户端
@@ -1094,93 +844,129 @@ createApiMission: (data: {
 
 ## 五、实施步骤
 
-### Phase 1: 数据库和基础架构（1-2天）
+### Phase 1: 配置文件和基础架构（1天）✅ 已完成
 
-- [ ] **1.1 数据库迁移**
-  - [ ] 创建 `platforms` 表
-  - [ ] 创建 `platform_stats` 表
-  - [ ] 修改 `api_missions` 表添加平台字段
-  - [ ] 修改 `api_mission_items` 表添加平台字段
-  - [ ] 初始化平台数据（RunningHub + 占位符）
-  - [ ] 创建索引
+- [x] **1.1 平台配置文件**
+  - [x] 创建 `core/platforms.py`
+  - [x] 定义平台配置列表（RunningHub + 其他平台占位符）
+  - [x] 实现平台查询函数
+  - [x] 更新 `core/__init__.py` 导出平台配置
 
-- [ ] **1.2 平台适配器框架**
-  - [ ] 创建 `BasePlatformAdapter` 抽象类
-  - [ ] 实现 `RunningHubAdapter`
-  - [ ] 编写单元测试
+- [x] **1.2 数据库迁移（最小化）**
+  - [x] 修改 `api_missions` 表添加 `platform_strategy` 和 `platform_id` 字段
+  - [x] 修改 `api_mission_items` 表添加 `platform_id`、`platform_task_id` 和 `platform_attempt` 字段
+  - [x] 创建索引
+  - [x] 创建迁移脚本 `migrations/add_platform_fields.sql`
 
-- [ ] **1.3 平台管理器**
-  - [ ] 实现 `PlatformManager` 类
-  - [ ] 实现平台加载逻辑
-  - [ ] 实现平台选择策略
-  - [ ] 实现统计更新
+- [x] **1.3 平台适配器框架**
+  - [x] 创建 `integrations/platform_adapters/base.py`
+  - [x] 创建 `integrations/platform_adapters/runninghub.py`
+  - [x] 实现 `RunningHubAdapter` 类
+  - [ ] 编写单元测试（可选）
 
-### Phase 2: 后端 API（2-3天）
+- [x] **1.4 平台管理器**
+  - [x] 创建 `services/platform_manager.py`
+  - [x] 实现 `PlatformManager` 类
+  - [x] 实现平台加载逻辑
+  - [x] 实现平台选择策略（specified/failover/priority）
+  - [x] 实现故障转移机制（任务失败时自动切换平台重试）
+  - [x] 创建测试脚本 `tests/test_multi_platform.py`
 
-- [ ] **2.1 平台管理接口**
-  - [ ] `GET /api/v1/platforms` - 获取平台列表
-  - [ ] `GET /api/v1/platforms/{id}/stats` - 获取平台统计
-  - [ ] `POST /api/v1/platforms` - 添加平台（管理员）
-  - [ ] `PUT /api/v1/platforms/{id}` - 更新平台配置（管理员）
+### Phase 2: 后端 API（1-2天）✅ 已完成
 
-- [ ] **2.2 更新任务接口**
-  - [ ] 修改 `POST /api/v1/api_missions/submit` 支持平台参数
-  - [ ] 修改 `GET /api/v1/api_missions/{id}` 返回平台信息
-  - [ ] 修改 `GET /api/v1/api_mission_items` 返回平台信息
+- [x] **2.1 平台管理接口**
+  - [x] 创建 `api/v1/platforms.py`
+  - [x] 实现 `GET /api/v1/platforms` - 获取平台列表
+  - [x] 支持按任务类型过滤
+  - [x] 实现 `GET /api/v1/platforms/task-types` - 获取任务类型列表
+  - [x] 更新路由配置
 
-- [ ] **2.3 集成平台路由**
-  - [ ] 修改 `ApiTaskManager` 使用 `PlatformManager`
-  - [ ] 实现平台选择和任务提交
-  - [ ] 实现平台统计收集
+- [x] **2.2 更新任务接口**
+  - [x] 修改 `POST /api/v1/api_missions/submit` 支持平台参数
+  - [x] 更新 `services/api_task_service.py` 使用 PlatformManager
+  - [x] 修改 `GET /api/v1/api_missions/{id}` 返回平台信息（已有字段）
+  - [x] 修改 `GET /api/v1/api_mission_items` 返回平台信息（已有字段）
 
-### Phase 3: 前端多 Tab 页面（2-3天）
+- [x] **2.3 集成平台路由**
+  - [x] 修改 `ApiTaskManager.create_api_mission()` 接受平台参数
+  - [x] 实现平台选择和任务提交
+  - [x] 记录平台使用情况到数据库
+  - [x] 集成平台管理器到任务服务
+  - [x] 拆分 `_submit_and_start_polling` 方法，提高代码可维护性
 
-- [ ] **3.1 创建页面组件**
-  - [ ] 创建 `api-create-multi.tsx`
-  - [ ] 实现 4 个任务类型 Tab
-  - [ ] 实现平台选择 UI
-  - [ ] 实现批量输入表单
+### 2.4 数据持久化和恢复 ✅ 已完成
 
-- [ ] **3.2 平台展示组件**
-  - [ ] 平台卡片组件
-  - [ ] 平台策略选择器
-  - [ ] 平台统计展示
+- [x] **数据库字段设计**
+  - [x] `api_missions.platform_strategy`: 平台选择策略
+  - [x] `api_missions.platform_id`: 用户指定的平台ID
+  - [x] `api_mission_items.platform_id`: 实际使用的平台
+  - [x] `api_mission_items.platform_task_id`: 平台返回的任务ID（不同平台格式不同）
+  - [x] `api_mission_items.platform_attempt`: 已尝试的平台列表JSON
 
-- [ ] **3.3 任务类型表单**
-  - [ ] 文生图表单
-  - [ ] 图生图表单
-  - [ ] 文生视频表单
-  - [ ] 图生视频表单
+- [x] **PollingTask 数据结构**
+  - [x] 添加 `platform_id` 字段
+  - [x] 添加 `platform_task_id` 字段
+  - [x] 添加 `platform_attempt` 字段
 
-### Phase 4: 列表和详情更新（1-2天）
+- [x] **任务提交流程**
+  - [x] 使用 `platform_manager.submit_task_with_platform()` 提交
+  - [x] 保存平台ID和任务ID到数据库
+  - [x] 记录已尝试的平台列表
 
-- [ ] **4.1 更新列表页面**
-  - [ ] 添加平台列
-  - [ ] 添加平台徽章
-  - [ ] 添加平台筛选
+- [x] **轮询查询流程**
+  - [x] 创建 `_query_task_status()` 方法
+  - [x] 使用平台适配器查询任务状态
+  - [x] 使用 `platform_task_id` 进行查询
 
-- [ ] **4.2 更新详情页面**
-  - [ ] 显示使用的平台
-  - [ ] 显示平台统计
-  - [ ] 添加平台对比功能
+- [x] **系统恢复流程**
+  - [x] 从数据库恢复 `platform_id`
+  - [x] 从数据库恢复 `platform_task_id`
+  - [x] 从数据库恢复 `platform_attempt`
+  - [x] 重新创建轮询任务并启动
 
-### Phase 5: 测试和优化（1-2天）
+### Phase 3: 前端更新（1天）
 
-- [ ] **5.1 功能测试**
+- [ ] **3.1 更新 API 任务创建页面**
+  - [x] 不创建新页面，直接修改 `frontend/app/routes/api-create.tsx`
+  - [ ] 添加平台选择状态管理
+  - [ ] 添加平台列表加载功能
+  - [ ] 在表单中添加平台设置区域
+  - [ ] 修改表单提交逻辑，添加平台参数
+
+- [ ] **3.2 平台选择 UI**
+  - [ ] 实现平台策略选择器（指定/故障转移/优先级）
+  - [ ] 实现平台列表展示（指定模式时）
+  - [ ] 添加平台选择交互
+
+- [ ] **3.3 更新任务列表和详情**
+  - [ ] 在任务列表中显示使用平台
+  - [ ] 在任务详情中显示平台信息
+  - [ ] 添加平台徽章显示
+
+- [ ] **3.4 更新 API 客户端**
+  - [ ] 添加 `getPlatforms()` 方法
+  - [ ] 添加 `getTaskTypes()` 方法
+  - [ ] 更新 `createApiMission()` 支持平台参数
+  - [ ] 更新类型定义
+
+### Phase 4: 测试和文档（1天）
+
+- [ ] **4.1 功能测试**
   - [ ] 测试指定平台模式
-  - [ ] 测试轮询模式
+  - [ ] 测试故障转移模式
   - [ ] 测试优先级模式
-  - [ ] 测试平台失败回退
+  - [ ] 测试各任务类型
+  - [ ] 测试系统恢复功能
 
-- [ ] **5.2 性能优化**
-  - [ ] 平台适配器缓存
-  - [ ] 统计数据聚合
-  - [ ] 前端性能优化
+- [ ] **4.2 配置说明**
+  - [ ] 更新 `.env.example` 添加其他平台 API Key 占位符
+  - [ ] 更新 README 说明如何启用新平台
+  - [ ] 编写平台配置指南
 
-- [ ] **5.3 文档和部署**
-  - [ ] 更新 API 文档
-  - [ ] 编写用户指南
-  - [ ] 准备部署配置
+- [ ] **4.3 数据库迁移**
+  - [ ] 执行迁移脚本
+  - [ ] 验证表结构
+  - [ ] 测试数据恢复
 
 ---
 
@@ -1188,22 +974,21 @@ createApiMission: (data: {
 
 ### 6.1 用户体验
 
-- ✅ **更清晰的分类**: 4 个 Tab 分别对应不同的 AI 生成类型
-- ✅ **更灵活的选择**: 可以指定平台或让系统自动选择
-- ✅ **更透明的信息**: 显示使用的平台、成本、成功率等
+- ✅ **灵活的平台选择**: 可以指定平台、故障转移或优先级模式
+- ✅ **透明的信息**: 显示使用的平台和策略
+- ✅ **无缝集成**: 在现有页面中添加平台功能，不需要学习新界面
 
 ### 6.2 系统优势
 
-- ✅ **可扩展性**: 轻松添加新平台
+- ✅ **可扩展性**: 轻松添加新平台（修改配置文件）
 - ✅ **可维护性**: 统一的适配器接口
-- ✅ **可靠性**: 平台失败自动切换
-- ✅ **可观测性**: 完整的平台统计
+- ✅ **配置简单**: 平台配置集中在配置文件中
+- ✅ **版本控制**: 配置变更可以被 git 追踪
 
 ### 6.3 成本优化
 
 - ✅ **负载均衡**: 轮询模式分散负载
-- ✅ **成本控制**: 可以选择低成本平台
-- ✅ **性能优化**: 根据统计选择最优平台
+- ✅ **灵活配置**: 可以根据成本选择平台
 
 ---
 
@@ -1262,8 +1047,13 @@ def select_platform_smart(self, task_type: str, params: Dict) -> str:
 
 ---
 
-**文档版本**: 1.0
+**文档版本**: 2.3
 **创建日期**: 2026-02-02
-**预计总工作量**: 8-12 天
+**最后更新**: 2026-02-02
+- ✅ Phase 1 已完成
+- ✅ Phase 2 已完成
+- ⏸️ Phase 3 待开始（修改现有页面，不新建）
+- ⏸️ Phase 4 待开始
+**预计总工作量**: 3-4 天
 **优先级**: 高
-**状态**: 待审批
+**状态**: 后端完成，前端待开发（修改现有页面）

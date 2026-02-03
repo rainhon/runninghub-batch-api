@@ -140,6 +140,19 @@ export const api = {
     );
   },
 
+  // ============== 平台管理 API ==============
+
+  // 获取平台列表
+  getPlatforms: (taskType?: string) => {
+    const params = taskType ? `?task_type=${taskType}` : '';
+    return request.get<any[]>(`/api/v1/platforms${params}`);
+  },
+
+  // 获取任务类型列表
+  getTaskTypes: () => {
+    return request.get<any[]>('/api/v1/platforms/task-types');
+  },
+
   // ============== API 模板管理 API ==============
 
   // 保存 API 模板

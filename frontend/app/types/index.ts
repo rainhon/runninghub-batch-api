@@ -193,6 +193,30 @@ export interface CreateApiMissionRequest {
   description?: string;
   task_type: ApiTaskType;
   config: ApiMissionConfig;
+  platform_strategy?: string;  // specified, failover, priority
+  platform_id?: string;
+}
+
+// 平台信息
+export interface Platform {
+  platform_id: string;
+  name: string;
+  display_name: string;
+  enabled: boolean;
+  priority: number;
+  supported_task_types: string[];
+  rate_limit: number;
+  timeout: number;
+  cost_per_task?: number;
+}
+
+// 任务类型信息
+export interface TaskTypeInfo {
+  type: string;
+  label: string;
+  description: string;
+  icon: string;
+  color: string;
 }
 
 // API 任务列表响应

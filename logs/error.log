@@ -2739,3 +2739,34 @@
 2026-01-26 11:09:56 [ERROR] [api.v1.templates:get_templates:115] [MainThread] 获取模板列表失败: 数据库操作失败：no such table: task_templates
 2026-01-26 11:09:59 [ERROR] [api.v1.templates:get_templates:115] [MainThread] 获取模板列表失败: 数据库操作失败：no such table: task_templates
 2026-01-26 18:00:58 [ERROR] [api.v1.app_missions_v2:upload_app_task_file:438] [MainThread] 上传文件失败: 数据库操作失败：table media_files has no column named file_name
+2026-02-03 14:31:47 [ERROR] [api.v1.api_missions:create_api_mission:109] [MainThread] 创建任务失败: create_mission() got an unexpected keyword argument 'platform_strategy'
+2026-02-03 14:31:52 [ERROR] [api.v1.api_missions:create_api_mission:109] [MainThread] 创建任务失败: create_mission() got an unexpected keyword argument 'platform_strategy'
+2026-02-03 14:33:26 [ERROR] [api.v1.api_missions:create_api_mission:109] [MainThread] 创建任务失败: 数据库插入失败：table api_missions has no column named platform_strategy
+2026-02-03 14:36:48 [ERROR] [api.v1.api_missions:create_api_mission:109] [MainThread] 创建任务失败: 数据库插入失败：table api_missions has no column named platform_strategy
+2026-02-03 14:39:15 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-03 14:39:15 [ERROR] [api_task_service:_handle_task_submission_failure:504] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-03 14:41:26 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-03 14:41:26 [ERROR] [api_task_service:_handle_task_submission_failure:508] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-03 14:43:14 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-03 14:43:14 [ERROR] [api_task_service:_handle_task_submission_failure:508] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-03 16:13:02 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-03 16:13:02 [ERROR] [api_task_service:_handle_task_submission_failure:494] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-04 14:18:58 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-04 14:18:58 [ERROR] [api_task_service:_handle_task_submission_failure:502] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-04 14:19:01 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-04 14:19:01 [ERROR] [api_task_service:_handle_task_submission_failure:502] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-04 14:19:01 [ERROR] [api_task_service:_handle_task_submission_failure:556] [API-Task-Consumer] ❌ 子任务 #1 提交失败，已达最大重试次数: 未知错误
+2026-02-04 15:21:43 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:43 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:44 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:44 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:45 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:45 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:46 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:46 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:47 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:47 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:48 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:48 [ERROR] [api_task_service:_polling_worker:714] [Polling-Item-21] ❌ 子任务 #3 失败，已达最大重试次数: 查询失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:48 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:48 [ERROR] [api_task_service:_polling_worker:714] [Polling-Item-19] ❌ 子任务 #1 失败，已达最大重试次数: 查询失败: 'PlatformManager' object has no attribute 'get_platform_adapter'

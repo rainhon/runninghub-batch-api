@@ -15,6 +15,7 @@ from services import api_task_manager, app_task_manager_v2
 from utils import setup_logging, get_logger
 from api import api_router
 from core import USE_MOCK_SERVICE, get_api_key
+from core.json_encoder import ChinaTZJSONResponse
 
 
 # ============== 生命周期管理 ==============
@@ -48,7 +49,11 @@ async def lifespan(app: FastAPI):
     logger.info("应用已关闭")
 
 
-app = FastAPI(title="runninghub任务管理", lifespan=lifespan)
+app = FastAPI(
+    title="runninghub任务管理",
+    lifespan=lifespan,
+    default_response_class=ChinaTZJSONResponse  # 使用自定义响应类处理时区
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

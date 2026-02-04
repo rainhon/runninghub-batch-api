@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS api_mission_items (
     status VARCHAR(20) DEFAULT 'pending',          -- 状态: pending/processing/completed/failed
     result_url TEXT,                                -- 结果文件URL
     error_message TEXT,                             -- 错误信息
-    runninghub_task_id TEXT,                        -- RunningHub返回的任务ID
+    platform_id VARCHAR(50) DEFAULT 'runninghub',   -- 使用的平台ID
+    platform_task_id TEXT,                          -- 平台任务ID（不同平台格式不同）
     retry_count INTEGER DEFAULT 0,                  -- 重试次数
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

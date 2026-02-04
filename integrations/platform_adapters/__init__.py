@@ -4,8 +4,10 @@
 """
 from .base import BasePlatformAdapter
 from .runninghub import RunningHubAdapter
+from .mock import MockAdapter
 
 __all__ = [
     'BasePlatformAdapter',
-    'RunningHubAdapter'
+    'RunningHubAdapter',
+    'MockAdapter'
 ]

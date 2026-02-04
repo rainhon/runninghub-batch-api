@@ -24,17 +24,14 @@ class PollingTask:
     """轮询任务：管理单个子任务的轮询"""
 
     def __init__(self, item_id: int, item_index: int, mission_id: int,
-                 task_type: str, runninghub_task_id: str,
-                 platform_id: str = None, platform_task_id: str = None,
-                 platform_attempt: List[str] = None):
+                 task_type: str, platform_task_id: str,
+                 platform_id: str = None):
         self.item_id = item_id
         self.item_index = item_index
         self.mission_id = mission_id
         self.task_type = task_type
-        self.runninghub_task_id = runninghub_task_id
-        self.platform_id = platform_id or 'runninghub'  # 使用的平台
         self.platform_task_id = platform_task_id  # 平台任务ID（不同平台格式不同）
-        self.platform_attempt = platform_attempt or []  # 已尝试的平台列表
+        self.platform_id = platform_id or 'runninghub'  # 使用的平台
         self.should_stop = False
 
 
@@ -86,18 +83,15 @@ class ApiTaskManager:
         logger.info("⏹️ API任务管理器已停止")
 
     def create_api_mission(self, name: str, description: str, task_type: str,
-                           config: Dict, platform_strategy: str = "specified",
-                           platform_id: str = None) -> int:
+                           config: Dict) -> int:
         """
-        创建API任务（支持多平台）
+        创建API任务
 
         Args:
             name: 任务名称
             description: 任务描述
             task_type: 任务类型
             config: 任务配置（包含 batch_input）
-            platform_strategy: 平台选择策略 (specified/failover/priority)
-            platform_id: 指定的平台 ID
 
         Returns:
             任务 ID
@@ -122,16 +116,15 @@ class ApiTaskManager:
         # 从 config 中移除 batch_input，其余保存为固定配置
         fixed_config = {k: v for k, v in config.items() if k != "batch_input"}
 
-        # 创建数据库记录（包含平台信息）
+        # 创建数据库记录（不指定平台策略，由消费者决定）
         mission_id = database.execute_insert_returning_id(
             """INSERT INTO api_missions
-               (name, description, task_type, status, total_count, config_json, platform_strategy, platform_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (name, description, task_type, "queued", total_count, json.dumps(fixed_config),
-             platform_strategy, platform_id)
+               (name, description, task_type, status, total_count, config_json)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (name, description, task_type, "queued", total_count, json.dumps(fixed_config))
         )
 
-        logger.info(f"📋 API任务 #{mission_id} 已创建，共 {total_count} 个子任务，平台策略: {platform_strategy}")
+        logger.info(f"📋 API任务 #{mission_id} 已创建，共 {total_count} 个子任务")
 
         # 创建子任务
         for idx, input_data in enumerate(batch_input, 1):
@@ -177,7 +170,7 @@ class ApiTaskManager:
                 logger.warning(f"⚠️ 任务 #{mission_id} 没有待处理的子任务")
                 return
 
-            # 将所有子任务加入队列
+            # 将所有子任务加入队列（不预设平台策略）
             with self.queue_lock:
                 for item in items:
                     item_data = {
@@ -228,12 +221,12 @@ class ApiTaskManager:
 
             logger.info(f"📥 恢复 {restored_count} 个待处理的子任务到队列")
 
-            # 2. 恢复 processing 状态且有 runninghub_task_id 的子任务的轮询
+            # 2. 恢复 processing 状态且有 platform_task_id 的子任务的轮询
             processing_items = database.execute_sql(
                 """SELECT i.*, m.task_type, m.config_json
                    FROM api_mission_items i
                    JOIN api_missions m ON i.api_mission_id = m.id
-                   WHERE i.status = 'processing' AND i.runninghub_task_id IS NOT NULL
+                   WHERE i.status = 'processing' AND i.platform_task_id IS NOT NULL
                    ORDER BY i.api_mission_id, i.item_index""",
                 fetch_all=True
             )
@@ -244,8 +237,6 @@ class ApiTaskManager:
                     # 获取平台信息
                     platform_id = item.get('platform_id', 'runninghub')
                     platform_task_id = item.get('platform_task_id')
-                    platform_attempt_json = item.get('platform_attempt', '[]')
-                    platform_attempt = json.loads(platform_attempt_json) if platform_attempt_json else []
 
                     # 创建轮询任务
                     polling_task = PollingTask(
@@ -253,10 +244,8 @@ class ApiTaskManager:
                         item_index=item['item_index'],
                         mission_id=item['api_mission_id'],
                         task_type=item['task_type'],
-                        runninghub_task_id=item['runninghub_task_id'],
-                        platform_id=platform_id,
-                        platform_task_id=platform_task_id,
-                        platform_attempt=platform_attempt
+                        platform_task_id=item['platform_task_id'],
+                        platform_id=platform_id
                     )
 
                     # 添加到运行中任务
@@ -277,7 +266,7 @@ class ApiTaskManager:
 
                     restored_polling_count += 1
                     logger.info(f"🔄 恢复轮询：子任务 #{item['item_index']} "
-                              f"(task_id: {item['runninghub_task_id']}, platform: {platform_id})")
+                              f"(task_id: {item['platform_task_id']}, platform: {platform_id})")
 
                 except Exception as e:
                     logger.error(f"❌ 恢复子任务 #{item['item_index']} 轮询失败: {str(e)}")
@@ -341,18 +330,26 @@ class ApiTaskManager:
         while self.is_running:
             try:
                 # 从队列中取出子任务并提交（控制并发）
+                items_to_process = []
+
+                # 在锁内取出要处理的任务
                 with self.queue_lock:
                     # 检查是否还有子任务且未达到并发上限
                     while self.item_queue and self.current_concurrent < self.max_concurrent:
                         # 取出一个子任务
                         item_data = self.item_queue.popleft()
+                        items_to_process.append(item_data)
+                        self.current_concurrent += 1
 
-                        # 提交任务
-                        try:
-                            self._submit_and_start_polling(item_data)
-                            self.current_concurrent += 1
-                        except Exception as e:
-                            logger.error(f"❌ 提交子任务失败: {str(e)}")
+                # 在锁外提交任务（避免阻塞队列操作）
+                for item_data in items_to_process:
+                    try:
+                        self._submit_and_start_polling(item_data)
+                    except Exception as e:
+                        logger.error(f"❌ 提交子任务失败: {str(e)}")
+                        # 提交失败，需要减少并发计数
+                        with self.lock:
+                            self.current_concurrent -= 1
 
                 time.sleep(0.5)  # 避免 CPU 占用过高
 
@@ -409,37 +406,22 @@ class ApiTaskManager:
             monitor_thread.start()
 
     def _submit_task_to_platform(self, item_data: Dict) -> Dict[str, Any]:
-        """提交任务到平台（支持多平台故障转移）"""
-        mission_id = item_data['mission_id']
+        """提交任务到平台"""
         item = item_data['item']
         task_type = item_data['task_type']
         config = item_data['config']
 
-        # 获取任务的平台策略和平台ID
-        mission = database.execute_sql(
-            "SELECT platform_strategy, platform_id FROM api_missions WHERE id = ?",
-            (mission_id,),
-            fetch_one=True
-        )
-
-        platform_strategy = mission.get('platform_strategy', 'specified') if mission else 'specified'
-        platform_id = mission.get('platform_id') if mission else None
-
-        # 获取已尝试的平台列表
-        attempted_platforms_json = item.get('platform_attempt', '[]')
-        attempted_platforms = json.loads(attempted_platforms_json) if attempted_platforms_json else []
+        # 获取输入参数（prompt、imageUrl 等）并与固定配置合并
+        input_params = json.loads(item.get('input_params', '{}'))
+        params = {**input_params, **config}  # input_params 优先，config 作为补充
 
         # 使用平台管理器提交任务
         from services.platform_manager import platform_manager
 
-        result = platform_manager.submit_task_with_platform(
+        result = platform_manager.submit_task(
             task_type=task_type,
-            params=config,
-            mission_id=mission_id,
-            item_id=item['id'],
-            platform_id=platform_id,
-            strategy=platform_strategy,
-            attempted_platforms=attempted_platforms
+            params=params,
+            item_id=item['id']
         )
 
         return result
@@ -447,30 +429,42 @@ class ApiTaskManager:
     def _handle_task_submission_success(self, mission_id: int, item: Dict,
                                        item_data: Dict, result: Dict):
         """处理任务提交成功"""
-        runninghub_task_id = result['task_id']
+        platform_task_id = result['task_id']
         used_platform = result.get('platform_id', 'runninghub')
 
-        # 更新数据库状态（platform_id 和 platform_attempt 已在 platform_manager 中更新）
+        # 更新数据库状态（platform_id、platform_task_id 已在 platform_manager 中更新）
         database.execute_sql(
             """UPDATE api_mission_items
-               SET status = 'processing', runninghub_task_id = ?
+               SET status = 'processing'
                WHERE id = ?""",
-            (runninghub_task_id, item['id'])
+            (item['id'],)
         )
 
-        logger.info(f"✅ 子任务 #{item['item_index']} 已提交到 {used_platform} (task_id: {runninghub_task_id})")
+        logger.info(f"✅ 子任务 #{item['item_index']} 已提交到 {used_platform} (task_id: {platform_task_id})")
 
-        # 创建并启动轮询任务
-        self._create_and_start_polling_task(mission_id, item, item_data, runninghub_task_id)
+        # 重新从数据库读取 item（获取更新后的 platform_id、platform_task_id 等）
+        updated_item = database.execute_sql(
+            "SELECT * FROM api_mission_items WHERE id = ?",
+            (item['id'],),
+            fetch_one=True
+        )
+
+        if updated_item:
+            # 使用更新后的 item 数据创建轮询任务
+            self._create_and_start_polling_task(mission_id, updated_item, item_data)
+        else:
+            logger.error(f"❌ 无法读取更新后的子任务 #{item['item_index']} 数据")
 
     def _create_and_start_polling_task(self, mission_id: int, item: Dict,
-                                      item_data: Dict, runninghub_task_id: str):
+                                      item_data: Dict):
         """创建并启动轮询任务"""
         # 从 item 中获取平台信息
         platform_id = item.get('platform_id', 'runninghub')
         platform_task_id = item.get('platform_task_id')
-        platform_attempt_json = item.get('platform_attempt', '[]')
-        platform_attempt = json.loads(platform_attempt_json) if platform_attempt_json else []
+
+        if not platform_task_id:
+            logger.error(f"❌ 子任务 #{item['item_index']} 缺少 platform_task_id，无法启动轮询")
+            return
 
         # 创建轮询任务
         polling_task = PollingTask(
@@ -478,10 +472,8 @@ class ApiTaskManager:
             item_index=item['item_index'],
             mission_id=mission_id,
             task_type=item_data['task_type'],
-            runninghub_task_id=runninghub_task_id,
-            platform_id=platform_id,
             platform_task_id=platform_task_id,
-            platform_attempt=platform_attempt
+            platform_id=platform_id
         )
 
         # 添加到运行中任务
@@ -505,7 +497,7 @@ class ApiTaskManager:
 
         # 检查是否需要重试
         current_item = database.execute_sql(
-            "SELECT retry_count FROM api_mission_items WHERE id = ?",
+            "SELECT * FROM api_mission_items WHERE id = ?",
             (item['id'],),
             fetch_one=True
         )
@@ -518,19 +510,35 @@ class ApiTaskManager:
                 new_retry_count = retry_count + 1
                 database.execute_sql(
                     """UPDATE api_mission_items
-                       SET status = 'pending', retry_count = ?, error_message = ?
+                       SET status = 'pending', retry_count = ?, platform_task_id = NULL, error_message = ?
                        WHERE id = ?""",
                     (new_retry_count,
                      f"提交失败: {error_msg} (重试 {new_retry_count}/{MAX_RETRY_COUNT})",
                      item['id'])
                 )
 
-                # 重新加入队列
-                with self.queue_lock:
-                    self.item_queue.append(item_data)
+                # 重新构建 item_data，使用最新的 item数据
+                # 重新获取 mission 的 config_json
+                mission = database.execute_sql(
+                    "SELECT task_type, config_json FROM api_missions WHERE id = ?",
+                    (current_item['api_mission_id'],),
+                    fetch_one=True
+                )
 
-                logger.warning(f"⚠️ 子任务 #{item['item_index']} 提交失败，重新加入队列 "
-                             f"(重试 {new_retry_count}/{MAX_RETRY_COUNT})")
+                if mission:
+                    new_item_data = {
+                        'mission_id': current_item['api_mission_id'],
+                        'item': current_item,  # 使用最新的 item 数据
+                        'task_type': mission['task_type'],
+                        'config': json.loads(mission['config_json'])
+                    }
+
+                    # 重新加入队列
+                    with self.queue_lock:
+                        self.item_queue.append(new_item_data)
+
+                    logger.warning(f"⚠️ 子任务 #{item['item_index']} 提交失败，重新加入队列 "
+                                 f"(重试 {new_retry_count}/{MAX_RETRY_COUNT})")
             else:
                 # 达到最大重试次数，标记为永久失败
                 database.execute_sql(
@@ -583,7 +591,7 @@ class ApiTaskManager:
         try:
             from services.platform_manager import platform_manager
 
-            adapter = platform_manager.get_platform_adapter(polling_task.platform_id)
+            adapter = platform_manager.get_adapter(polling_task.platform_id)
             if adapter:
                 # 使用平台任务ID进行查询
                 result = adapter.query_task(polling_task.platform_task_id)
@@ -615,10 +623,22 @@ class ApiTaskManager:
                     status = result.get("status")
 
                     if status == "SUCCESS":
-                        # 成功
-                        if result.get("results") and len(result["results"]) > 0:
-                            result_url = result["results"][0]["url"]
+                        # 成功 - 提取结果 URL
+                        result_url = None
 
+                        # 尝试从不同的字段中提取 URL
+                        if result.get("results") and len(result["results"]) > 0:
+                            # 格式1: results 数组（Mock 格式）
+                            result_url = result["results"][0].get("url")
+                        elif result.get("result"):
+                            # 格式2: result 对象（RunningHub 格式）
+                            result_obj = result["result"]
+                            result_url = result_obj.get("fileUrl") or result_obj.get("url")
+                        elif result.get("data"):
+                            # 格式3: data 对象（标准格式）
+                            result_url = result["data"].get("fileUrl") or result["data"].get("url")
+
+                        if result_url:
                             database.execute_sql(
                                 """UPDATE api_mission_items
                                    SET status = 'completed', result_url = ?
@@ -655,7 +675,7 @@ class ApiTaskManager:
                                 new_retry_count = retry_count + 1
                                 database.execute_sql(
                                     """UPDATE api_mission_items
-                                       SET status = 'pending', retry_count = ?, runninghub_task_id = NULL, error_message = ?
+                                       SET status = 'pending', retry_count = ?, platform_task_id = NULL, error_message = ?
                                        WHERE id = ?""",
                                     (new_retry_count, f"任务失败: {error_message} (重试 {new_retry_count}/{MAX_RETRY_COUNT})", polling_task.item_id)
                                 )
@@ -763,7 +783,12 @@ api_task_manager = ApiTaskManager()
 # 便捷函数：供 API 路由直接调用
 def create_mission(name: str, description: str, task_type: str, config: dict) -> int:
     """创建 API 任务"""
-    return api_task_manager.create_api_mission(name, description, task_type, config)
+    return api_task_manager.create_api_mission(
+        name=name,
+        description=description,
+        task_type=task_type,
+        config=config
+    )
 
 
 def add_to_queue(mission_id: int):

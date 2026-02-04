@@ -194,7 +194,6 @@ export default function ApiTasksPage() {
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  const { api } = require('../lib/api');
                   // 触发刷新
                   window.location.reload();
                 }}

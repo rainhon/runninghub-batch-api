@@ -1,6 +1,6 @@
 """
 RunningHub 平台适配器
-将现有的 RunningHub API 封装为统一的平台适配器接口
+将 RunningHub API 封装为统一的平台适配器接口
 """
 from typing import Dict, Any, List
 from .base import BasePlatformAdapter
@@ -67,7 +67,7 @@ class RunningHubAdapter(BasePlatformAdapter):
         Returns:
             提交结果
         """
-        from integrations.api_client_wrapper import submit_api_task
+        from integrations.runninghub_client import submit_task
         from core import API_TASK_TYPES
 
         if task_type not in self.get_supported_task_types():
@@ -89,11 +89,8 @@ class RunningHubAdapter(BasePlatformAdapter):
 
         api_url = API_TASK_TYPES[task_type]["url"]
 
-        logger.info(f"📤 提交任务到 RunningHub: {task_type}")
-        logger.debug(f"   参数: {params}")
-
-        # 调用现有的 RunningHub API 包装器
-        response = submit_api_task(task_type, params, api_url)
+        # 调用 RunningHub API 客户端
+        response = submit_task(task_type, params, api_url)
 
         if response.get("code") == 200:
             return {
@@ -119,24 +116,23 @@ class RunningHubAdapter(BasePlatformAdapter):
             task_id: 任务 ID
 
         Returns:
-            查询结果
+            查询结果（直接返回原始响应的 status 和 results）
         """
-        from integrations.api_client_wrapper import query_api_task
+        from integrations.runninghub_client import query_task
 
-        logger.debug(f"🔍 查询 RunningHub 任务: {task_id}")
-
-        response = query_api_task(task_id)
+        response = query_task(task_id)
 
         if response.get("code") == 200:
             return {
                 "success": True,
                 "status": response.get("status"),
-                "result": response.get("data"),
+                "results": response.get("results", []),  # 直接传递 results 数组
                 "raw_response": response
             }
         else:
             return {
                 "success": False,
+                "status": "FAILED",
                 "error": response.get("message", "查询失败"),
                 "raw_response": response
             }

@@ -66,7 +66,17 @@ function cleanAndCopyPlugin() {
 }
 
 export default defineConfig({
-  plugins: [tailwindcss(), reactRouter(), tsconfigPaths(), cleanAndCopyPlugin()],
+  plugins: [
+    tailwindcss(),
+    reactRouter(),
+    tsconfigPaths(),
+    cleanAndCopyPlugin()
+  ],
   // 开发环境使用 /，生产环境使用 /static/
   base: process.env.NODE_ENV === 'production' ? '/static/' : '/',
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './app'),
+    },
+  },
 });

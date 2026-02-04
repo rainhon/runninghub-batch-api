@@ -13,13 +13,15 @@ import type { ApiTaskType, ApiMissionConfig } from '../types';
 
 // 使用自定义 hooks
 import { useApiTaskFormState } from '../hooks/useApiTaskFormState';
-import { useApiPlatformSettings } from '../hooks/useApiPlatformSettings';
 
 // 使用新组件
 import { ApiTaskTypeTabs } from '../components/tasks';
-import { ApiTaskNameInput, ApiTaskDescription, ApiPlatformSettings } from '../components/forms';
+import { ApiTaskNameInput, ApiTaskDescription, ApiRepeatCountInput } from '../components/forms';
 import { ApiPromptsInput, ApiImageUpload, ApiBatchPreview } from '../components/tasks';
+import { BatchModeSelector } from '../components/tasks/BatchModeSelector';
+import { PreciseTaskList } from '../components/tasks/PreciseTaskList';
 import type { ImageBatch } from '../components/tasks';
+import type { PreciseTaskConfig } from '../components/tasks/TaskCard';
 
 // 使用常量
 import { TASK_TYPE_CONFIG } from '../constants/taskTypes';
@@ -43,14 +45,14 @@ export default function ApiCreatePage() {
   const [imageBatches, setImageBatches] = useState<ImageBatch[]>(initialImageBatches);
   const [prompts, setPrompts] = useState<string[]>(['']);
 
+  // 批量模式状态（默认精确模式）
+  const [batchMode, setBatchMode] = useState<'precise' | 'combinatorial'>('precise');
+
+  // 精确模式任务列表状态
+  const [preciseTasks, setPreciseTasks] = useState<PreciseTaskConfig[]>([]);
+
   // 使用表单状态 hook
   const formState = useApiTaskFormState();
-
-  // 使用平台设置 hook
-  const platform = useApiPlatformSettings({
-    taskType,
-    defaultStrategy: 'failover',
-  });
 
   // 当前任务类型配置
   const currentTaskConfig = taskType ? TASK_TYPE_CONFIG[taskType] : null;
@@ -64,52 +66,53 @@ export default function ApiCreatePage() {
       return;
     }
 
-    const validPrompts = prompts.filter(p => p.trim().length > 0);
-    if (validPrompts.length === 0) {
-      formState.setError('请至少输入一个提示词');
-      return;
-    }
+    // 组合模式才需要验证 prompts 和 imageBatches
+    if (batchMode === 'combinatorial') {
+      const validPrompts = prompts.filter(p => p.trim().length > 0);
+      if (validPrompts.length === 0) {
+        formState.setError('请至少输入一个提示词');
+        return;
+      }
 
-    const needsImage = taskTypeRequiresImage(taskType);
-    const hasImages = imageBatches.some(batch => batch.images.length > 0);
-    if (needsImage && !hasImages) {
-      formState.setError('请上传参考图片');
-      return;
+      const needsImage = taskTypeRequiresImage(taskType);
+      const hasImages = imageBatches.some(batch => batch.images.length > 0);
+      if (needsImage && !hasImages) {
+        formState.setError('请上传参考图片');
+        return;
+      }
     }
 
     formState.setSubmitting(true);
     formState.clearMessages();
 
     try {
-      // 构造 batch_input（笛卡尔积）
-      const batch_input: any[] = [];
-      const validPrompts = prompts.filter(p => p.trim().length > 0);
+      let batch_input: any[] = [];
 
-      // 重复次数
-      const repeatCount = formState.repeatCount;
+      if (batchMode === 'combinatorial') {
+        // 组合模式：构造笛卡尔积，再重复
+        const validPrompts = prompts.filter(p => p.trim().length > 0);
 
-      // 收集所有批次的所有图片
-      const allBatchImages = imageBatches.flatMap(batch => batch.images);
+        // 收集所有批次的所有图片
+        const allBatchImages = imageBatches.flatMap(batch => batch.images);
 
-      // 根据任务类型构造批量输入
-      if (taskType === 'image_to_image') {
-        // 图生图：所有批次的图片作为一组，配合每个提示词，重复指定次数
-        for (let repeat = 0; repeat < repeatCount; repeat++) {
+        // 第一步：根据任务类型构造笛卡尔积的基本任务
+        const baseTasks: any[] = [];
+
+        if (taskType === 'image_to_image') {
+          // 图生图：所有批次的图片作为一组，配合每个提示词
           for (const prompt of validPrompts) {
-            batch_input.push({
+            baseTasks.push({
               prompt: prompt.trim(),
-              imageUrls: allBatchImages.join(','), // 所有图片用逗号分隔
+              imageUrls: allBatchImages.join(','),
               aspectRatio: config.aspectRatio,
             });
           }
-        }
-      } else if (taskType === 'image_to_video') {
-        // 图生视频：每个批次的图片分别配合每个提示词，重复指定次数
-        for (let repeat = 0; repeat < repeatCount; repeat++) {
+        } else if (taskType === 'image_to_video') {
+          // 图生视频：每个批次的图片分别配合每个提示词
           for (const batch of imageBatches) {
             for (const imageUrl of batch.images) {
               for (const prompt of validPrompts) {
-                batch_input.push({
+                baseTasks.push({
                   prompt: prompt.trim(),
                   imageUrl: imageUrl,
                   aspectRatio: config.aspectRatio,
@@ -118,10 +121,8 @@ export default function ApiCreatePage() {
               }
             }
           }
-        }
-      } else {
-        // 文生图/文生视频：每个提示词独立生成，重复指定次数
-        for (let repeat = 0; repeat < repeatCount; repeat++) {
+        } else {
+          // 文生图/文生视频：每个提示词独立生成
           for (const prompt of validPrompts) {
             const item: any = {
               prompt: prompt.trim(),
@@ -130,9 +131,50 @@ export default function ApiCreatePage() {
             if (taskType === 'text_to_video') {
               item.duration = config.duration;
             }
-            batch_input.push(item);
+            baseTasks.push(item);
           }
         }
+
+        // 第二步：对笛卡尔积的结果进行重复
+        const repeatCount = formState.repeatCount;
+        for (let repeat = 0; repeat < repeatCount; repeat++) {
+          batch_input.push(...baseTasks);
+        }
+      } else {
+        // 精确模式：直接转换任务列表
+        if (preciseTasks.length === 0) {
+          formState.setError('请至少添加一个任务');
+          formState.setSubmitting(false);
+          return;
+        }
+
+        // 验证所有任务都有提示词
+        const invalidTasks = preciseTasks.filter(t => !t.prompt || t.prompt.trim().length === 0);
+        if (invalidTasks.length > 0) {
+          formState.setError('所有任务都必须填写提示词');
+          formState.setSubmitting(false);
+          return;
+        }
+
+        // 验证需要图片的任务类型
+        const needsImage = taskTypeRequiresImage(taskType);
+        if (needsImage) {
+          const tasksWithoutImage = preciseTasks.filter(t => !t.imageUrl && !t.imageUrls);
+          if (tasksWithoutImage.length > 0) {
+            formState.setError('所有任务都必须上传参考图片');
+            formState.setSubmitting(false);
+            return;
+          }
+        }
+
+        // 转换为后端格式
+        batch_input = preciseTasks.map(task => ({
+          prompt: task.prompt.trim(),
+          ...(task.imageUrl && { imageUrl: task.imageUrl }),
+          ...(task.imageUrls && { imageUrls: task.imageUrls }),
+          aspectRatio: task.config.aspectRatio,
+          ...(task.config.duration && { duration: task.config.duration })
+        }));
       }
 
       const submitConfig: ApiMissionConfig = {
@@ -145,8 +187,6 @@ export default function ApiCreatePage() {
         description: formState.taskDescription,
         task_type: taskType,
         config: submitConfig,
-        platform_strategy: platform.platformStrategy,
-        platform_id: platform.platformStrategy === 'specified' ? platform.selectedPlatform : undefined,
       });
 
       formState.setSuccessMessage('任务提交成功！正在跳转到任务列表...');
@@ -199,47 +239,63 @@ export default function ApiCreatePage() {
                 onChange={formState.setTaskDescription}
               />
 
-              {/* 平台设置 */}
-              <ApiPlatformSettings
-                taskType={taskType}
-                strategy={platform.platformStrategy}
-                onStrategyChange={platform.setPlatformStrategy}
-                selectedPlatform={platform.selectedPlatform}
-                onPlatformChange={platform.setSelectedPlatform}
-                platforms={platform.platforms}
-                loadingPlatforms={platform.loadingPlatforms}
+              {/* 重复次数 */}
+              <ApiRepeatCountInput
+                value={formState.repeatCount}
+                onChange={formState.setRepeatCount}
+                min={1}
+                max={100}
               />
 
-              {/* 配置表单 */}
-              {renderConfigForm()}
-
-              {/* 提示词输入 */}
-              <ApiPromptsInput
-                prompts={prompts}
-                onChange={setPrompts}
-                maxCount={50}
+              {/* 批量模式切换器 */}
+              <BatchModeSelector
+                value={batchMode}
+                onChange={setBatchMode}
               />
 
-              {/* 图片上传（如果需要） */}
-              {taskTypeRequiresImage(taskType) && (
-                <ApiImageUpload
-                  imageBatches={imageBatches}
-                  onBatchesChange={setImageBatches}
+              {/* 根据模式显示不同界面 */}
+              {batchMode === 'precise' ? (
+                /* 精确模式：任务列表 */
+                <PreciseTaskList
+                  tasks={preciseTasks}
+                  onChange={setPreciseTasks}
                   taskType={taskType}
-                  onUploadingChange={formState.setSubmitting}
-                  onError={formState.setError}
-                  onSuccess={formState.setSuccessMessage}
                 />
-              )}
+              ) : (
+                /* 组合模式：笛卡尔积方式 */
+                <>
+                  {/* 配置表单 */}
+                  {renderConfigForm()}
 
-              {/* 批量预览 */}
-              <ApiBatchPreview
-                taskType={taskType}
-                prompts={prompts}
-                imageBatches={imageBatches}
-                repeatCount={formState.repeatCount}
-                config={config}
-              />
+                  {/* 提示词输入 */}
+                  <ApiPromptsInput
+                    prompts={prompts}
+                    onChange={setPrompts}
+                    maxCount={50}
+                  />
+
+                  {/* 图片上传（如果需要） */}
+                  {taskTypeRequiresImage(taskType) && (
+                    <ApiImageUpload
+                      imageBatches={imageBatches}
+                      onBatchesChange={setImageBatches}
+                      taskType={taskType}
+                      onUploadingChange={formState.setSubmitting}
+                      onError={formState.setError}
+                      onSuccess={formState.setSuccessMessage}
+                    />
+                  )}
+
+                  {/* 批量预览 */}
+                  <ApiBatchPreview
+                    taskType={taskType}
+                    prompts={prompts}
+                    imageBatches={imageBatches}
+                    repeatCount={formState.repeatCount}
+                    config={config}
+                  />
+                </>
+              )}
 
               {/* 错误提示 */}
               {formState.error && (

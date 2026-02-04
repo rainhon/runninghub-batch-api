@@ -14132,3 +14132,951 @@
 2026-02-03 14:15:41 [INFO] [api.v1.api_missions:upload_image:293] [MainThread] ✅ 图片上传成功: 17fca9d8-bfc5-492a-9b10-ccfbc4c9f888.jpg (147101 bytes)
 2026-02-03 14:15:49 [INFO] [api.v1.api_missions:upload_image:293] [MainThread] ✅ 图片上传成功: 4f177b81-8034-4213-8388-e67d15c05c3d.jpg (299509 bytes)
 2026-02-03 14:16:00 [INFO] [api.v1.api_missions:upload_image:293] [MainThread] ✅ 图片上传成功: af1f71f3-145e-49b6-b2fe-adc3050ccc6f.jpg (147101 bytes)
+2026-02-03 14:31:13 [INFO] [api.v1.api_missions:upload_image:293] [MainThread] ✅ 图片上传成功: 905df8d6-3da4-4b8e-9bc3-de4279bc7a54.jpg (299509 bytes)
+2026-02-03 14:31:47 [ERROR] [api.v1.api_missions:create_api_mission:109] [MainThread] 创建任务失败: create_mission() got an unexpected keyword argument 'platform_strategy'
+2026-02-03 14:31:52 [ERROR] [api.v1.api_missions:create_api_mission:109] [MainThread] 创建任务失败: create_mission() got an unexpected keyword argument 'platform_strategy'
+2026-02-03 14:33:16 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-03 14:33:16 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-03 14:33:16 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-03 14:33:16 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-03 14:33:23 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-03 14:33:23 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-03 14:33:23
+2026-02-03 14:33:23 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-03 14:33:23 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-03 14:33:23 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-03 14:33:23 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-03 14:33:23 [INFO] [api_task_service:_restore_tasks:205] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-03 14:33:23 [INFO] [api_task_service:_restore_tasks:229] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-03 14:33:23 [INFO] [api_task_service:_restore_tasks:285] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-03 14:33:23 [INFO] [api_task_service:_restore_tasks:320] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 0 个
+2026-02-03 14:33:23 [INFO] [api_task_service:_consumer_loop:339] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-03 14:33:23 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-03 14:33:23 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-03 14:33:23 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-03 14:33:23 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-03 14:33:23 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-03 14:33:26 [ERROR] [api.v1.api_missions:create_api_mission:109] [MainThread] 创建任务失败: 数据库插入失败：table api_missions has no column named platform_strategy
+2026-02-03 14:34:55 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-03 14:34:55 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-03 14:34:55 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-03 14:34:55 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-03 14:36:30 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-03 14:36:30 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-03 14:36:30
+2026-02-03 14:36:30 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-03 14:36:30 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-03 14:36:30 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-03 14:36:30 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-03 14:36:30 [INFO] [api_task_service:_restore_tasks:205] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-03 14:36:30 [INFO] [api_task_service:_restore_tasks:229] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-03 14:36:30 [INFO] [api_task_service:_restore_tasks:285] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-03 14:36:30 [INFO] [api_task_service:_restore_tasks:320] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 0 个
+2026-02-03 14:36:30 [INFO] [api_task_service:_consumer_loop:339] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-03 14:36:30 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-03 14:36:30 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-03 14:36:30 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-03 14:36:30 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-03 14:36:30 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-03 14:36:44 [INFO] [api.v1.api_missions:upload_image:293] [MainThread] ✅ 图片上传成功: e0bc4674-8235-4f7d-8109-39c162ef727c.jpg (256393 bytes)
+2026-02-03 14:36:48 [ERROR] [api.v1.api_missions:create_api_mission:109] [MainThread] 创建任务失败: 数据库插入失败：table api_missions has no column named platform_strategy
+2026-02-03 14:36:57 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-03 14:36:57 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-03 14:36:57 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-03 14:36:57 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-03 14:39:07 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-03 14:39:07 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-03 14:39:07
+2026-02-03 14:39:07 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-03 14:39:07 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-03 14:39:07 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-03 14:39:07 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-03 14:39:07 [INFO] [api_task_service:_restore_tasks:205] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-03 14:39:07 [INFO] [api_task_service:_restore_tasks:229] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-03 14:39:07 [INFO] [api_task_service:_restore_tasks:285] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-03 14:39:07 [INFO] [api_task_service:_restore_tasks:320] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 0 个
+2026-02-03 14:39:07 [INFO] [api_task_service:_consumer_loop:339] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-03 14:39:07 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-03 14:39:07 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-03 14:39:07 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-03 14:39:07 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-03 14:39:07 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-03 14:39:14 [INFO] [api_task_service:create_api_mission:134] [MainThread] 📋 API任务 #1 已创建，共 2 个子任务，平台策略: failover
+2026-02-03 14:39:14 [INFO] [api_task_service:create_api_mission:145] [MainThread] 📋 API任务 #1 已创建 2 个子任务
+2026-02-03 14:39:14 [INFO] [api_task_service:add_to_queue:191] [MainThread] 📥 任务 #1 的 2 个子任务已加入队列
+2026-02-03 14:39:15 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-03 14:39:15 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-03 14:39:15 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-03 14:39:15 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-03 14:39:15 [WARNING] [services.platform_manager:submit_task_with_platform:208] [API-Task-Consumer] ⚠️ 任务提交失败: 缺少必需参数: imageUrl, prompt, platform=runninghub
+2026-02-03 14:39:15 [INFO] [services.platform_manager:submit_task_with_platform:212] [API-Task-Consumer] 🔄 启用故障转移，尝试下一个平台...
+2026-02-03 14:39:15 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-03 14:39:15 [ERROR] [api_task_service:_handle_task_submission_failure:504] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-03 14:41:24 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-03 14:41:24 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-03 14:41:24 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-03 14:41:24 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-03 14:41:26 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-03 14:41:26 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-03 14:41:26
+2026-02-03 14:41:26 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-03 14:41:26 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-03 14:41:26 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-03 14:41:26 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-03 14:41:26 [INFO] [api_task_service:_restore_tasks:205] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-03 14:41:26 [INFO] [api_task_service:_restore_tasks:229] [MainThread] 📥 恢复 2 个待处理的子任务到队列
+2026-02-03 14:41:26 [INFO] [api_task_service:_restore_tasks:285] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-03 14:41:26 [INFO] [api_task_service:_restore_tasks:320] [MainThread] ✅ 任务恢复完成：队列 2 个，轮询 0 个
+2026-02-03 14:41:26 [INFO] [api_task_service:_consumer_loop:339] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-03 14:41:26 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-03 14:41:26 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-03 14:41:26 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-03 14:41:26 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-03 14:41:26 [ERROR] [api_task_service:_handle_task_submission_failure:508] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-03 14:41:26 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-03 14:41:26 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-03 14:43:11 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-03 14:43:11 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-03 14:43:11 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-03 14:43:11 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-03 14:43:14 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-03 14:43:14 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-03 14:43:14
+2026-02-03 14:43:14 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-03 14:43:14 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-03 14:43:14 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-03 14:43:14 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-03 14:43:14 [INFO] [api_task_service:_restore_tasks:205] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-03 14:43:14 [INFO] [api_task_service:_restore_tasks:229] [MainThread] 📥 恢复 2 个待处理的子任务到队列
+2026-02-03 14:43:14 [INFO] [api_task_service:_restore_tasks:285] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-03 14:43:14 [INFO] [api_task_service:_restore_tasks:320] [MainThread] ✅ 任务恢复完成：队列 2 个，轮询 0 个
+2026-02-03 14:43:14 [INFO] [api_task_service:_consumer_loop:339] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-03 14:43:14 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-03 14:43:14 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-03 14:43:14 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-03 14:43:14 [ERROR] [api_task_service:_handle_task_submission_failure:508] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-03 14:43:14 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-03 14:43:14 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-03 14:43:14 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-03 16:12:57 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-03 16:12:57 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-03 16:12:57 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-03 16:12:57 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-03 16:13:02 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-03 16:13:02 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-03 16:13:02
+2026-02-03 16:13:02 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-03 16:13:02 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-03 16:13:02 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-03 16:13:02 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-03 16:13:02 [INFO] [api_task_service:_restore_tasks:201] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-03 16:13:02 [INFO] [api_task_service:_restore_tasks:225] [MainThread] 📥 恢复 2 个待处理的子任务到队列
+2026-02-03 16:13:02 [INFO] [api_task_service:_restore_tasks:281] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-03 16:13:02 [INFO] [api_task_service:_restore_tasks:316] [MainThread] ✅ 任务恢复完成：队列 2 个，轮询 0 个
+2026-02-03 16:13:02 [INFO] [api_task_service:_consumer_loop:335] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-03 16:13:02 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-03 16:13:02 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-03 16:13:02 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-03 16:13:02 [ERROR] [api_task_service:_handle_task_submission_failure:494] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-03 16:13:02 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-03 16:13:02 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-03 16:13:02 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-03 18:08:00 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 5facf57a-1718-484a-a9fa-d77da1421022.jpg (485933 bytes)
+2026-02-03 18:08:03 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: a854e96f-84c2-4b0e-abe2-525a407f6528.jpg (147101 bytes)
+2026-02-03 18:10:26 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: a6b8493c-1cdb-4785-9ef8-e43bf1910959.jpg (299509 bytes)
+2026-02-03 18:10:30 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: fbe952ef-a0de-48f5-87ea-2315d4988017.jpg (147101 bytes)
+2026-02-04 14:13:12 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 1f33302a-6098-4542-9505-1e62cb032ee3.jpg (147101 bytes)
+2026-02-04 14:13:18 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: c93213e8-f19d-4f3b-a84a-0fbe243a771e.jpg (299509 bytes)
+2026-02-04 14:13:33 [INFO] [api_task_service:create_api_mission:130] [MainThread] 📋 API任务 #2 已创建，共 12 个子任务
+2026-02-04 14:13:35 [INFO] [api_task_service:create_api_mission:141] [MainThread] 📋 API任务 #2 已创建 12 个子任务
+2026-02-04 14:18:58 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-04 14:18:58 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-04 14:18:58
+2026-02-04 14:18:58 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-04 14:18:58 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-04 14:18:58 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-04 14:18:58 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-04 14:18:58 [INFO] [api_task_service:_restore_tasks:201] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-04 14:18:58 [INFO] [api_task_service:_restore_tasks:225] [MainThread] 📥 恢复 14 个待处理的子任务到队列
+2026-02-04 14:18:58 [INFO] [api_task_service:_restore_tasks:281] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-04 14:18:58 [INFO] [api_task_service:_restore_tasks:316] [MainThread] ✅ 任务恢复完成：队列 14 个，轮询 0 个
+2026-02-04 14:18:58 [INFO] [api_task_service:_consumer_loop:335] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-04 14:18:58 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-04 14:18:58 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-04 14:18:58 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-04 14:18:58 [ERROR] [api_task_service:_handle_task_submission_failure:502] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-04 14:18:58 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-04 14:18:58 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-04 14:18:58 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-04 14:18:58 [WARNING] [api_task_service:_handle_task_submission_failure:546] [API-Task-Consumer] ⚠️ 子任务 #1 提交失败，重新加入队列 (重试 5/5)
+2026-02-04 14:18:58 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:18:58 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:18:58 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:18:58 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:18:58 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_51_1770185938 (类型: image_to_video)
+2026-02-04 14:18:58 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_51_1770185938, platform=runninghub
+2026-02-04 14:18:58 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_api_task_51_1770185938)
+2026-02-04 14:18:58 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-2] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 14:18:58 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:18:58 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:18:58 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:18:58 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:18:58 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:18:58 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_52_1770185938 (类型: image_to_video)
+2026-02-04 14:18:58 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_52_1770185938, platform=runninghub
+2026-02-04 14:18:58 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_52_1770185938)
+2026-02-04 14:18:58 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-3] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 14:18:58 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-3] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:18:58 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:18:58 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:18:58 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:18:58 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:18:58 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_53_1770185938 (类型: image_to_video)
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_53_1770185938, platform=runninghub
+2026-02-04 14:18:59 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_api_task_53_1770185938)
+2026-02-04 14:18:59 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-4] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-4] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:18:59 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:18:59 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_54_1770185939 (类型: image_to_video)
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_54_1770185939, platform=runninghub
+2026-02-04 14:18:59 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_api_task_54_1770185939)
+2026-02-04 14:18:59 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-5] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-5] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:18:59 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:18:59 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_55_1770185939 (类型: image_to_video)
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_55_1770185939, platform=runninghub
+2026-02-04 14:18:59 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #4 已提交到 runninghub (task_id: mock_api_task_55_1770185939)
+2026-02-04 14:18:59 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-6] 🔄 轮询线程启动：子任务 #4 (平台: runninghub)
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-6] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:18:59 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:18:59 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_56_1770185939 (类型: image_to_video)
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_56_1770185939, platform=runninghub
+2026-02-04 14:18:59 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #5 已提交到 runninghub (task_id: mock_api_task_56_1770185939)
+2026-02-04 14:18:59 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-7] 🔄 轮询线程启动：子任务 #5 (平台: runninghub)
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-7] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:18:59 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:18:59 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_57_1770185939 (类型: image_to_video)
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_57_1770185939, platform=runninghub
+2026-02-04 14:18:59 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #6 已提交到 runninghub (task_id: mock_api_task_57_1770185939)
+2026-02-04 14:18:59 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-8] 🔄 轮询线程启动：子任务 #6 (平台: runninghub)
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-8] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:18:59 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:18:59 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:18:59 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:18:59 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_58_1770185939 (类型: image_to_video)
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_58_1770185939, platform=runninghub
+2026-02-04 14:19:00 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #7 已提交到 runninghub (task_id: mock_api_task_58_1770185939)
+2026-02-04 14:19:00 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-9] 🔄 轮询线程启动：子任务 #7 (平台: runninghub)
+2026-02-04 14:19:00 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-9] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:00 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:19:00 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:19:00 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:19:00 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_59_1770185940 (类型: image_to_video)
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_59_1770185940, platform=runninghub
+2026-02-04 14:19:00 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #8 已提交到 runninghub (task_id: mock_api_task_59_1770185940)
+2026-02-04 14:19:00 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-10] 🔄 轮询线程启动：子任务 #8 (平台: runninghub)
+2026-02-04 14:19:00 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-10] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:00 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:19:00 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:19:00 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:19:00 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_60_1770185940 (类型: image_to_video)
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_60_1770185940, platform=runninghub
+2026-02-04 14:19:00 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #9 已提交到 runninghub (task_id: mock_api_task_60_1770185940)
+2026-02-04 14:19:00 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-11] 🔄 轮询线程启动：子任务 #9 (平台: runninghub)
+2026-02-04 14:19:00 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-11] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:00 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:19:00 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:19:00 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:19:00 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_61_1770185940 (类型: image_to_video)
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_61_1770185940, platform=runninghub
+2026-02-04 14:19:00 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #10 已提交到 runninghub (task_id: mock_api_task_61_1770185940)
+2026-02-04 14:19:00 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-12] 🔄 轮询线程启动：子任务 #10 (平台: runninghub)
+2026-02-04 14:19:00 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-12] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:00 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:19:00 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:19:00 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:19:00 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_62_1770185940 (类型: image_to_video)
+2026-02-04 14:19:00 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_62_1770185940, platform=runninghub
+2026-02-04 14:19:01 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #11 已提交到 runninghub (task_id: mock_api_task_62_1770185940)
+2026-02-04 14:19:01 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-13] 🔄 轮询线程启动：子任务 #11 (平台: runninghub)
+2026-02-04 14:19:01 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-13] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:01 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:19:01 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:19:01 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:19:01 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:19:01 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_63_1770185941 (类型: image_to_video)
+2026-02-04 14:19:01 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_63_1770185941, platform=runninghub
+2026-02-04 14:19:01 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #12 已提交到 runninghub (task_id: mock_api_task_63_1770185941)
+2026-02-04 14:19:01 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-14] 🔄 轮询线程启动：子任务 #12 (平台: runninghub)
+2026-02-04 14:19:01 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-14] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:01 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:01 [ERROR] [services.platform_manager:select_platform:127] [API-Task-Consumer] ❌ 所有平台都已尝试失败: ['runninghub']
+2026-02-04 14:19:01 [ERROR] [api_task_service:_handle_task_submission_failure:502] [API-Task-Consumer] ❌ 提交子任务 #1 失败: 未知错误
+2026-02-04 14:19:01 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-3] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:01 [ERROR] [api_task_service:_handle_task_submission_failure:556] [API-Task-Consumer] ❌ 子任务 #1 提交失败，已达最大重试次数: 未知错误
+2026-02-04 14:19:02 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-4] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:02 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-5] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:02 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-6] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:02 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-7] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:02 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-8] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:03 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-9] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:03 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-10] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:03 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-11] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:03 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-12] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:04 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-13] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:04 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-14] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:04 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:04 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-3] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:05 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-4] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:05 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-5] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:05 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-6] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:05 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-7] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:05 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-8] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:06 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-9] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:06 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-10] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:06 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-11] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:06 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-12] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:07 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-13] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:07 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-14] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:07 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:07 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-3] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:08 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-4] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:08 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-5] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:08 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-6] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:08 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-7] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:08 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-8] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:09 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-9] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:09 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-10] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:09 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-11] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:09 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-12] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:10 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-13] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:10 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-14] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:10 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:10 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-3] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:11 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-4] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:11 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-5] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:11 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-6] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:11 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-7] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:11 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-8] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:12 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-9] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:12 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-10] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:12 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-11] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:12 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-12] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:13 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-13] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:13 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-14] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:13 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:13 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-3] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:14 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-4] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:14 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-5] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:14 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-6] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:14 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-7] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:14 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-8] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:15 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-9] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:15 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-10] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:15 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-11] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:15 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-12] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:16 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-13] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:16 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-14] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:16 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:16 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-3] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:17 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-4] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:17 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-5] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:17 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-6] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:17 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-7] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:17 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-8] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:18 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-9] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:18 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-10] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:18 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-11] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:18 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-12] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:19 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-13] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:19 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-14] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:19 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:19 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-3] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:20 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-4] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:20 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-5] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:20 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-6] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:19:20 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-04 14:19:20 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-04 14:19:20 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-04 14:19:20 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-04 14:19:22 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-04 14:19:22 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-04 14:19:22
+2026-02-04 14:19:22 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-04 14:19:22 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-04 14:19:22 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-04 14:19:22 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-04 14:19:22 [INFO] [api_task_service:_restore_tasks:201] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-04 14:19:22 [INFO] [api_task_service:_restore_tasks:225] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-04 14:19:22 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-2] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 14:19:22 [INFO] [api_task_service:_restore_tasks:275] [MainThread] 🔄 恢复轮询：子任务 #2 (task_id: mock_api_task_51_1770185938, platform: runninghub)
+2026-02-04 14:19:22 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-2] 🔶 使用 Mock 服务查询任务: mock_api_task_51_1770185938
+2026-02-04 14:19:22 [INFO] [api_task_service:_restore_tasks:281] [MainThread] 🔄 恢复 1 个轮询任务
+2026-02-04 14:19:22 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-2] ✅ Mock: 任务 mock_api_task_51_1770185938 成功完成
+2026-02-04 14:19:22 [INFO] [api_task_service:_restore_tasks:316] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 1 个
+2026-02-04 14:19:22 [INFO] [api_task_service:_consumer_loop:335] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-04 14:19:22 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-04 14:19:22 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-04 14:19:23 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-04 14:19:23 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-04 14:19:23 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-04 14:19:23 [INFO] [api_task_service:_update_progress:770] [Polling-Item-2] 📊 API任务 #1 进度: 0 完成, 2 失败
+2026-02-04 14:19:23 [INFO] [api_task_service:_polling_worker:738] [Polling-Item-2] ⏹️ 轮询线程结束：子任务 #2
+2026-02-04 14:19:37 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-04 14:19:37 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-04 14:19:37 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-04 14:19:37 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-04 14:19:38 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-04 14:19:38 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-04 14:19:38
+2026-02-04 14:19:38 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-04 14:19:38 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-04 14:19:38 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-04 14:19:38 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-04 14:19:38 [INFO] [api_task_service:_restore_tasks:201] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-04 14:19:38 [INFO] [api_task_service:_restore_tasks:225] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-04 14:19:38 [INFO] [api_task_service:_restore_tasks:281] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-04 14:19:38 [INFO] [api_task_service:_restore_tasks:316] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 0 个
+2026-02-04 14:19:38 [INFO] [api_task_service:_consumer_loop:335] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-04 14:19:38 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-04 14:19:38 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-04 14:19:38 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-04 14:19:38 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-04 14:19:38 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-04 14:19:58 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 3308549e-6820-4662-ab46-9582ea7dad6c.jpg (237949 bytes)
+2026-02-04 14:20:00 [INFO] [api_task_service:create_api_mission:130] [MainThread] 📋 API任务 #3 已创建，共 2 个子任务
+2026-02-04 14:20:00 [INFO] [api_task_service:create_api_mission:141] [MainThread] 📋 API任务 #3 已创建 2 个子任务
+2026-02-04 14:20:00 [INFO] [api_task_service:add_to_queue:187] [MainThread] 📥 任务 #3 的 2 个子任务已加入队列
+2026-02-04 14:20:00 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:20:00 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:20:00 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:20:00 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:20:00 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_64_1770186000 (类型: image_to_video)
+2026-02-04 14:20:00 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_64_1770186000, platform=runninghub
+2026-02-04 14:20:01 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_64_1770186000)
+2026-02-04 14:20:01 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-15] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 14:20:01 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-15] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:01 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:20:01 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:20:01 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:20:01 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:20:01 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_65_1770186001 (类型: image_to_video)
+2026-02-04 14:20:01 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_65_1770186001, platform=runninghub
+2026-02-04 14:20:01 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_api_task_65_1770186001)
+2026-02-04 14:20:01 [INFO] [api_task_service:_polling_worker:622] [Polling-Item-16] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 14:20:01 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-16] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:04 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-15] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:04 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-16] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:07 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-15] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:07 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-16] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:10 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-15] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:10 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-16] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:13 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-15] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:13 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-16] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:16 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-15] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:16 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-16] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:19 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-15] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:19 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-16] 🔶 使用 Mock 服务查询任务: None
+2026-02-04 14:20:21 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-04 14:20:21 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-04 14:20:21 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-04 14:20:21 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-04 14:21:29 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-04 14:21:29 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-04 14:21:29
+2026-02-04 14:21:29 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-04 14:21:29 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-04 14:21:29 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-04 14:21:29 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-04 14:21:29 [INFO] [api_task_service:_restore_tasks:201] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-04 14:21:29 [INFO] [api_task_service:_restore_tasks:225] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-04 14:21:29 [INFO] [api_task_service:_polling_worker:634] [Polling-Item-15] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 14:21:29 [INFO] [api_task_service:_restore_tasks:275] [MainThread] 🔄 恢复轮询：子任务 #1 (task_id: mock_api_task_64_1770186000, platform: runninghub)
+2026-02-04 14:21:29 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-15] 🔶 使用 Mock 服务查询任务: mock_api_task_64_1770186000
+2026-02-04 14:21:29 [INFO] [api_task_service:_polling_worker:634] [Polling-Item-16] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 14:21:29 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-15] ✅ Mock: 任务 mock_api_task_64_1770186000 成功完成
+2026-02-04 14:21:29 [INFO] [api_task_service:_restore_tasks:275] [MainThread] 🔄 恢复轮询：子任务 #2 (task_id: mock_api_task_65_1770186001, platform: runninghub)
+2026-02-04 14:21:29 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-16] 🔶 使用 Mock 服务查询任务: mock_api_task_65_1770186001
+2026-02-04 14:21:29 [INFO] [api_task_service:_restore_tasks:281] [MainThread] 🔄 恢复 2 个轮询任务
+2026-02-04 14:21:29 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-16] ✅ Mock: 任务 mock_api_task_65_1770186001 成功完成
+2026-02-04 14:21:29 [INFO] [api_task_service:_restore_tasks:316] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 2 个
+2026-02-04 14:21:29 [INFO] [api_task_service:_consumer_loop:335] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-04 14:21:29 [INFO] [api_task_service:start:81] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-04 14:21:29 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-04 14:21:29 [INFO] [api_task_service:_update_progress:782] [Polling-Item-15] 📊 API任务 #3 进度: 0 完成, 1 失败
+2026-02-04 14:21:29 [INFO] [api_task_service:_polling_worker:750] [Polling-Item-15] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 14:21:30 [INFO] [api_task_service:_update_progress:782] [Polling-Item-16] 📊 API任务 #3 进度: 0 完成, 2 失败
+2026-02-04 14:21:30 [INFO] [api_task_service:_polling_worker:750] [Polling-Item-16] ⏹️ 轮询线程结束：子任务 #2
+2026-02-04 14:21:30 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-04 14:21:30 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-04 14:21:30 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-04 14:21:45 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: a204364a-90f7-43a6-a253-a1a0ad3f44b1.png (87603 bytes)
+2026-02-04 14:21:47 [INFO] [api_task_service:create_api_mission:130] [MainThread] 📋 API任务 #4 已创建，共 2 个子任务
+2026-02-04 14:21:47 [INFO] [api_task_service:create_api_mission:141] [MainThread] 📋 API任务 #4 已创建 2 个子任务
+2026-02-04 14:21:47 [INFO] [api_task_service:add_to_queue:187] [MainThread] 📥 任务 #4 的 2 个子任务已加入队列
+2026-02-04 14:21:48 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:21:48 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:21:48 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:21:48 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:21:48 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_66_1770186108 (类型: image_to_video)
+2026-02-04 14:21:48 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_66_1770186108, platform=runninghub
+2026-02-04 14:21:48 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_66_1770186108)
+2026-02-04 14:21:48 [INFO] [api_task_service:_polling_worker:634] [Polling-Item-17] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 14:21:48 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-17] 🔶 使用 Mock 服务查询任务: mock_api_task_66_1770186108
+2026-02-04 14:21:48 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:21:48 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:21:48 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:21:48 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:21:48 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_67_1770186108 (类型: image_to_video)
+2026-02-04 14:21:48 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_67_1770186108, platform=runninghub
+2026-02-04 14:21:48 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_api_task_67_1770186108)
+2026-02-04 14:21:48 [INFO] [api_task_service:_polling_worker:634] [Polling-Item-18] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 14:21:48 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-18] 🔶 使用 Mock 服务查询任务: mock_api_task_67_1770186108
+2026-02-04 14:21:51 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-17] 🔶 使用 Mock 服务查询任务: mock_api_task_66_1770186108
+2026-02-04 14:21:51 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-18] 🔶 使用 Mock 服务查询任务: mock_api_task_67_1770186108
+2026-02-04 14:21:54 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-17] 🔶 使用 Mock 服务查询任务: mock_api_task_66_1770186108
+2026-02-04 14:21:54 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-18] 🔶 使用 Mock 服务查询任务: mock_api_task_67_1770186108
+2026-02-04 14:21:54 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-18] ✅ Mock: 任务 mock_api_task_67_1770186108 成功完成
+2026-02-04 14:21:54 [INFO] [api_task_service:_update_progress:782] [Polling-Item-18] 📊 API任务 #4 进度: 0 完成, 1 失败
+2026-02-04 14:21:54 [INFO] [api_task_service:_polling_worker:750] [Polling-Item-18] ⏹️ 轮询线程结束：子任务 #2
+2026-02-04 14:21:57 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-17] 🔶 使用 Mock 服务查询任务: mock_api_task_66_1770186108
+2026-02-04 14:21:57 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-17] ✅ Mock: 任务 mock_api_task_66_1770186108 成功完成
+2026-02-04 14:21:57 [INFO] [api_task_service:_update_progress:782] [Polling-Item-17] 📊 API任务 #4 进度: 0 完成, 2 失败
+2026-02-04 14:21:57 [INFO] [api_task_service:_polling_worker:750] [Polling-Item-17] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 14:21:58 [INFO] [api_task_service:_monitor_mission_completion:591] [Monitor-Mission-4] ✅ 任务 #4 全部完成
+2026-02-04 14:35:17 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: a5bc83c9-ff77-4ff7-bdd7-095af17a04b5.jpg (237949 bytes)
+2026-02-04 14:35:19 [INFO] [api_task_service:create_api_mission:130] [MainThread] 📋 API任务 #5 已创建，共 3 个子任务
+2026-02-04 14:35:20 [INFO] [api_task_service:create_api_mission:141] [MainThread] 📋 API任务 #5 已创建 3 个子任务
+2026-02-04 14:35:20 [INFO] [api_task_service:add_to_queue:187] [MainThread] 📥 任务 #5 的 3 个子任务已加入队列
+2026-02-04 14:35:20 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:35:20 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:35:20 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:35:20 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:35:20 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_68_1770186920 (类型: image_to_video)
+2026-02-04 14:35:20 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_68_1770186920, platform=runninghub
+2026-02-04 14:35:20 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_68_1770186920)
+2026-02-04 14:35:20 [INFO] [api_task_service:_polling_worker:634] [Polling-Item-19] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 14:35:20 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:20 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:35:20 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:35:20 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:35:20 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:35:20 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_69_1770186920 (类型: image_to_video)
+2026-02-04 14:35:20 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_69_1770186920, platform=runninghub
+2026-02-04 14:35:20 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_api_task_69_1770186920)
+2026-02-04 14:35:20 [INFO] [api_task_service:_polling_worker:634] [Polling-Item-20] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 14:35:20 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-20] 🔶 使用 Mock 服务查询任务: mock_api_task_69_1770186920
+2026-02-04 14:35:20 [INFO] [services.platform_manager:select_platform:124] [API-Task-Consumer] 🔄 故障转移: 尝试下一个平台 runninghub (已尝试: [])
+2026-02-04 14:35:20 [INFO] [services.platform_manager:submit_task_with_platform:186] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 14:35:20 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 14:35:20 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 14:35:20 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_70_1770186920 (类型: image_to_video)
+2026-02-04 14:35:20 [INFO] [services.platform_manager:submit_task_with_platform:205] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_70_1770186920, platform=runninghub
+2026-02-04 14:35:21 [INFO] [api_task_service:_handle_task_submission_success:459] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_api_task_70_1770186920)
+2026-02-04 14:35:21 [INFO] [api_task_service:_polling_worker:634] [Polling-Item-21] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 14:35:21 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:23 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:23 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-20] 🔶 使用 Mock 服务查询任务: mock_api_task_69_1770186920
+2026-02-04 14:35:24 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:26 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:26 [WARNING] [integrations.mock_api_client:query_task:172] [Polling-Item-19] ❌ Mock: 任务 mock_api_task_68_1770186920 失败: 内容审核未通过
+2026-02-04 14:35:26 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-20] 🔶 使用 Mock 服务查询任务: mock_api_task_69_1770186920
+2026-02-04 14:35:27 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:27 [WARNING] [integrations.mock_api_client:query_task:172] [Polling-Item-21] ❌ Mock: 任务 mock_api_task_70_1770186920 失败: 资源不足
+2026-02-04 14:35:29 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:29 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-20] 🔶 使用 Mock 服务查询任务: mock_api_task_69_1770186920
+2026-02-04 14:35:29 [INFO] [integrations.mock_api_client:query_task:152] [Polling-Item-20] ✅ Mock: 任务 mock_api_task_69_1770186920 成功完成
+2026-02-04 14:35:30 [INFO] [api_task_service:_update_progress:782] [Polling-Item-20] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 14:35:30 [INFO] [api_task_service:_polling_worker:750] [Polling-Item-20] ⏹️ 轮询线程结束：子任务 #2
+2026-02-04 14:35:30 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:32 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:33 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:35 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:36 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:38 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:39 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:41 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:42 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:44 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:45 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:47 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:48 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:50 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:51 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:53 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:54 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:56 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:35:57 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:35:59 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:00 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:02 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:03 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:05 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:06 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:08 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:09 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:11 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:12 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:14 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:15 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:17 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:18 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:20 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:21 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:23 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:24 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:26 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:27 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:29 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:30 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:32 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:33 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:35 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:36 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:38 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:39 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:41 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:42 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:44 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:45 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:47 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:48 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:50 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:51 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:53 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:54 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:56 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:36:57 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:36:59 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:37:00 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:37:02 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-19] 🔶 使用 Mock 服务查询任务: mock_api_task_68_1770186920
+2026-02-04 14:37:03 [INFO] [integrations.api_client_wrapper:query_api_task:46] [Polling-Item-21] 🔶 使用 Mock 服务查询任务: mock_api_task_70_1770186920
+2026-02-04 14:37:03 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-04 14:37:03 [INFO] [api_task_service:stop:86] [MainThread] ⏹️ API任务管理器已停止
+2026-02-04 14:37:03 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-04 14:37:03 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-04 15:21:43 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-04 15:21:43 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-04 15:21:43
+2026-02-04 15:21:43 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-04 15:21:43 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-04 15:21:43 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-04 15:21:43 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-04 15:21:43 [INFO] [api_task_service:_restore_tasks:198] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-04 15:21:43 [INFO] [api_task_service:_restore_tasks:222] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-04 15:21:43 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-19] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:21:43 [INFO] [api_task_service:_restore_tasks:268] [MainThread] 🔄 恢复轮询：子任务 #1 (task_id: mock_api_task_68_1770186920, platform: runninghub)
+2026-02-04 15:21:43 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:43 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-21] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 15:21:43 [INFO] [api_task_service:_restore_tasks:268] [MainThread] 🔄 恢复轮询：子任务 #3 (task_id: mock_api_task_70_1770186920, platform: runninghub)
+2026-02-04 15:21:43 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:43 [INFO] [api_task_service:_restore_tasks:274] [MainThread] 🔄 恢复 2 个轮询任务
+2026-02-04 15:21:43 [INFO] [api_task_service:_restore_tasks:309] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 2 个
+2026-02-04 15:21:43 [INFO] [api_task_service:_consumer_loop:328] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-04 15:21:43 [INFO] [api_task_service:start:78] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-04 15:21:43 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-04 15:21:43 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-04 15:21:43 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-04 15:21:43 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-04 15:21:43 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-21] ⚠️ 子任务 #3 失败，重新加入队列 (重试 1/5)
+2026-02-04 15:21:43 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-19] ⚠️ 子任务 #1 失败，重新加入队列 (重试 1/5)
+2026-02-04 15:21:43 [INFO] [api_task_service:_update_progress:776] [Polling-Item-21] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:43 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-21] ⏹️ 轮询线程结束：子任务 #3
+2026-02-04 15:21:43 [INFO] [api_task_service:_update_progress:776] [Polling-Item-19] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:43 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-19] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:21:43 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:43 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:43 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:43 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_71_1770189703 (类型: image_to_video)
+2026-02-04 15:21:44 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_71_1770189703, platform=runninghub
+2026-02-04 15:21:44 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_api_task_71_1770189703)
+2026-02-04 15:21:44 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-21] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 15:21:44 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:44 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:44 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:44 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:44 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_72_1770189704 (类型: image_to_video)
+2026-02-04 15:21:44 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_72_1770189704, platform=runninghub
+2026-02-04 15:21:44 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_72_1770189704)
+2026-02-04 15:21:44 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-19] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:21:44 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:44 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-19] ⚠️ 子任务 #1 失败，重新加入队列 (重试 2/5)
+2026-02-04 15:21:44 [INFO] [api_task_service:_update_progress:776] [Polling-Item-19] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:44 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-19] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:21:44 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-21] ⚠️ 子任务 #3 失败，重新加入队列 (重试 2/5)
+2026-02-04 15:21:44 [INFO] [api_task_service:_update_progress:776] [Polling-Item-21] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:44 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-21] ⏹️ 轮询线程结束：子任务 #3
+2026-02-04 15:21:44 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:44 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:44 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:44 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_73_1770189704 (类型: image_to_video)
+2026-02-04 15:21:45 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_73_1770189704, platform=runninghub
+2026-02-04 15:21:45 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_73_1770189704)
+2026-02-04 15:21:45 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-19] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:21:45 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:45 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:45 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:45 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:45 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_74_1770189705 (类型: image_to_video)
+2026-02-04 15:21:45 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_74_1770189705, platform=runninghub
+2026-02-04 15:21:45 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_api_task_74_1770189705)
+2026-02-04 15:21:45 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-21] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 15:21:45 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:45 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-21] ⚠️ 子任务 #3 失败，重新加入队列 (重试 3/5)
+2026-02-04 15:21:45 [INFO] [api_task_service:_update_progress:776] [Polling-Item-21] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:45 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-21] ⏹️ 轮询线程结束：子任务 #3
+2026-02-04 15:21:45 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-19] ⚠️ 子任务 #1 失败，重新加入队列 (重试 3/5)
+2026-02-04 15:21:45 [INFO] [api_task_service:_update_progress:776] [Polling-Item-19] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:45 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-19] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:21:46 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:46 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:46 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:46 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_75_1770189706 (类型: image_to_video)
+2026-02-04 15:21:46 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_75_1770189706, platform=runninghub
+2026-02-04 15:21:46 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_api_task_75_1770189706)
+2026-02-04 15:21:46 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-21] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 15:21:46 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:46 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:46 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:46 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:46 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_76_1770189706 (类型: image_to_video)
+2026-02-04 15:21:46 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-21] ⚠️ 子任务 #3 失败，重新加入队列 (重试 4/5)
+2026-02-04 15:21:46 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_76_1770189706, platform=runninghub
+2026-02-04 15:21:46 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_76_1770189706)
+2026-02-04 15:21:46 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-19] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:21:46 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:46 [INFO] [api_task_service:_update_progress:776] [Polling-Item-21] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:46 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-21] ⏹️ 轮询线程结束：子任务 #3
+2026-02-04 15:21:46 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-19] ⚠️ 子任务 #1 失败，重新加入队列 (重试 4/5)
+2026-02-04 15:21:46 [INFO] [api_task_service:_update_progress:776] [Polling-Item-19] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:46 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-19] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:21:46 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:46 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:46 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:46 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_77_1770189706 (类型: image_to_video)
+2026-02-04 15:21:47 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_77_1770189706, platform=runninghub
+2026-02-04 15:21:47 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_api_task_77_1770189706)
+2026-02-04 15:21:47 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-21] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 15:21:47 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:47 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:47 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:47 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:47 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_78_1770189707 (类型: image_to_video)
+2026-02-04 15:21:47 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-21] ⚠️ 子任务 #3 失败，重新加入队列 (重试 5/5)
+2026-02-04 15:21:47 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_78_1770189707, platform=runninghub
+2026-02-04 15:21:47 [INFO] [api_task_service:_update_progress:776] [Polling-Item-21] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:47 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-21] ⏹️ 轮询线程结束：子任务 #3
+2026-02-04 15:21:47 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_78_1770189707)
+2026-02-04 15:21:47 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-19] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:21:47 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:47 [WARNING] [api_task_service:_polling_worker:705] [Polling-Item-19] ⚠️ 子任务 #1 失败，重新加入队列 (重试 5/5)
+2026-02-04 15:21:47 [INFO] [api_task_service:_update_progress:776] [Polling-Item-19] 📊 API任务 #5 进度: 0 完成, 1 失败
+2026-02-04 15:21:47 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-19] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:21:48 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:48 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:48 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:48 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_79_1770189708 (类型: image_to_video)
+2026-02-04 15:21:48 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_79_1770189708, platform=runninghub
+2026-02-04 15:21:48 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_api_task_79_1770189708)
+2026-02-04 15:21:48 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-21] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 15:21:48 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-21] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:48 [ERROR] [api_task_service:_polling_worker:714] [Polling-Item-21] ❌ 子任务 #3 失败，已达最大重试次数: 查询失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:48 [INFO] [api_task_service:_update_progress:776] [Polling-Item-21] 📊 API任务 #5 进度: 0 完成, 2 失败
+2026-02-04 15:21:48 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-21] ⏹️ 轮询线程结束：子任务 #3
+2026-02-04 15:21:48 [INFO] [services.platform_manager:submit_task:96] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:21:48 [INFO] [integrations.platform_adapters.runninghub:submit_task:92] [API-Task-Consumer] 📤 提交任务到 RunningHub: image_to_video
+2026-02-04 15:21:48 [INFO] [integrations.api_client_wrapper:submit_api_task:27] [API-Task-Consumer] 🔶 使用 Mock 服务提交任务: image_to_video
+2026-02-04 15:21:48 [INFO] [integrations.mock_api_client:submit_task:87] [API-Task-Consumer] 📤 Mock: 提交任务 mock_api_task_80_1770189708 (类型: image_to_video)
+2026-02-04 15:21:48 [INFO] [services.platform_manager:submit_task:114] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_api_task_80_1770189708, platform=runninghub
+2026-02-04 15:21:48 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_api_task_80_1770189708)
+2026-02-04 15:21:48 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-19] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:21:48 [ERROR] [api_task_service:_query_task_status:607] [Polling-Item-19] ❌ 查询任务状态失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:48 [ERROR] [api_task_service:_polling_worker:714] [Polling-Item-19] ❌ 子任务 #1 失败，已达最大重试次数: 查询失败: 'PlatformManager' object has no attribute 'get_platform_adapter'
+2026-02-04 15:21:49 [INFO] [api_task_service:_update_progress:776] [Polling-Item-19] 📊 API任务 #5 进度: 0 完成, 3 失败
+2026-02-04 15:21:49 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-19] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:31:41 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-04 15:31:41 [INFO] [api_task_service:stop:83] [MainThread] ⏹️ API任务管理器已停止
+2026-02-04 15:31:41 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-04 15:31:41 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-04 15:31:43 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-04 15:31:43 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-04 15:31:43
+2026-02-04 15:31:43 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-04 15:31:43 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-04 15:31:43 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-04 15:31:43 [INFO] [__main__:lifespan:30] [MainThread] 正在初始化应用...
+2026-02-04 15:31:43 [INFO] [api_task_service:_restore_tasks:198] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-04 15:31:43 [INFO] [api_task_service:_restore_tasks:222] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-04 15:31:43 [INFO] [api_task_service:_restore_tasks:274] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-04 15:31:43 [INFO] [api_task_service:_restore_tasks:309] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 0 个
+2026-02-04 15:31:43 [INFO] [api_task_service:_consumer_loop:328] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-04 15:31:43 [INFO] [api_task_service:start:78] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-04 15:31:43 [INFO] [__main__:lifespan:34] [MainThread] ✅ API任务管理器已启动
+2026-02-04 15:31:43 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-04 15:31:43 [INFO] [__main__:lifespan:38] [MainThread] ✅ App任务管理器V2已启动
+2026-02-04 15:31:43 [INFO] [__main__:lifespan:40] [MainThread] 应用初始化完成
+2026-02-04 15:32:14 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: f49ef2c8-2f8e-40a7-a0bc-d211d15513c1.jpg (353572 bytes)
+2026-02-04 15:32:17 [INFO] [api_task_service:create_api_mission:127] [MainThread] 📋 API任务 #6 已创建，共 2 个子任务
+2026-02-04 15:32:17 [INFO] [api_task_service:create_api_mission:138] [MainThread] 📋 API任务 #6 已创建 2 个子任务
+2026-02-04 15:32:17 [INFO] [api_task_service:add_to_queue:184] [MainThread] 📥 任务 #6 的 2 个子任务已加入队列
+2026-02-04 15:32:18 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:32:18 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_781acf9de5a8
+2026-02-04 15:32:18 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_781acf9de5a8, platform=runninghub
+2026-02-04 15:32:18 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_mock_runninghub_781acf9de5a8)
+2026-02-04 15:32:18 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-22] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:32:18 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:32:18 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_b119b0819af4
+2026-02-04 15:32:18 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_b119b0819af4, platform=runninghub
+2026-02-04 15:32:18 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_mock_runninghub_b119b0819af4)
+2026-02-04 15:32:18 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-23] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 15:32:21 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-22] ✅ 子任务 #1 成功: mock_result://mock_runninghub/mock_mock_runninghub_781acf9de5a8.mp4
+2026-02-04 15:32:21 [INFO] [api_task_service:_update_progress:776] [Polling-Item-22] 📊 API任务 #6 进度: 1 完成, 0 失败
+2026-02-04 15:32:21 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-22] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:32:21 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-23] ✅ 子任务 #2 成功: mock_result://mock_runninghub/mock_mock_runninghub_b119b0819af4.mp4
+2026-02-04 15:32:22 [INFO] [api_task_service:_update_progress:776] [Polling-Item-23] 📊 API任务 #6 进度: 2 完成, 0 失败
+2026-02-04 15:32:22 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-23] ⏹️ 轮询线程结束：子任务 #2
+2026-02-04 15:32:22 [INFO] [api_task_service:_monitor_mission_completion:573] [Monitor-Mission-6] ✅ 任务 #6 全部完成
+2026-02-04 15:51:26 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 1b4e8c50-c795-4c8b-89e8-d49a04eadc0b.png (799651 bytes)
+2026-02-04 15:51:34 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 49aa27e6-8931-4bfe-bb0f-4847e2309414.jpg (1333322 bytes)
+2026-02-04 15:51:36 [INFO] [api_task_service:create_api_mission:127] [MainThread] 📋 API任务 #7 已创建，共 6 个子任务
+2026-02-04 15:51:37 [INFO] [api_task_service:create_api_mission:138] [MainThread] 📋 API任务 #7 已创建 6 个子任务
+2026-02-04 15:51:37 [INFO] [api_task_service:add_to_queue:184] [MainThread] 📥 任务 #7 的 6 个子任务已加入队列
+2026-02-04 15:51:37 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:51:37 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_afc40d7af11f
+2026-02-04 15:51:37 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_afc40d7af11f, platform=runninghub
+2026-02-04 15:51:37 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_mock_runninghub_afc40d7af11f)
+2026-02-04 15:51:37 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-24] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:51:37 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:51:37 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_85b5ccfbeaa4
+2026-02-04 15:51:37 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_85b5ccfbeaa4, platform=runninghub
+2026-02-04 15:51:37 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_mock_runninghub_85b5ccfbeaa4)
+2026-02-04 15:51:37 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-25] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 15:51:37 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:51:37 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_c07943ac8641
+2026-02-04 15:51:37 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_c07943ac8641, platform=runninghub
+2026-02-04 15:51:38 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_mock_runninghub_c07943ac8641)
+2026-02-04 15:51:38 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-26] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 15:51:38 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:51:38 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_fa6a333ba828
+2026-02-04 15:51:38 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_fa6a333ba828, platform=runninghub
+2026-02-04 15:51:38 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #4 已提交到 runninghub (task_id: mock_mock_runninghub_fa6a333ba828)
+2026-02-04 15:51:38 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-27] 🔄 轮询线程启动：子任务 #4 (平台: runninghub)
+2026-02-04 15:51:38 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:51:38 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_795c2409e42f
+2026-02-04 15:51:38 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_795c2409e42f, platform=runninghub
+2026-02-04 15:51:38 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #5 已提交到 runninghub (task_id: mock_mock_runninghub_795c2409e42f)
+2026-02-04 15:51:38 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-28] 🔄 轮询线程启动：子任务 #5 (平台: runninghub)
+2026-02-04 15:51:38 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 15:51:38 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_57d246ea93bd
+2026-02-04 15:51:38 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_57d246ea93bd, platform=runninghub
+2026-02-04 15:51:38 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #6 已提交到 runninghub (task_id: mock_mock_runninghub_57d246ea93bd)
+2026-02-04 15:51:38 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-29] 🔄 轮询线程启动：子任务 #6 (平台: runninghub)
+2026-02-04 15:51:40 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-24] ✅ 子任务 #1 成功: mock_result://mock_runninghub/mock_mock_runninghub_afc40d7af11f.mp4
+2026-02-04 15:51:40 [INFO] [api_task_service:_update_progress:776] [Polling-Item-24] 📊 API任务 #7 进度: 1 完成, 0 失败
+2026-02-04 15:51:40 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-24] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:51:40 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-25] ✅ 子任务 #2 成功: mock_result://mock_runninghub/mock_mock_runninghub_85b5ccfbeaa4.mp4
+2026-02-04 15:51:41 [INFO] [api_task_service:_update_progress:776] [Polling-Item-25] 📊 API任务 #7 进度: 2 完成, 0 失败
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-25] ⏹️ 轮询线程结束：子任务 #2
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-26] ✅ 子任务 #3 成功: mock_result://mock_runninghub/mock_mock_runninghub_c07943ac8641.mp4
+2026-02-04 15:51:41 [INFO] [api_task_service:_update_progress:776] [Polling-Item-26] 📊 API任务 #7 进度: 3 完成, 0 失败
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-26] ⏹️ 轮询线程结束：子任务 #3
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-27] ✅ 子任务 #4 成功: mock_result://mock_runninghub/mock_mock_runninghub_fa6a333ba828.mp4
+2026-02-04 15:51:41 [INFO] [api_task_service:_update_progress:776] [Polling-Item-27] 📊 API任务 #7 进度: 4 完成, 0 失败
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-27] ⏹️ 轮询线程结束：子任务 #4
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-28] ✅ 子任务 #5 成功: mock_result://mock_runninghub/mock_mock_runninghub_795c2409e42f.mp4
+2026-02-04 15:51:41 [INFO] [api_task_service:_update_progress:776] [Polling-Item-28] 📊 API任务 #7 进度: 5 完成, 0 失败
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-28] ⏹️ 轮询线程结束：子任务 #5
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-29] ✅ 子任务 #6 成功: mock_result://mock_runninghub/mock_mock_runninghub_57d246ea93bd.mp4
+2026-02-04 15:51:41 [INFO] [api_task_service:_update_progress:776] [Polling-Item-29] 📊 API任务 #7 进度: 6 完成, 0 失败
+2026-02-04 15:51:41 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-29] ⏹️ 轮询线程结束：子任务 #6
+2026-02-04 15:51:43 [INFO] [api_task_service:_monitor_mission_completion:573] [Monitor-Mission-7] ✅ 任务 #7 全部完成
+2026-02-04 15:52:32 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: da510f53-8d0f-463f-be33-10b704d73198.png (799651 bytes)
+2026-02-04 15:52:35 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 9c6e0da5-1b3a-424a-bc9c-09e4ff1984c1.jpg (1333322 bytes)
+2026-02-04 15:52:40 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 818236e4-4e73-4df6-b3a7-1921f5f3d89b.png (3094769 bytes)
+2026-02-04 15:52:51 [INFO] [api_task_service:create_api_mission:127] [MainThread] 📋 API任务 #8 已创建，共 2 个子任务
+2026-02-04 15:52:52 [INFO] [api_task_service:create_api_mission:138] [MainThread] 📋 API任务 #8 已创建 2 个子任务
+2026-02-04 15:52:52 [INFO] [api_task_service:add_to_queue:184] [MainThread] 📥 任务 #8 的 2 个子任务已加入队列
+2026-02-04 15:52:52 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_image 任务
+2026-02-04 15:52:52 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_image -> mock_mock_runninghub_dde5c994625b
+2026-02-04 15:52:52 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_dde5c994625b, platform=runninghub
+2026-02-04 15:52:52 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_mock_runninghub_dde5c994625b)
+2026-02-04 15:52:52 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-30] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 15:52:52 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_image 任务
+2026-02-04 15:52:52 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_image -> mock_mock_runninghub_867b89eada64
+2026-02-04 15:52:52 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_867b89eada64, platform=runninghub
+2026-02-04 15:52:52 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_mock_runninghub_867b89eada64)
+2026-02-04 15:52:52 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-31] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 15:52:55 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-30] ✅ 子任务 #1 成功: mock_result://mock_runninghub/mock_mock_runninghub_dde5c994625b.png
+2026-02-04 15:52:55 [INFO] [api_task_service:_update_progress:776] [Polling-Item-30] 📊 API任务 #8 进度: 1 完成, 0 失败
+2026-02-04 15:52:55 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-30] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 15:52:56 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-31] ✅ 子任务 #2 成功: mock_result://mock_runninghub/mock_mock_runninghub_867b89eada64.png
+2026-02-04 15:52:56 [INFO] [api_task_service:_update_progress:776] [Polling-Item-31] 📊 API任务 #8 进度: 2 完成, 0 失败
+2026-02-04 15:52:56 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-31] ⏹️ 轮询线程结束：子任务 #2
+2026-02-04 15:52:56 [INFO] [api_task_service:_monitor_mission_completion:573] [Monitor-Mission-8] ✅ 任务 #8 全部完成
+2026-02-04 16:02:49 [INFO] [__main__:lifespan:45] [MainThread] 应用正在关闭...
+2026-02-04 16:02:49 [INFO] [api_task_service:stop:83] [MainThread] ⏹️ API任务管理器已停止
+2026-02-04 16:02:49 [INFO] [app_task_service_v2:stop:72] [MainThread] ⏹️ App任务管理器已停止
+2026-02-04 16:02:49 [INFO] [__main__:lifespan:48] [MainThread] 应用已关闭
+2026-02-04 16:02:51 [INFO] [utils.logger:setup_logging:89] [MainThread] ============================================================
+2026-02-04 16:02:51 [INFO] [utils.logger:setup_logging:90] [MainThread] 应用启动 - 2026-02-04 16:02:51
+2026-02-04 16:02:51 [INFO] [utils.logger:setup_logging:91] [MainThread] 日志级别: INFO
+2026-02-04 16:02:51 [INFO] [utils.logger:setup_logging:92] [MainThread] 日志目录: E:\e-projects\runninghub\logs
+2026-02-04 16:02:51 [INFO] [utils.logger:setup_logging:93] [MainThread] ============================================================
+2026-02-04 16:02:51 [INFO] [__main__:lifespan:31] [MainThread] 正在初始化应用...
+2026-02-04 16:02:51 [INFO] [api_task_service:_restore_tasks:198] [MainThread] 🔄 开始恢复未完成的任务...
+2026-02-04 16:02:51 [INFO] [api_task_service:_restore_tasks:222] [MainThread] 📥 恢复 0 个待处理的子任务到队列
+2026-02-04 16:02:51 [INFO] [api_task_service:_restore_tasks:274] [MainThread] 🔄 恢复 0 个轮询任务
+2026-02-04 16:02:51 [INFO] [api_task_service:_restore_tasks:309] [MainThread] ✅ 任务恢复完成：队列 0 个，轮询 0 个
+2026-02-04 16:02:51 [INFO] [api_task_service:_consumer_loop:328] [API-Task-Consumer] 🔄 消费者线程已启动
+2026-02-04 16:02:51 [INFO] [api_task_service:start:78] [MainThread] ✅ API任务管理器已启动（消费者线程）
+2026-02-04 16:02:51 [INFO] [__main__:lifespan:35] [MainThread] ✅ API任务管理器已启动
+2026-02-04 16:02:51 [INFO] [app_task_service_v2:start:67] [MainThread] ✅ App任务管理器已启动（批量输入模式）
+2026-02-04 16:02:51 [INFO] [__main__:lifespan:39] [MainThread] ✅ App任务管理器V2已启动
+2026-02-04 16:02:51 [INFO] [__main__:lifespan:41] [MainThread] 应用初始化完成
+2026-02-04 17:44:31 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 24862a08-ca57-4977-a7fc-6d5b3099eccb.png (799651 bytes)
+2026-02-04 17:51:04 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: fbdf92ee-fd52-44e8-86fb-51dc93855a3f.png (799651 bytes)
+2026-02-04 17:52:44 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 321fab6c-f018-4c5c-a11b-f6c4ba4454da.png (3094769 bytes)
+2026-02-04 17:53:07 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 6ecfcc04-d71f-4875-b8ab-c4333a1e2946.jpg (1373518 bytes)
+2026-02-04 17:53:14 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: fdd7b376-58b1-47f7-b388-311671bda695.png (145431 bytes)
+2026-02-04 17:53:22 [INFO] [api_task_service:create_api_mission:127] [MainThread] 📋 API任务 #9 已创建，共 4 个子任务
+2026-02-04 17:53:23 [INFO] [api_task_service:create_api_mission:138] [MainThread] 📋 API任务 #9 已创建 4 个子任务
+2026-02-04 17:53:23 [INFO] [api_task_service:add_to_queue:184] [MainThread] 📥 任务 #9 的 4 个子任务已加入队列
+2026-02-04 17:53:23 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 17:53:23 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_76730edc57b0
+2026-02-04 17:53:23 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_76730edc57b0, platform=runninghub
+2026-02-04 17:53:23 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #1 已提交到 runninghub (task_id: mock_mock_runninghub_76730edc57b0)
+2026-02-04 17:53:23 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-32] 🔄 轮询线程启动：子任务 #1 (平台: runninghub)
+2026-02-04 17:53:23 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 17:53:23 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_7649f48a539e
+2026-02-04 17:53:23 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_7649f48a539e, platform=runninghub
+2026-02-04 17:53:23 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #2 已提交到 runninghub (task_id: mock_mock_runninghub_7649f48a539e)
+2026-02-04 17:53:23 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-33] 🔄 轮询线程启动：子任务 #2 (平台: runninghub)
+2026-02-04 17:53:23 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 17:53:23 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_bf29d07a8456
+2026-02-04 17:53:24 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_bf29d07a8456, platform=runninghub
+2026-02-04 17:53:24 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #3 已提交到 runninghub (task_id: mock_mock_runninghub_bf29d07a8456)
+2026-02-04 17:53:24 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-34] 🔄 轮询线程启动：子任务 #3 (平台: runninghub)
+2026-02-04 17:53:24 [INFO] [services.platform_manager:submit_task:139] [API-Task-Consumer] 📤 使用平台 runninghub 提交 image_to_video 任务
+2026-02-04 17:53:24 [INFO] [integrations.platform_adapters.mock:submit_task:88] [API-Task-Consumer] 📤 Mock 提交任务: image_to_video -> mock_mock_runninghub_9066ed1ffb18
+2026-02-04 17:53:24 [INFO] [services.platform_manager:submit_task:157] [API-Task-Consumer] ✅ 任务提交成功: task_id=mock_mock_runninghub_9066ed1ffb18, platform=runninghub
+2026-02-04 17:53:24 [INFO] [api_task_service:_handle_task_submission_success:443] [API-Task-Consumer] ✅ 子任务 #4 已提交到 runninghub (task_id: mock_mock_runninghub_9066ed1ffb18)
+2026-02-04 17:53:24 [INFO] [api_task_service:_polling_worker:616] [Polling-Item-35] 🔄 轮询线程启动：子任务 #4 (平台: runninghub)
+2026-02-04 17:53:26 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-32] ✅ 子任务 #1 成功: mock_result://mock_runninghub/mock_mock_runninghub_76730edc57b0.mp4
+2026-02-04 17:53:26 [INFO] [api_task_service:_update_progress:776] [Polling-Item-32] 📊 API任务 #9 进度: 1 完成, 0 失败
+2026-02-04 17:53:26 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-32] ⏹️ 轮询线程结束：子任务 #1
+2026-02-04 17:53:27 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-33] ✅ 子任务 #2 成功: mock_result://mock_runninghub/mock_mock_runninghub_7649f48a539e.mp4
+2026-02-04 17:53:27 [INFO] [api_task_service:_update_progress:776] [Polling-Item-33] 📊 API任务 #9 进度: 2 完成, 0 失败
+2026-02-04 17:53:27 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-33] ⏹️ 轮询线程结束：子任务 #2
+2026-02-04 17:53:27 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-34] ✅ 子任务 #3 成功: mock_result://mock_runninghub/mock_mock_runninghub_bf29d07a8456.mp4
+2026-02-04 17:53:27 [INFO] [api_task_service:_update_progress:776] [Polling-Item-34] 📊 API任务 #9 进度: 3 完成, 0 失败
+2026-02-04 17:53:27 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-34] ⏹️ 轮询线程结束：子任务 #3
+2026-02-04 17:53:27 [INFO] [api_task_service:_polling_worker:649] [Polling-Item-35] ✅ 子任务 #4 成功: mock_result://mock_runninghub/mock_mock_runninghub_9066ed1ffb18.mp4
+2026-02-04 17:53:27 [INFO] [api_task_service:_update_progress:776] [Polling-Item-35] 📊 API任务 #9 进度: 4 完成, 0 失败
+2026-02-04 17:53:27 [INFO] [api_task_service:_polling_worker:744] [Polling-Item-35] ⏹️ 轮询线程结束：子任务 #4
+2026-02-04 17:53:27 [INFO] [api_task_service:_monitor_mission_completion:573] [Monitor-Mission-9] ✅ 任务 #9 全部完成
+2026-02-04 18:01:55 [INFO] [api.v1.api_missions:upload_image:256] [MainThread] ✅ 图片上传成功: 19e3bf24-490c-421b-94f4-0988a0da0d74.jpeg (110456 bytes)

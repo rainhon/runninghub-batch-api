@@ -1,9 +1,38 @@
 import sqlite3
 import traceback
 from typing import Optional, Tuple, Any, Dict, List
+from utils.datetime import parse_datetime_to_response
 
 # 数据库文件路径（可根据需要修改）
 DB_FILE_PATH = "./runninghub.db"
+
+
+def format_datetime_fields(data: Any, fields: List[str] = None) -> Any:
+    """
+    格式化数据中的 datetime 字段为中国时区字符串
+
+    Args:
+        data: 可以是单个字典或字典列表
+        fields: 需要格式化的字段名列表，默认为 ['created_at', 'updated_at']
+
+    Returns:
+        格式化后的数据
+    """
+    if fields is None:
+        fields = ['created_at', 'updated_at']
+
+    if isinstance(data, list):
+        # 处理列表
+        return [format_datetime_fields(item, fields) for item in data]
+    elif isinstance(data, dict):
+        # 处理单个字典
+        result = dict(data)
+        for field in fields:
+            if field in result and result[field]:
+                result[field] = parse_datetime_to_response(result[field])
+        return result
+    else:
+        return data
 
 def get_db_connection() -> sqlite3.Connection:
     """
@@ -158,12 +187,15 @@ def get_api_mission_list(page: int = 1, page_size: int = 20, status: Optional[st
     """
     items = execute_sql(list_sql, params + (page_size, offset), fetch_all=True)
 
-    # 计算进度百分比
+    # 计算进度百分比并格式化时间字段
     for item in items:
         if item['total_count'] > 0:
             item['progress'] = round((item['completed_count'] / item['total_count']) * 100, 2)
         else:
             item['progress'] = 0
+
+    # 格式化时间字段为中国时区
+    items = format_datetime_fields(items)
 
     return {
         "items": items,

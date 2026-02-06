@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Loader2, RefreshCw, Download, RotateCcw, XCircle, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { Loader2, RefreshCw, Download, RotateCcw, XCircle, ArrowLeft, Image as ImageIcon, ExternalLink } from 'lucide-react';
 import { api } from '../lib/api';
 import type { ApiMissionDetail, ApiMissionItem } from '../types';
 
@@ -26,6 +26,56 @@ const TASK_TYPE_NAMES: Record<string, string> = {
   image_to_video: '图生视频',
 };
 
+// 图片预览组件
+function ImagePreview({ url }: { url: string }) {
+  const [showPreview, setShowPreview] = useState(false);
+
+  return (
+    <>
+      <div
+        className="inline-block cursor-pointer group"
+        onClick={() => setShowPreview(true)}
+      >
+        <div className="relative w-20 h-20">
+          <img
+            src={url}
+            alt="预览"
+            className="w-full h-full object-cover rounded border border-border"
+          />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+            <ExternalLink className="h-4 w-4 text-white" />
+          </div>
+        </div>
+      </div>
+
+      {/* 图片预览对话框 */}
+      {showPreview && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowPreview(false)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh]">
+            <img
+              src={url}
+              alt="预览图片"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
+              onClick={() => setShowPreview(false)}
+            >
+              ✕
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // 输入参数渲染组件
 function RenderInputParams({ inputParams }: { inputParams: string }) {
   try {
@@ -46,19 +96,7 @@ function RenderInputParams({ inputParams }: { inputParams: string }) {
                     {value.map((url, index) => (
                       <div key={index} className="flex items-center gap-2 text-xs">
                         <span className="text-muted-foreground">[{index}]:</span>
-                        {url ? (
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 hover:underline break-all"
-                            title="点击在新标签页打开"
-                          >
-                            {url.length > 60 ? url.substring(0, 60) + '...' : url}
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">(空)</span>
-                        )}
+                        {url ? <ImagePreview url={url} /> : <span className="text-muted-foreground">(空)</span>}
                       </div>
                     ))}
                   </div>
@@ -69,19 +107,7 @@ function RenderInputParams({ inputParams }: { inputParams: string }) {
             return (
               <div key={key} className="flex flex-col gap-1">
                 <span className="font-medium text-foreground">{key}:</span>
-                {value ? (
-                  <a
-                    href={value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 hover:underline break-all text-xs"
-                    title="点击在新标签页打开"
-                  >
-                    {value}
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground">(空)</span>
-                )}
+                {value ? <ImagePreview url={value} /> : <span className="text-muted-foreground">(空)</span>}
               </div>
             );
           } else if (key === 'prompt' && typeof value === 'string') {

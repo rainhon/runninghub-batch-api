@@ -1,9 +1,8 @@
 /**
- * API 任务创建页面（重构版）
- * 使用新组件和 hooks，代码从 758 行减少到约 200 行
+ * API 任务创建页面
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -50,6 +49,18 @@ export default function ApiCreatePage() {
 
   // 精确模式任务列表状态
   const [preciseTasks, setPreciseTasks] = useState<PreciseTaskConfig[]>([]);
+
+  // 初始化默认配置（在组件挂载或任务类型改变时）
+  useEffect(() => {
+    if (taskType) {
+      const aspectRatios = getAspectRatiosForTaskType(taskType);
+      const isVideoTask = taskType === 'text_to_video' || taskType === 'image_to_video';
+      setConfig({
+        aspectRatio: aspectRatios[0]?.value,
+        duration: isVideoTask ? '10' : undefined
+      });
+    }
+  }, [taskType]);
 
   // 使用表单状态 hook
   const formState = useApiTaskFormState();
@@ -167,20 +178,34 @@ export default function ApiCreatePage() {
           }
         }
 
-        // 转换为后端格式
-        batch_input = preciseTasks.map(task => ({
+        // 转换为后端格式并应用重复次数
+        const baseTasks = preciseTasks.map(task => ({
           prompt: task.prompt.trim(),
           ...(task.imageUrl && { imageUrl: task.imageUrl }),
           ...(task.imageUrls && { imageUrls: task.imageUrls }),
           aspectRatio: task.config.aspectRatio,
           ...(task.config.duration && { duration: task.config.duration })
         }));
+
+        // 应用重复次数
+        const repeatCount = formState.repeatCount;
+        for (let repeat = 0; repeat < repeatCount; repeat++) {
+          batch_input.push(...baseTasks);
+        }
       }
 
       const submitConfig: ApiMissionConfig = {
         ...config,
         batch_input: batch_input,
       };
+
+      console.log('📤 提交配置:', {
+        mode: batchMode,
+        taskType,
+        config: submitConfig,
+        batch_input_count: batch_input.length,
+        sample_items: batch_input.slice(0, 3)
+      });
 
       await api.submitApiMission({
         name: formState.taskName,
@@ -208,8 +233,8 @@ export default function ApiCreatePage() {
           value={taskType || ''}
           onChange={(value) => {
             setTaskType(value);
-            setConfig({});
             setImageBatches(initialImageBatches);
+            // config 会在 useEffect 中自动初始化
           }}
         />
       </div>

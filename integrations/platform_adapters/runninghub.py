@@ -92,11 +92,27 @@ class RunningHubAdapter(BasePlatformAdapter):
         # 调用 RunningHub API 客户端
         response = submit_task(task_type, params, api_url)
 
-        if response.get("code") == 200:
+        # RunningHub API 返回格式:
+        # {
+        #     "taskId": "xxx",
+        #     "status": "RUNNING",
+        #     "errorCode": "",
+        #     "errorMessage": "",
+        #     "results": null,
+        #     "clientId": "xxx",
+        #     "promptTips": "{...}"
+        # }
+
+        # 检查是否有错误码
+        error_code = response.get("errorCode", "")
+        error_message = response.get("errorMessage", "")
+        task_id = response.get("taskId")
+
+        if task_id and not error_code:
             return {
                 "success": True,
-                "task_id": response.get("taskId"),
-                "status": "submitted",
+                "task_id": task_id,
+                "status": response.get("status", "submitted").lower(),
                 "message": "任务提交成功",
                 "raw_response": response
             }
@@ -104,7 +120,7 @@ class RunningHubAdapter(BasePlatformAdapter):
             return {
                 "success": False,
                 "status": "failed",
-                "message": response.get("message", "提交失败"),
+                "message": error_message or "提交失败",
                 "raw_response": response
             }
 
@@ -122,17 +138,54 @@ class RunningHubAdapter(BasePlatformAdapter):
 
         response = query_task(task_id)
 
-        if response.get("code") == 200:
-            return {
-                "success": True,
-                "status": response.get("status"),
-                "results": response.get("results", []),  # 直接传递 results 数组
-                "raw_response": response
-            }
-        else:
+        # RunningHub API 返回格式:
+        # {
+        #     "taskId": "xxx",
+        #     "status": "RUNNING" | "SUCCESS" | "FAILED",
+        #     "errorCode": "",
+        #     "errorMessage": "",
+        #     "failedReason": {},
+        #     "usage": {...},
+        #     "results": [
+        #         {
+        #             "url": "xxx",
+        #             "outputType": "png",
+        #             "text": null
+        #         }
+        #     ] or null,
+        #     "clientId": "xxx",
+        #     "promptTips": ""
+        # }
+
+        # 检查是否有错误码
+        error_code = response.get("errorCode", "")
+        error_message = response.get("errorMessage", "")
+        failed_reason = response.get("failedReason", {})
+
+        if error_code or failed_reason:
             return {
                 "success": False,
                 "status": "FAILED",
-                "error": response.get("message", "查询失败"),
+                "error": error_message or str(failed_reason) or "查询失败",
                 "raw_response": response
             }
+
+        # 转换状态为统一格式
+        status = response.get("status", "UNKNOWN").upper()
+        results = response.get("results", [])
+
+        # 提取结果URL列表
+        result_urls = []
+        if results:
+            for result in results:
+                if isinstance(result, dict):
+                    url = result.get("url")
+                    if url:
+                        result_urls.append(url)
+
+        return {
+            "success": True,
+            "status": status,
+            "results": result_urls,
+            "raw_response": response
+        }

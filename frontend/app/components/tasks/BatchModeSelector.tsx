@@ -10,8 +10,6 @@ interface BatchModeSelectorProps {
 export function BatchModeSelector({ value, onChange }: BatchModeSelectorProps) {
   return (
     <div className="mb-6">
-      <label className="block text-sm font-medium mb-3">创建模式</label>
-
       <div className="flex gap-2 border-b pb-2">
         <button
           type="button"
@@ -47,7 +45,7 @@ export function BatchModeSelector({ value, onChange }: BatchModeSelectorProps) {
 
       {value === 'combinatorial' && (
         <div className="mt-3 text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
-          <strong>组合模式：</strong>通过提示词、图片等参数的笛卡尔积自动生成大量子任务
+          <strong>组合模式：</strong>通过提示词、图片等参数组合生成子任务
         </div>
       )}
     </div>

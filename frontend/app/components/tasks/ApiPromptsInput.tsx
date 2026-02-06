@@ -46,19 +46,7 @@ export function ApiPromptsInput({
   return (
     <Card className={className}>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">提示词</CardTitle>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addPrompt}
-            disabled={prompts.length >= maxCount}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            添加
-          </Button>
-        </div>
+        <CardTitle className="text-lg">提示词</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {prompts.map((prompt, index) => (
@@ -85,9 +73,21 @@ export function ApiPromptsInput({
             />
           </div>
         ))}
-        <p className="text-xs text-muted-foreground">
-          当前 {prompts.length} 个提示词，最多 {maxCount} 个
-        </p>
+        <div className="flex items-center justify-between pt-2 border-t">
+          <p className="text-xs text-muted-foreground">
+            当前 {prompts.length} 个提示词，最多 {maxCount} 个
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addPrompt}
+            disabled={prompts.length >= maxCount}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            添加
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

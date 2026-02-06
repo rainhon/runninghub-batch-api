@@ -116,18 +116,7 @@ export function ApiImageUpload({
   return (
     <Card className={className}>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">图片批次</CardTitle>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addBatch}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            添加批次
-          </Button>
-        </div>
+        <CardTitle className="text-lg">图片批次</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-xs text-muted-foreground">
@@ -212,19 +201,28 @@ export function ApiImageUpload({
         {imageBatches.length === 0 && (
           <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-md">
             <Upload className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">点击上方"添加批次"开始上传图片</p>
+            <p className="text-sm">点击下方"添加批次"开始上传图片</p>
           </div>
         )}
 
-        {/* 统计信息 */}
-        {totalImages > 0 && (
-          <div className="p-3 bg-muted rounded-md text-sm">
-            <div className="flex items-center justify-between">
-              <span>总计</span>
-              <span className="font-medium">{imageBatches.length} 个批次，{totalImages} 张图片</span>
+        {/* 统计信息和添加按钮 */}
+        <div className="flex items-center justify-between pt-2 border-t">
+          {totalImages > 0 && (
+            <div className="text-sm text-muted-foreground">
+              {imageBatches.length} 个批次，{totalImages} 张图片
             </div>
-          </div>
-        )}
+          )}
+          {totalImages === 0 && <div />}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addBatch}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            添加批次
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

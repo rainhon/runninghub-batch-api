@@ -96,11 +96,6 @@ class ApiTaskManager:
         Returns:
             任务 ID
         """
-        # 验证 API Key
-        try:
-            api_key = get_api_key()
-        except ValueError as e:
-            raise Exception(str(e))
 
         # 验证任务类型
         if task_type not in API_TASK_TYPES:
@@ -170,7 +165,6 @@ class ApiTaskManager:
                 logger.warning(f"⚠️ 任务 #{mission_id} 没有待处理的子任务")
                 return
 
-            # 将所有子任务加入队列（不预设平台策略）
             with self.queue_lock:
                 for item in items:
                     item_data = {
@@ -379,7 +373,13 @@ class ApiTaskManager:
 
             # 处理提交失败
             else:
-                raise Exception(result.get('error', '未知错误'))
+                # 适配器可能返回 "error" 或 "message" 字段
+                error_msg = (
+                    result.get('error') or
+                    result.get('message') or
+                    '未知错误'
+                )
+                raise Exception(error_msg)
 
         except Exception as e:
             self._handle_task_submission_failure(item, item_data, str(e))
@@ -628,14 +628,23 @@ class ApiTaskManager:
 
                         # 尝试从不同的字段中提取 URL
                         if result.get("results") and len(result["results"]) > 0:
-                            # 格式1: results 数组（Mock 格式）
-                            result_url = result["results"][0].get("url")
+                            # results 可能是以下几种格式:
+                            # 1. 字符串数组: ["url1", "url2"] (适配器已处理的格式)
+                            # 2. 对象数组: [{"url": "...", ...}] (原始API格式)
+                            results = result["results"]
+
+                            if isinstance(results[0], str):
+                                # 格式1: 字符串数组
+                                result_url = results[0]
+                            elif isinstance(results[0], dict):
+                                # 格式2: 对象数组
+                                result_url = results[0].get("url")
                         elif result.get("result"):
-                            # 格式2: result 对象（RunningHub 格式）
+                            # 格式3: result 对象
                             result_obj = result["result"]
                             result_url = result_obj.get("fileUrl") or result_obj.get("url")
                         elif result.get("data"):
-                            # 格式3: data 对象（标准格式）
+                            # 格式4: data 对象
                             result_url = result["data"].get("fileUrl") or result["data"].get("url")
 
                         if result_url:
@@ -659,7 +668,12 @@ class ApiTaskManager:
 
                     elif status == "FAILED":
                         # 失败 - 检查是否需要重试
-                        error_message = result.get("errorMessage", "未知错误")
+                        # 适配器可能返回 "error" 或 "errorMessage" 字段
+                        error_message = (
+                            result.get("error") or
+                            result.get("errorMessage") or
+                            "未知错误"
+                        )
 
                         item = database.execute_sql(
                             "SELECT retry_count FROM api_mission_items WHERE id = ?",

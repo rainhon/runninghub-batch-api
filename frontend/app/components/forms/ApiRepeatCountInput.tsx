@@ -44,7 +44,7 @@ export function ApiRepeatCountInput({
         disabled={disabled}
       />
       <p className="text-xs text-muted-foreground">
-        笛卡尔积结果将重复执行 {value} 次，生成 {value} 倍数量的任务
+        批量任务将重复执行 {value} 次，生成 {value} 倍数量的任务
       </p>
     </div>
   );

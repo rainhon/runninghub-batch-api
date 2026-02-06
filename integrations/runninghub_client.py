@@ -92,7 +92,7 @@ def query_task(task_id: str) -> Dict[str, Any]:
 
         if response.status_code == 200:
             result = response.json()
-            logger.debug(f"   查询结果: status={result.get('status')}")
+            logger.debug(f"   查询结果: {result}")
             return result
         else:
             error_msg = f"查询失败: {response.status_code}, {response.text}"

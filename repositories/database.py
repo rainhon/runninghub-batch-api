@@ -179,7 +179,7 @@ def get_api_mission_list(page: int = 1, page_size: int = 20, status: Optional[st
     list_sql = f"""
         SELECT id, name, description, task_type, status,
                total_count, completed_count, failed_count,
-               created_at, updated_at
+               scheduled_time, started_at, created_at, updated_at
         FROM api_missions
         {where_clause}
         ORDER BY created_at DESC
@@ -187,15 +187,15 @@ def get_api_mission_list(page: int = 1, page_size: int = 20, status: Optional[st
     """
     items = execute_sql(list_sql, params + (page_size, offset), fetch_all=True)
 
-    # 计算进度百分比并格式化时间字段
+    # 计算进度百分比
     for item in items:
         if item['total_count'] > 0:
             item['progress'] = round((item['completed_count'] / item['total_count']) * 100, 2)
         else:
             item['progress'] = 0
 
-    # 格式化时间字段为中国时区
-    items = format_datetime_fields(items)
+    # 格式化时间字段为中国时区（包含所有时间字段）
+    items = format_datetime_fields(items, fields=['created_at', 'updated_at', 'scheduled_time', 'started_at'])
 
     return {
         "items": items,
@@ -234,10 +234,21 @@ def get_api_mission_detail(mission_id: int) -> Optional[Dict]:
     mission_dict['config'] = json.loads(mission_dict['config_json'])
     del mission_dict['config_json']
 
-    # 解析子任务参数
+    # 格式化时间字段为中国时区
+    mission_dict = format_datetime_fields(
+        mission_dict,
+        fields=['created_at', 'updated_at', 'scheduled_time', 'started_at']
+    )
+
+    # 解析子任务参数并格式化时间
     for item in items:
         item_dict = dict(item)
         item_dict['input_params'] = json.loads(item_dict['input_params'])
+        # 格式化子任务的时间字段
+        item_dict = format_datetime_fields(
+            item_dict,
+            fields=['created_at', 'updated_at', 'next_retry_at']
+        )
         items[items.index(item)] = item_dict
 
     mission_dict['items'] = items
@@ -308,7 +319,7 @@ def retry_api_mission(mission_id: int) -> int:
     for item in failed_items:
         execute_sql(
             """UPDATE api_mission_items
-               SET status = 'pending', error_message = NULL, runninghub_task_id = NULL
+               SET status = 'pending', error_message = NULL, platform_task_id = NULL
                WHERE id = ?""",
             (item['id'],)
         )

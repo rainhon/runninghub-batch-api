@@ -2,22 +2,51 @@
 API 任务服务模块
 支持四种 API 任务类型：文生图、图生图、文生视频、图生视频
 最多支持 50 个并发任务
-子任务失败自动重试，最多重试 5 次
+子任务失败自动重试，最多重试 5 次（使用指数退避：10s -> 1h）
 """
 import time
 import threading
 import json
 from collections import deque
-from typing import Dict, Any, List
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Any, List, Optional
 import repositories as database
 from core import API_TASK_TYPES, MAX_CONCURRENT_API_TASKS, get_api_key
 from utils import get_logger
+from utils.datetime import CHINA_TZ, get_current_timestamp
 
 # 获取日志器
 logger = get_logger('api_task_service')
 
 # 最大重试次数
-MAX_RETRY_COUNT = 5
+MAX_RETRY_COUNT = 3
+
+# 指数退避配置（10秒起始，最长1小时）
+BASE_RETRY_DELAY = 60  # 基础重试延迟（秒）
+MAX_RETRY_DELAY = 3600  # 最大重试延迟（秒，1小时）
+RETRY_CHECK_INTERVAL = 10  # 重试检查器检查间隔（秒）
+
+
+def calculate_retry_delay(retry_count: int) -> int:
+    """
+    计算重试延迟时间（指数退避）
+
+    Args:
+        retry_count: 当前重试次数
+
+    Returns:
+        延迟秒数
+
+    示例:
+        retry_count=0 -> 60秒
+        retry_count=1 -> 120秒
+        retry_count=2 -> 240秒
+        retry_count=3 -> 480秒
+        retry_count=4 -> 960秒
+        retry_count=5 -> 1980秒
+    """
+    delay = BASE_RETRY_DELAY * (2 ** retry_count)
+    return min(delay, MAX_RETRY_DELAY)
 
 
 class PollingTask:
@@ -58,6 +87,7 @@ class ApiTaskManager:
 
         # 消费者线程
         self.consumer_thread = None
+        self.retry_checker_thread = None  # 重试检查器线程
         self.is_running = False
 
     def start(self):
@@ -77,13 +107,22 @@ class ApiTaskManager:
             self.consumer_thread.start()
             logger.info("✅ API任务管理器已启动（消费者线程）")
 
+            # 启动重试检查器线程
+            self.retry_checker_thread = threading.Thread(
+                target=self._retry_checker_loop,
+                daemon=True,
+                name="API-Retry-Checker"
+            )
+            self.retry_checker_thread.start()
+            logger.info("✅ API任务管理器已启动（重试检查器线程）")
+
     def stop(self):
         """停止处理"""
         self.is_running = False
         logger.info("⏹️ API任务管理器已停止")
 
     def create_api_mission(self, name: str, description: str, task_type: str,
-                           config: Dict) -> int:
+                           config: Dict, scheduled_time: Optional[str] = None) -> int:
         """
         创建API任务
 
@@ -92,6 +131,7 @@ class ApiTaskManager:
             description: 任务描述
             task_type: 任务类型
             config: 任务配置（包含 batch_input）
+            scheduled_time: 定时执行时间（ISO 格式字符串，可选）
 
         Returns:
             任务 ID
@@ -111,15 +151,44 @@ class ApiTaskManager:
         # 从 config 中移除 batch_input，其余保存为固定配置
         fixed_config = {k: v for k, v in config.items() if k != "batch_input"}
 
-        # 创建数据库记录（不指定平台策略，由消费者决定）
+        # 如果提供了定时时间，验证并解析
+        mission_status = "queued"
+        scheduled_time_iso = None
+
+        if scheduled_time:
+            try:
+                # 解析 ISO 格式时间
+                from datetime import timezone
+                scheduled_dt = datetime.fromisoformat(scheduled_time.replace('Z', '+00:00'))
+
+                # 转换为中国时区
+                if scheduled_dt.tzinfo is None:
+                    scheduled_dt = scheduled_dt.replace(tzinfo=timezone.utc).astimezone(CHINA_TZ)
+                else:
+                    scheduled_dt = scheduled_dt.astimezone(CHINA_TZ)
+
+                # 检查是否为过去时间（允许5秒的误差）
+                now = get_current_timestamp()
+                if scheduled_dt < now - timedelta(seconds=5):
+                    raise ValueError(f"定时时间不能早于当前时间: {scheduled_time}")
+
+                # 转换为 ISO 格式字符串存储
+                scheduled_time_iso = scheduled_dt.isoformat()
+                mission_status = "scheduled"
+
+                logger.info(f"📅 任务设定在 {scheduled_time_iso} 执行")
+            except ValueError as e:
+                raise ValueError(f"定时时间格式错误: {str(e)}")
+
+        # 创建数据库记录
         mission_id = database.execute_insert_returning_id(
             """INSERT INTO api_missions
-               (name, description, task_type, status, total_count, config_json)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (name, description, task_type, "queued", total_count, json.dumps(fixed_config))
+               (name, description, task_type, status, total_count, config_json, scheduled_time)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (name, description, task_type, mission_status, total_count, json.dumps(fixed_config), scheduled_time_iso)
         )
 
-        logger.info(f"📋 API任务 #{mission_id} 已创建，共 {total_count} 个子任务")
+        logger.info(f"📋 API任务 #{mission_id} 已创建，共 {total_count} 个子任务，状态: {mission_status}")
 
         # 创建子任务
         for idx, input_data in enumerate(batch_input, 1):
@@ -132,8 +201,9 @@ class ApiTaskManager:
 
         logger.info(f"📋 API任务 #{mission_id} 已创建 {total_count} 个子任务")
 
-        # 添加到队列
-        self.add_to_queue(mission_id)
+        # 如果不是定时任务，立即添加到队列
+        if not scheduled_time:
+            self.add_to_queue(mission_id)
 
         return mission_id
 
@@ -191,13 +261,15 @@ class ApiTaskManager:
         try:
             logger.info("🔄 开始恢复未完成的任务...")
 
-            # 1. 恢复 pending 状态的子任务到队列
+            # 1. 恢复 pending 状态的子任务到队列（保留 next_retry_at）
+            # 注意：排除 scheduled 状态的任务，这些任务由调度器管理
             pending_items = database.execute_sql(
                 """SELECT i.*, m.task_type, m.config_json
                    FROM api_mission_items i
                    JOIN api_missions m ON i.api_mission_id = m.id
                    WHERE i.status = 'pending'
-                   ORDER BY i.api_mission_id, i.item_index""",
+                     AND m.status != 'scheduled'
+                   ORDER BY i.next_retry_at ASC""",
                 fetch_all=True
             )
 
@@ -205,7 +277,7 @@ class ApiTaskManager:
             for item in pending_items:
                 item_data = {
                     'mission_id': item['api_mission_id'],
-                    'item': item,
+                    'item': item,  # 保留完整的 item 数据，包括 next_retry_at
                     'task_type': item['task_type'],
                     'config': json.loads(item['config_json'])
                 }
@@ -213,7 +285,7 @@ class ApiTaskManager:
                     self.item_queue.append(item_data)
                 restored_count += 1
 
-            logger.info(f"📥 恢复 {restored_count} 个待处理的子任务到队列")
+            logger.info(f"📥 恢复 {restored_count} 个待处理的子任务到队列（包含重试时间信息）")
 
             # 2. 恢复 processing 状态且有 platform_task_id 的子任务的轮询
             processing_items = database.execute_sql(
@@ -323,29 +395,50 @@ class ApiTaskManager:
 
         while self.is_running:
             try:
-                # 从队列中取出子任务并提交（控制并发）
                 items_to_process = []
 
-                # 在锁内取出要处理的任务
                 with self.queue_lock:
-                    # 检查是否还有子任务且未达到并发上限
+                    # 检查队列中到期的任务
+                    temp_queue = deque()
+                    now = get_current_timestamp()
+
                     while self.item_queue and self.current_concurrent < self.max_concurrent:
-                        # 取出一个子任务
                         item_data = self.item_queue.popleft()
+
+                        # 检查是否到达重试时间
+                        item = item_data['item']
+                        next_retry_at_str = item.get('next_retry_at')
+
+                        if next_retry_at_str:
+                            try:
+                                next_retry_at = datetime.fromisoformat(next_retry_at_str.replace('Z', '+00:00'))
+                                if next_retry_at.tzinfo is None:
+                                    next_retry_at = next_retry_at.replace(tzinfo=timezone.utc).astimezone(CHINA_TZ)
+
+                                # 如果还没到重试时间，放回队列
+                                if next_retry_at > now:
+                                    temp_queue.append(item_data)
+                                    continue
+                            except Exception as e:
+                                logger.warning(f"⚠️ 解析 next_retry_at 失败: {e}")
+
+                        # 可以处理
                         items_to_process.append(item_data)
                         self.current_concurrent += 1
 
-                # 在锁外提交任务（避免阻塞队列操作）
+                    # 将未到期的任务放回队列
+                    self.item_queue.extendleft(temp_queue)
+
+                # 提交任务
                 for item_data in items_to_process:
                     try:
                         self._submit_and_start_polling(item_data)
                     except Exception as e:
                         logger.error(f"❌ 提交子任务失败: {str(e)}")
-                        # 提交失败，需要减少并发计数
                         with self.lock:
                             self.current_concurrent -= 1
 
-                time.sleep(0.5)  # 避免 CPU 占用过高
+                time.sleep(0.5)
 
             except Exception as e:
                 logger.error(f"❌ 消费者循环错误: {str(e)}")
@@ -392,10 +485,13 @@ class ApiTaskManager:
             fetch_one=True
         )
         if mission and mission['status'] == 'queued':
+            # 记录开始时间（使用中国时区）
+            started_at = get_current_timestamp().isoformat()
             database.execute_sql(
-                "UPDATE api_missions SET status = 'running' WHERE id = ?",
-                (mission_id,)
+                "UPDATE api_missions SET status = 'running', started_at = ? WHERE id = ?",
+                (started_at, mission_id)
             )
+            logger.info(f"🚀 任务 #{mission_id} 开始执行，开始时间: {started_at}")
             # 启动监控线程
             monitor_thread = threading.Thread(
                 target=self._monitor_mission_completion,
@@ -492,7 +588,7 @@ class ApiTaskManager:
         polling_thread.start()
 
     def _handle_task_submission_failure(self, item: Dict, item_data: Dict, error_msg: str):
-        """处理任务提交失败"""
+        """处理任务提交失败（使用指数退避）"""
         logger.error(f"❌ 提交子任务 #{item['item_index']} 失败: {error_msg}")
 
         # 检查是否需要重试
@@ -506,44 +602,39 @@ class ApiTaskManager:
             retry_count = current_item.get('retry_count', 0)
 
             if retry_count < MAX_RETRY_COUNT:
-                # 增加重试次数并重新加入队列
                 new_retry_count = retry_count + 1
+
+                # 计算重试延迟（指数退避）
+                delay_seconds = calculate_retry_delay(retry_count)
+                next_retry_time = get_current_timestamp() + timedelta(seconds=delay_seconds)
+
+                # 更新数据库：设置下次重试时间，不立即加入队列
                 database.execute_sql(
                     """UPDATE api_mission_items
-                       SET status = 'pending', retry_count = ?, platform_task_id = NULL, error_message = ?
+                       SET status = 'pending',
+                           retry_count = ?,
+                           platform_task_id = NULL,
+                           error_message = ?,
+                           next_retry_at = ?
                        WHERE id = ?""",
                     (new_retry_count,
-                     f"提交失败: {error_msg} (重试 {new_retry_count}/{MAX_RETRY_COUNT})",
+                     f"提交失败: {error_msg} (将在 {delay_seconds} 秒后重试 {new_retry_count}/{MAX_RETRY_COUNT})",
+                     next_retry_time.isoformat(),
                      item['id'])
                 )
 
-                # 重新构建 item_data，使用最新的 item数据
-                # 重新获取 mission 的 config_json
-                mission = database.execute_sql(
-                    "SELECT task_type, config_json FROM api_missions WHERE id = ?",
-                    (current_item['api_mission_id'],),
-                    fetch_one=True
+                # 不再立即加入队列，等待重试检查器在指定时间唤醒
+                logger.warning(
+                    f"⚠️ 子任务 #{item['item_index']} 提交失败，"
+                    f"将在 {delay_seconds} 秒后重试 ({new_retry_count}/{MAX_RETRY_COUNT})"
                 )
-
-                if mission:
-                    new_item_data = {
-                        'mission_id': current_item['api_mission_id'],
-                        'item': current_item,  # 使用最新的 item 数据
-                        'task_type': mission['task_type'],
-                        'config': json.loads(mission['config_json'])
-                    }
-
-                    # 重新加入队列
-                    with self.queue_lock:
-                        self.item_queue.append(new_item_data)
-
-                    logger.warning(f"⚠️ 子任务 #{item['item_index']} 提交失败，重新加入队列 "
-                                 f"(重试 {new_retry_count}/{MAX_RETRY_COUNT})")
             else:
                 # 达到最大重试次数，标记为永久失败
                 database.execute_sql(
                     """UPDATE api_mission_items
-                       SET status = 'failed', error_message = ?
+                       SET status = 'failed',
+                           error_message = ?,
+                           next_retry_at = NULL
                        WHERE id = ?""",
                     (f"提交失败 (已达最大重试次数 {MAX_RETRY_COUNT}): {error_msg}", item['id'])
                 )
@@ -667,7 +758,7 @@ class ApiTaskManager:
                         break  # 退出轮询
 
                     elif status == "FAILED":
-                        # 失败 - 检查是否需要重试
+                        # 失败 - 检查是否需要重试（使用指数退避）
                         # 适配器可能返回 "error" 或 "errorMessage" 字段
                         error_message = (
                             result.get("error") or
@@ -685,43 +776,38 @@ class ApiTaskManager:
                             retry_count = item.get('retry_count', 0)
 
                             if retry_count < MAX_RETRY_COUNT:
-                                # 增加重试次数并重新加入队列
                                 new_retry_count = retry_count + 1
+
+                                # 计算重试延迟（指数退避）
+                                delay_seconds = calculate_retry_delay(retry_count)
+                                next_retry_time = get_current_timestamp() + timedelta(seconds=delay_seconds)
+
                                 database.execute_sql(
                                     """UPDATE api_mission_items
-                                       SET status = 'pending', retry_count = ?, platform_task_id = NULL, error_message = ?
+                                       SET status = 'pending',
+                                           retry_count = ?,
+                                           platform_task_id = NULL,
+                                           error_message = ?,
+                                           next_retry_at = ?
                                        WHERE id = ?""",
-                                    (new_retry_count, f"任务失败: {error_message} (重试 {new_retry_count}/{MAX_RETRY_COUNT})", polling_task.item_id)
+                                    (new_retry_count,
+                                     f"任务失败: {error_message} (将在 {delay_seconds} 秒后重试 {new_retry_count}/{MAX_RETRY_COUNT})",
+                                     next_retry_time.isoformat(),
+                                     polling_task.item_id)
                                 )
 
-                                # 重新构建子任务数据并加入队列
-                                mission = database.execute_sql(
-                                    "SELECT * FROM api_missions WHERE id = ?",
-                                    (polling_task.mission_id,),
-                                    fetch_one=True
+                                # 不立即加入队列，等待重试检查器在指定时间唤醒
+                                logger.warning(
+                                    f"⚠️ 子任务 #{polling_task.item_index} 失败，"
+                                    f"将在 {delay_seconds} 秒后重试 ({new_retry_count}/{MAX_RETRY_COUNT})"
                                 )
-
-                                if mission:
-                                    item_data = {
-                                        'mission_id': polling_task.mission_id,
-                                        'item': database.execute_sql(
-                                            "SELECT * FROM api_mission_items WHERE id = ?",
-                                            (polling_task.item_id,),
-                                            fetch_one=True
-                                        ),
-                                        'task_type': polling_task.task_type,
-                                        'config': json.loads(mission['config_json'])
-                                    }
-
-                                    with self.queue_lock:
-                                        self.item_queue.append(item_data)
-
-                                    logger.warning(f"⚠️ 子任务 #{polling_task.item_index} 失败，重新加入队列 (重试 {new_retry_count}/{MAX_RETRY_COUNT})")
                             else:
                                 # 达到最大重试次数，标记为永久失败
                                 database.execute_sql(
                                     """UPDATE api_mission_items
-                                       SET status = 'failed', error_message = ?
+                                       SET status = 'failed',
+                                           error_message = ?,
+                                           next_retry_at = NULL
                                        WHERE id = ?""",
                                     (f"任务失败 (已达最大重试次数 {MAX_RETRY_COUNT}): {error_message}", polling_task.item_id)
                                 )
@@ -789,19 +875,78 @@ class ApiTaskManager:
 
         logger.info(f"📊 API任务 #{mission_id} 进度: {completed} 完成, {failed} 失败")
 
+    def _retry_checker_loop(self):
+        """重试检查器：定期检查并唤醒到期的重试任务"""
+        logger.info("🔄 重试检查器线程已启动")
+
+        while self.is_running:
+            try:
+                now = get_current_timestamp()
+
+                # 查询所有到期的 pending 任务
+                due_items = database.execute_sql(
+                    """SELECT i.id, i.api_mission_id, i.item_index, i.status, i.next_retry_at,
+                              m.task_type, m.config_json
+                       FROM api_mission_items i
+                       JOIN api_missions m ON i.api_mission_id = m.id
+                       WHERE i.status = 'pending'
+                         AND i.next_retry_at IS NOT NULL
+                         AND datetime(i.next_retry_at) <= datetime(?)
+                       ORDER BY i.next_retry_at ASC""",
+                    (now.isoformat(),),
+                    fetch_all=True
+                )
+
+                if due_items:
+                    logger.info(f"🕐 发现 {len(due_items)} 个到期的重试任务")
+
+                    for item in due_items:
+                        # 重新构建 item_data
+                        full_item = database.execute_sql(
+                            "SELECT * FROM api_mission_items WHERE id = ?",
+                            (item['id'],),
+                            fetch_one=True
+                        )
+
+                        if full_item:
+                            item_data = {
+                                'mission_id': item['api_mission_id'],
+                                'item': full_item,
+                                'task_type': item['task_type'],
+                                'config': json.loads(item['config_json'])
+                            }
+
+                            # 加入队列（由消费者检查时间戳）
+                            with self.queue_lock:
+                                self.item_queue.append(item_data)
+
+                            logger.info(f"✅ 重试任务 #{item['item_index']} 已加入队列")
+
+                # 等待下次检查
+                time.sleep(RETRY_CHECK_INTERVAL)
+
+            except Exception as e:
+                logger.error(f"❌ 重试检查器循环错误: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                time.sleep(RETRY_CHECK_INTERVAL)
+
+        logger.info("⏹️ 重试检查器线程已停止")
+
 
 # 全局实例
 api_task_manager = ApiTaskManager()
 
 
 # 便捷函数：供 API 路由直接调用
-def create_mission(name: str, description: str, task_type: str, config: dict) -> int:
+def create_mission(name: str, description: str, task_type: str, config: dict, scheduled_time: Optional[str] = None) -> int:
     """创建 API 任务"""
     return api_task_manager.create_api_mission(
         name=name,
         description=description,
         task_type=task_type,
-        config=config
+        config=config,
+        scheduled_time=scheduled_time
     )
 
 

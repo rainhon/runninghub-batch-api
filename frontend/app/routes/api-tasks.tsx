@@ -89,6 +89,24 @@ export default function ApiTasksPage() {
                   <span className="font-medium text-red-600">{mission.failed_count}</span>
                 </div>
               )}
+              {/* 定时任务：显示定时执行时间 */}
+              {mission.scheduled_time && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">定时执行:</span>{' '}
+                  <span className="font-medium text-purple-600">
+                    {new Date(mission.scheduled_time).toLocaleString('zh-CN')}
+                  </span>
+                </div>
+              )}
+              {/* 运行中任务：显示开始执行时间 */}
+              {mission.started_at && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">开始时间:</span>{' '}
+                  <span className="font-medium">
+                    {new Date(mission.started_at).toLocaleString('zh-CN')}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* 进度条 */}

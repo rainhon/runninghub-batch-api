@@ -28,6 +28,7 @@ class CreateApiMissionRequest(BaseModel):
     description: Optional[str] = None
     task_type: str  # text_to_image, image_to_image, text_to_video, image_to_video
     config: Dict  # 包含 fixed_config 和 batch_input
+    scheduled_time: Optional[str] = None  # 定时执行时间（ISO 格式字符串）
 
 
 class SaveTemplateRequest(BaseModel):
@@ -44,16 +45,17 @@ class SaveTemplateRequest(BaseModel):
 async def create_api_mission(request: CreateApiMissionRequest):
     """创建 API 任务"""
     try:
-        # 创建任务（平台策略由系统决定）
+        # 创建任务（支持定时执行）
         mission_id = api_task_service.create_mission(
             name=request.name,
             description=request.description,
             task_type=request.task_type,
-            config=request.config
+            config=request.config,
+            scheduled_time=request.scheduled_time
         )
 
         mission = database.execute_sql(
-            "SELECT total_count, status FROM api_missions WHERE id = ?",
+            "SELECT total_count, status, scheduled_time FROM api_missions WHERE id = ?",
             (mission_id,),
             fetch_one=True
         )
@@ -63,7 +65,8 @@ async def create_api_mission(request: CreateApiMissionRequest):
             "data": {
                 "mission_id": mission_id,
                 "total_count": mission['total_count'],
-                "status": mission['status']
+                "status": mission['status'],
+                "scheduled_time": mission.get('scheduled_time')
             }
         }
     except ValueError as e:
@@ -125,15 +128,40 @@ async def get_api_mission_items(api_mission_id: int):
 
 @router.post("/{api_mission_id}/cancel")
 async def cancel_api_mission(api_mission_id: int):
-    """取消 API 任务"""
+    """取消 API 任务（包括定时任务）"""
     try:
+        # 获取任务当前状态
+        mission = database.execute_sql(
+            "SELECT status FROM api_missions WHERE id = ?",
+            (api_mission_id,),
+            fetch_one=True
+        )
+
+        if not mission:
+            raise HTTPException(status_code=404, detail="任务不存在")
+
+        # 如果是定时任务，直接标记为取消
+        if mission['status'] == 'scheduled':
+            database.execute_sql(
+                "UPDATE api_missions SET status = 'cancelled' WHERE id = ?",
+                (api_mission_id,)
+            )
+            return {
+                "code": 0,
+                "data": {"cancelled": True, "was_scheduled": True}
+            }
+
+        # 其他状态的任务按原有逻辑处理
         cancelled_count = database.cancel_api_mission(api_mission_id)
         return {
             "code": 0,
             "data": {
-                "cancelled_count": cancelled_count
+                "cancelled_count": cancelled_count,
+                "was_scheduled": False
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"取消任务失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"取消任务失败: {str(e)}")
@@ -309,6 +337,24 @@ async def create_api_template(request: SaveTemplateRequest):
     except Exception as e:
         logger.error(f"保存模板失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"保存模板失败: {str(e)}")
+
+
+@router.get("/scheduled")
+async def get_scheduled_missions():
+    """获取定时任务列表"""
+    try:
+        from services.scheduler import task_scheduler
+        missions = task_scheduler.get_scheduled_tasks()
+        return {
+            "code": 0,
+            "data": {
+                "items": missions,
+                "total": len(missions)
+            }
+        }
+    except Exception as e:
+        logger.error(f"获取定时任务列表失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取定时任务列表失败: {str(e)}")
 
 
 @router.get("/templates")

@@ -164,6 +164,8 @@ export interface ApiMission {
   failed_count: number;
   progress: number;  // 完成百分比
   config_json: string;  // JSON string
+  scheduled_time?: string;  // 定时执行时间（中国时区 ISO 格式）
+  started_at?: string;  // 任务实际开始执行时间
   created_at: string;
   updated_at: string;
 }
@@ -193,6 +195,7 @@ export interface CreateApiMissionRequest {
   description?: string;
   task_type: ApiTaskType;
   config: ApiMissionConfig;
+  scheduled_time?: string;  // 定时执行时间（中国时区 ISO 格式）
   platform_strategy?: string;  // specified, failover, priority
   platform_id?: string;
 }

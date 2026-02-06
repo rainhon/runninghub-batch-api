@@ -12,6 +12,7 @@ from pathlib import Path
 import repositories as database
 import integrations.runninghub as runninghub
 from services import api_task_manager, app_task_manager_v2
+from services.scheduler import task_scheduler
 from utils import setup_logging, get_logger
 from api import api_router
 from core import USE_MOCK_SERVICE, get_api_key
@@ -25,7 +26,7 @@ async def lifespan(app: FastAPI):
     """应用生命周期管理"""
     # 启动时执行
     # 初始化日志系统
-    setup_logging(level=logging.INFO)
+    setup_logging(level=logging.DEBUG)
 
     logger = get_logger(__name__)
     logger.info("正在初始化应用...")
@@ -38,6 +39,10 @@ async def lifespan(app: FastAPI):
     app_task_manager_v2.start()
     logger.info("✅ App任务管理器V2已启动")
 
+    # 启动任务调度器
+    task_scheduler.start()
+    logger.info("✅ 任务调度器已启动")
+
     logger.info("应用初始化完成")
 
     yield
@@ -46,6 +51,7 @@ async def lifespan(app: FastAPI):
     logger.info("应用正在关闭...")
     api_task_manager.stop()
     app_task_manager_v2.stop()
+    task_scheduler.stop()
     logger.info("应用已关闭")
 
 

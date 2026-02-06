@@ -16,6 +16,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   queued: { label: '排队中', color: 'bg-gray-500', icon: <Loader2 className="w-3 h-3" /> },
   running: { label: '运行中', color: 'bg-blue-500', icon: <Loader2 className="w-3 h-3 animate-spin" /> },
   cancelled: { label: '已取消', color: 'bg-yellow-500', icon: <XCircle className="w-3 h-3" /> },
+  scheduled: { label: '已定时', color: 'bg-purple-500', icon: <Loader2 className="w-3 h-3" /> },
 };
 
 // 任务类型名称映射
@@ -367,6 +368,24 @@ export default function ApiTaskDetailPage() {
                 <span className="text-muted-foreground">失败:</span>{' '}
                 <span className="font-medium text-red-600">{mission.failed_count}</span>
               </div>
+              {/* 定时任务：显示定时执行时间 */}
+              {mission.scheduled_time && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">定时执行:</span>{' '}
+                  <span className="font-medium text-purple-600">
+                    {new Date(mission.scheduled_time).toLocaleString('zh-CN')}
+                  </span>
+                </div>
+              )}
+              {/* 运行中任务：显示开始执行时间 */}
+              {mission.started_at && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">开始时间:</span>{' '}
+                  <span className="font-medium">
+                    {new Date(mission.started_at).toLocaleString('zh-CN')}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* 进度条 */}

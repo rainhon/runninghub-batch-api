@@ -19,6 +19,7 @@ import { ApiTaskNameInput, ApiTaskDescription, ApiRepeatCountInput } from '../co
 import { ApiPromptsInput, ApiImageUpload, ApiBatchPreview } from '../components/tasks';
 import { BatchModeSelector } from '../components/tasks/BatchModeSelector';
 import { PreciseTaskList } from '../components/tasks/PreciseTaskList';
+import { ScheduledExecutionToggle } from '../components/tasks/ScheduledExecutionToggle';
 import type { ImageBatch } from '../components/tasks';
 import type { PreciseTaskConfig } from '../components/tasks/TaskCard';
 
@@ -50,6 +51,9 @@ export default function ApiCreatePage() {
   // 精确模式任务列表状态
   const [preciseTasks, setPreciseTasks] = useState<PreciseTaskConfig[]>([]);
 
+  // 定时执行时间
+  const [scheduledTime, setScheduledTime] = useState<string | undefined>();
+
   // 初始化默认配置（在组件挂载或任务类型改变时）
   useEffect(() => {
     if (taskType) {
@@ -75,6 +79,17 @@ export default function ApiCreatePage() {
     if (!taskType || !formState.taskName.trim()) {
       formState.setError('请填写任务名称');
       return;
+    }
+
+    // 验证定时时间
+    if (scheduledTime) {
+      const scheduledDate = new Date(scheduledTime);
+      const now = new Date();
+
+      if (scheduledDate < now) {
+        formState.setError('定时时间不能早于当前时间');
+        return;
+      }
     }
 
     // 组合模式才需要验证 prompts 和 imageBatches
@@ -212,9 +227,14 @@ export default function ApiCreatePage() {
         description: formState.taskDescription,
         task_type: taskType,
         config: submitConfig,
+        scheduled_time: scheduledTime,
       });
 
-      formState.setSuccessMessage('任务提交成功！正在跳转到任务列表...');
+      const successMsg = scheduledTime
+        ? `任务已创建，将在 ${new Date(scheduledTime).toLocaleString('zh-CN')} 执行`
+        : '任务提交成功！';
+
+      formState.setSuccessMessage(successMsg + ' 正在跳转到任务列表...');
       setTimeout(() => {
         navigate('/api-tasks');
       }, 1500);
@@ -262,6 +282,13 @@ export default function ApiCreatePage() {
               <ApiTaskDescription
                 value={formState.taskDescription}
                 onChange={formState.setTaskDescription}
+              />
+
+              {/* 定时执行 */}
+              <ScheduledExecutionToggle
+                scheduledTime={scheduledTime}
+                onChange={setScheduledTime}
+                disabled={formState.submitting}
               />
 
               {/* 重复次数 */}

@@ -2,7 +2,7 @@
 API 任务管理路由
 v1 版本
 """
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional, Dict
@@ -257,7 +257,7 @@ async def download_api_mission_results(api_mission_id: int):
 # ========== 图片上传接口 ==========
 
 @router.post("/images/upload")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(request: Request, file: UploadFile = File(...)):
     """上传图片到本地，返回可访问的 URL"""
     try:
         # 验证文件类型
@@ -278,8 +278,22 @@ async def upload_image(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             buffer.write(content)
 
+        # 动态获取服务器 host 和 port
+        # 优先使用请求头中的 host，如果没有则使用 X-Forwarded-Host（代理场景）
+        host = request.headers.get("host", "")
+        if not host:
+            # 尝试从 X-Forwarded-Host 获取（反向代理场景）
+            host = request.headers.get("x-forwarded-host", "localhost:7777")
+
+        # 确定协议（http 或 https）
+        # 检查 X-Forwarded-Proto 请求头（反向代理会设置）
+        scheme = request.headers.get("x-forwarded-proto", "")
+        if not scheme:
+            # 使用请求的 URL scheme
+            scheme = request.url.scheme
+
         # 返回访问 URL（完整路径，包含 /api/v1/api_missions 前缀）
-        file_url = f"http://localhost:7777/api/v1/api_missions/images/{unique_filename}"
+        file_url = f"{scheme}://{host}/api/v1/api_missions/images/{unique_filename}"
 
         logger.info(f"✅ 图片上传成功: {unique_filename} ({len(content)} bytes)")
 

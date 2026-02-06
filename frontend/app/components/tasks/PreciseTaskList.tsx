@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { generateUUID } from '@/lib/utils';
 import { TaskCard, type PreciseTaskConfig } from './TaskCard';
 import { TaskEditDialog } from './TaskEditDialog';
 import type { ApiTaskType } from '@/types';
@@ -37,7 +38,7 @@ export function PreciseTaskList({ tasks, onChange, taskType }: PreciseTaskListPr
     const taskToDuplicate = tasks[index];
     const newTask = {
       ...taskToDuplicate,
-      id: crypto.randomUUID()
+      id: generateUUID()
     };
     onChange([...tasks, newTask]);
   };

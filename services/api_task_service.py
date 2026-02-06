@@ -19,7 +19,7 @@ from utils.datetime import CHINA_TZ, get_current_timestamp
 logger = get_logger('api_task_service')
 
 # 最大重试次数
-MAX_RETRY_COUNT = 3
+MAX_RETRY_COUNT = 7
 
 # 指数退避配置（10秒起始，最长1小时）
 BASE_RETRY_DELAY = 60  # 基础重试延迟（秒）

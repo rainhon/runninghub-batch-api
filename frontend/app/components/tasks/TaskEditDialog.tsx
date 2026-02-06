@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, X } from 'lucide-react';
 import { api } from '@/lib/api';
+import { generateUUID } from '@/lib/utils';
 import type { PreciseTaskConfig } from './TaskCard';
 import { getAspectRatiosForTaskType, taskTypeRequiresImage } from '@/constants/taskTypes';
 import { VIDEO_DURATIONS } from '@/constants/taskTypes';
@@ -93,7 +94,7 @@ export function TaskEditDialog({
     }
 
     const task: PreciseTaskConfig = {
-      id: editingTask?.id || crypto.randomUUID(),
+      id: editingTask?.id || generateUUID(),
       prompt: prompt.trim(),
       ...(requiresImage && imageUrl && { imageUrl }),
       config: {

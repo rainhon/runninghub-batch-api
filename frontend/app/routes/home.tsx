@@ -23,7 +23,7 @@ export default function Home() {
       </div>
 
       {/* Feature Cards */}
-      <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
+      {/* <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
@@ -63,7 +63,7 @@ export default function Home() {
             </Link>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* API Tasks Section */}
       <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">

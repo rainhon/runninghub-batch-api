@@ -15,7 +15,7 @@ export function Header() {
 
         <nav className="flex flex-wrap items-center gap-2 justify-end">
           {/* App 任务 - 批量输入模式 */}
-          <Link to="/app-create">
+          {/* <Link to="/app-create">
             <Button
               variant={location.pathname === '/app-create' ? 'default' : 'ghost'}
               size="sm"
@@ -35,7 +35,7 @@ export function Header() {
               <List className="w-4 h-4 flex-shrink-0" />
               App列表
             </Button>
-          </Link>
+          </Link> */}
 
           {/* API 任务 */}
           <div className="w-px h-6 bg-border" />
@@ -63,7 +63,7 @@ export function Header() {
           </Link>
 
           {/* 模板 - 共享 */}
-          <div className="w-px h-6 bg-border" />
+          {/* <div className="w-px h-6 bg-border" />
 
           <Link to="/templates">
             <Button
@@ -74,7 +74,7 @@ export function Header() {
               <FileText className="w-4 h-4 flex-shrink-0" />
               模板列表
             </Button>
-          </Link>
+          </Link> */}
         </nav>
       </div>
     </header>

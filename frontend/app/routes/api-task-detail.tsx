@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Loader2, RefreshCw, Download, RotateCcw, XCircle, ArrowLeft, Image as ImageIcon, ExternalLink, Clock, AlertCircle } from 'lucide-react';
+import { Loader2, RefreshCw, Download, RotateCcw, XCircle, ArrowLeft, Image as ImageIcon, ExternalLink, Clock, AlertCircle, Copy, Check } from 'lucide-react';
 import { api } from '../lib/api';
 import type { ApiMissionDetail, ApiMissionItem } from '../types';
 
@@ -149,14 +149,7 @@ function RenderInputParams({ inputParams }: { inputParams: string }) {
               </div>
             );
           } else if (key === 'prompt' && typeof value === 'string') {
-            return (
-              <div key={key} className="flex flex-col gap-1">
-                <span className="font-medium text-foreground">{key}:</span>
-                <span className="text-muted-foreground">
-                  {value.length > 100 ? value.substring(0, 100) + '...' : value}
-                </span>
-              </div>
-            );
+            return <CopyableText key={key} label={key} value={value} maxLength={100} />;
           } else {
             return (
               <div key={key} className="flex flex-col gap-1">
@@ -177,6 +170,38 @@ function RenderInputParams({ inputParams }: { inputParams: string }) {
       </pre>
     );
   }
+}
+
+// 可复制文本组件
+function CopyableText({ label, value, maxLength }: { label: string; value: string; maxLength: number }) {
+  const [copied, setCopied] = useState(false);
+  const isTruncated = value.length > maxLength;
+  const displayText = isTruncated ? value.substring(0, maxLength) + '...' : value;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="font-medium text-foreground">{label}:</span>
+      <div
+        className={`text-muted-foreground cursor-pointer hover:text-foreground transition-colors relative group ${isTruncated ? 'flex items-center gap-1' : ''}`}
+        onClick={handleCopy}
+        title={value} // 鼠标悬停显示完整内容
+      >
+        <span className={isTruncated ? 'flex-1' : ''}>{displayText}</span>
+        {copied ? (
+          <Check className="w-3 h-3 text-green-500 shrink-0" />
+        ) : (
+          <Copy className="w-3 h-3 opacity-0 group-hover:opacity-50 shrink-0" />
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function ApiTaskDetailPage() {
@@ -237,9 +262,23 @@ export default function ApiTaskDetailPage() {
   const handleDownloadItem = (item: ApiMissionItem) => {
     if (!item.result_url) return;
 
+    const taskType = mission?.task_type;
+    let extension = 'png'; // 默认图片格式
+
+    // 根据任务类型确定文件扩展名
+    if (taskType === 'text_to_video' || taskType === 'image_to_video' || taskType === 'frame_to_video') {
+      extension = 'mp4';
+    }
+
+    // 也可以从 URL 中提取扩展名
+    const urlMatch = item.result_url.match(/\.([a-z0-9]+)(?:\?|$)/i);
+    if (urlMatch) {
+      extension = urlMatch[1];
+    }
+
     const link = document.createElement('a');
     link.href = item.result_url;
-    link.download = `result_${item.item_index}.png`;
+    link.download = `result_${item.item_index}.${extension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -248,6 +287,7 @@ export default function ApiTaskDetailPage() {
   // 渲染子任务卡片
   const renderItemCard = (item: ApiMissionItem) => {
     const statusConfig = STATUS_CONFIG[item.status];
+    const taskType = mission?.task_type;
 
     return (
       <Card key={item.id} className="hover:shadow-md transition-shadow">
@@ -309,14 +349,37 @@ export default function ApiTaskDetailPage() {
                   <span className="text-muted-foreground">结果预览:</span>
                 </div>
                 <div className="relative aspect-video bg-muted rounded overflow-hidden">
-                  <img
-                    src={item.result_url}
-                    alt={`结果 #${item.item_index}`}
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ccc" width="100" height="100"/%3E%3Ctext fill="%23666" x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle"%3E加载失败%3C/text%3E%3C/svg%3E';
-                    }}
-                  />
+                  {taskType && (taskType === 'text_to_video' || taskType === 'image_to_video' || taskType === 'frame_to_video') ? (
+                    // 视频任务使用 video 标签
+                    <video
+                      src={item.result_url}
+                      controls
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  ) : (
+                    // 图片任务使用 img 标签
+                    <img
+                      src={item.result_url}
+                      alt={`结果 #${item.item_index}`}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  )}
+                  {/* 加载失败提示 */}
+                  <div className="absolute inset-0 items-center justify-center bg-muted text-muted-foreground text-xs hidden" style={{ display: 'none' }}>
+                    加载失败
+                  </div>
                 </div>
                 <Button
                   size="sm"

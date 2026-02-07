@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { TaskEditDialog } from './TaskEditDialog';
-import type { ApiTaskType } from '@/types';
+import type { ApiTaskType, Model } from '@/types';
 
 export interface PreciseTaskConfig {
   id: string;
@@ -30,13 +30,13 @@ interface TaskCardProps {
   task: PreciseTaskConfig;
   index: number;
   taskType: ApiTaskType;
-  modelId?: string;  // 新增：模型ID
+  model: Model;  // 模型对象，用于获取模型能力配置
   onEdit: (task: PreciseTaskConfig) => void;
   onDelete: () => void;
   onDuplicate: () => void;
 }
 
-export function TaskCard({ task, index, taskType, modelId, onEdit, onDelete, onDuplicate }: TaskCardProps) {
+export function TaskCard({ task, index, taskType, model, onEdit, onDelete, onDuplicate }: TaskCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
 
@@ -135,7 +135,7 @@ export function TaskCard({ task, index, taskType, modelId, onEdit, onDelete, onD
           setShowEditDialog(false);
         }}
         taskType={taskType}
-        modelId={modelId}
+        model={model}
         editingTask={task}
       />
 

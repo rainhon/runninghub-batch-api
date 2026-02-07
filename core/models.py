@@ -17,15 +17,15 @@ MODELS_CONFIG: List[Dict[str, Any]] = [
         "capabilities": {
             "image_to_video": {
                 "enabled": True,
-                "supported_aspect_ratios": ["16:9", "9:16"],
-                "duration_options": [10, 15],
+                "supported_aspect_ratios": ["9:16", "16:9"],
+                "duration_options": [15, 10],
                 "required_params": ["imageUrl", "prompt"],
                 "optional_params": ["duration", "aspectRatio"]
             },
             "text_to_video": {
                 "enabled": True,
-                "supported_aspect_ratios": ["16:9", "9:16"],
-                "duration_options": [10, 15],
+                "supported_aspect_ratios": ["9:16", "16:9"],
+                "duration_options": [15, 10],
                 "required_params": ["prompt"],
                 "optional_params": ["duration", "aspectRatio"]
             }
@@ -43,15 +43,15 @@ MODELS_CONFIG: List[Dict[str, Any]] = [
         "capabilities": {
             "image_to_video": {
                 "enabled": True,
-                "supported_aspect_ratios": ["16:9", "9:16"],
-                "duration_options": [15, 25],
+                "supported_aspect_ratios": ["9:16", "16:9"],
+                "duration_options": [25, 15],
                 "required_params": ["imageUrl", "prompt"],
                 "optional_params": ["duration", "aspectRatio"]
             },
             "text_to_video": {
                 "enabled": True,
-                "supported_aspect_ratios": ["16:9", "9:16"],
-                "duration_options": [15, 25],
+                "supported_aspect_ratios": ["9:16", "16:9"],
+                "duration_options": [25, 15],
                 "required_params": ["prompt"],
                 "optional_params": ["duration", "aspectRatio"]
             }

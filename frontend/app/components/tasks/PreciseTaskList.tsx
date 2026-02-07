@@ -8,16 +8,16 @@ import { Plus } from 'lucide-react';
 import { generateUUID } from '@/lib/utils';
 import { TaskCard, type PreciseTaskConfig } from './TaskCard';
 import { TaskEditDialog } from './TaskEditDialog';
-import type { ApiTaskType } from '@/types';
+import type { ApiTaskType, Model } from '@/types';
 
 interface PreciseTaskListProps {
   tasks: PreciseTaskConfig[];
   onChange: (tasks: PreciseTaskConfig[]) => void;
   taskType: ApiTaskType;
-  modelId?: string;  // 新增：模型ID
+  model: Model;  // 模型对象，用于获取模型能力配置
 }
 
-export function PreciseTaskList({ tasks, onChange, taskType, modelId }: PreciseTaskListProps) {
+export function PreciseTaskList({ tasks, onChange, taskType, model }: PreciseTaskListProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const handleAddTask = (task: PreciseTaskConfig) => {
@@ -60,7 +60,7 @@ export function PreciseTaskList({ tasks, onChange, taskType, modelId }: PreciseT
               task={task}
               index={index}
               taskType={taskType}
-              modelId={modelId}
+              model={model}
               onEdit={(updates) => handleEditTask(index, updates)}
               onDelete={() => handleDeleteTask(index)}
               onDuplicate={() => handleDuplicateTask(index)}
@@ -93,7 +93,7 @@ export function PreciseTaskList({ tasks, onChange, taskType, modelId }: PreciseT
         onClose={() => setShowAddDialog(false)}
         onSave={handleAddTask}
         taskType={taskType}
-        modelId={modelId}
+        model={model}
       />
     </div>
   );

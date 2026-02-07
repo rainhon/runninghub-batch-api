@@ -8,16 +8,15 @@ import { Upload, X } from 'lucide-react';
 import { api } from '@/lib/api';
 import { generateUUID } from '@/lib/utils';
 import type { PreciseTaskConfig } from './TaskCard';
-import { getAspectRatiosForTaskType, taskTypeRequiresImage } from '@/constants/taskTypes';
-import { VIDEO_DURATIONS } from '@/constants/taskTypes';
-import type { ApiTaskType } from '@/types';
+import { taskTypeRequiresImage } from '@/constants/taskTypes';
+import type { ApiTaskType, Model } from '@/types';
 
 interface TaskEditDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: (task: PreciseTaskConfig) => void;
   taskType: ApiTaskType;
-  modelId?: string;  // 新增：模型ID，用于获取模型能力
+  model: Model;  // 模型对象，用于获取模型能力配置
   // 编辑模式时传入现有任务，添加模式时不传
   editingTask?: PreciseTaskConfig;
 }
@@ -27,7 +26,7 @@ export function TaskEditDialog({
   onClose,
   onSave,
   taskType,
-  modelId,
+  model,
   editingTask
 }: TaskEditDialogProps) {
   const [prompt, setPrompt] = useState('');
@@ -45,8 +44,21 @@ export function TaskEditDialog({
   const requiresDuration = taskType === 'text_to_video' || taskType === 'image_to_video' || taskType === 'frame_to_video';
   const isEditMode = !!editingTask;
 
-  // 根据任务类型获取可用的宽高比选项
-  const aspectRatios = getAspectRatiosForTaskType(taskType);
+  // 从模型能力配置获取可用的宽高比选项
+  const capability = model.capabilities?.[taskType];
+  const aspectRatios = capability?.supported_aspect_ratios || ['16:9', '9:16', '1:1'];
+  const durationOptions = capability?.duration_options || [10, 15];
+
+  // 转换为选项格式
+  const aspectRatioOptions = aspectRatios.map((ratio: string) => ({
+    value: ratio,
+    label: ratio
+  }));
+
+  const durationOptionsList = durationOptions.map((d: number) => ({
+    value: String(d),
+    label: `${d}秒`
+  }));
 
   // 初始化表单数据
   useEffect(() => {
@@ -55,16 +67,16 @@ export function TaskEditDialog({
       setImageUrl(editingTask.imageUrl || '');
       setEndImageUrl(editingTask.endImageUrl || '');
       setAspectRatio(editingTask.config.aspectRatio);
-      setDuration(editingTask.config.duration || '10');
+      setDuration(editingTask.config.duration || String(durationOptions[0]));
     } else {
       // 重置为默认值 - 使用当前任务类型的第一个宽高比作为默认值
       setPrompt('');
       setImageUrl('');
       setEndImageUrl('');
-      setAspectRatio(aspectRatios[0]?.value || 'auto');
-      setDuration('10');
+      setAspectRatio(aspectRatios[0] || '16:9');
+      setDuration(String(durationOptions[0]));
     }
-  }, [editingTask, open, taskType, aspectRatios]);
+  }, [editingTask, open, taskType, aspectRatios, durationOptions]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -295,7 +307,7 @@ export function TaskEditDialog({
               className="w-full p-3 border rounded-md"
               disabled={uploading}
             >
-              {aspectRatios.map((ratio) => (
+              {aspectRatioOptions.map((ratio) => (
                 <option key={ratio.value} value={ratio.value}>
                   {ratio.label}
                 </option>
@@ -313,7 +325,7 @@ export function TaskEditDialog({
                 className="w-full p-3 border rounded-md"
                 disabled={uploading}
               >
-                {VIDEO_DURATIONS.map((d) => (
+                {durationOptionsList.map((d) => (
                   <option key={d.value} value={d.value}>
                     {d.label}
                   </option>

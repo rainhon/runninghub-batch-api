@@ -387,7 +387,7 @@ export default function ApiCreatePage() {
                     tasks={preciseTasks}
                     onChange={setPreciseTasks}
                     taskType={taskType}
-                    modelId={selectedModel.model_id}
+                    model={selectedModel}
                   />
                 ) : (
                   /* 组合模式：笛卡尔积方式 */

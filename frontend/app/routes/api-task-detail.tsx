@@ -178,11 +178,46 @@ function CopyableText({ label, value, maxLength }: { label: string; value: strin
   const isTruncated = value.length > maxLength;
   const displayText = isTruncated ? value.substring(0, maxLength) + '...' : value;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(value).then(() => {
+  const handleCopy = async () => {
+    // 成功后设置状态
+    const onSuccess = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    });
+    };
+
+    // 优先使用 Clipboard API（现代浏览器，需要 HTTPS 或 localhost）
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(value);
+        onSuccess();
+        return;
+      } catch (err) {
+        console.warn('Clipboard API 失败，尝试备用方法:', err);
+      }
+    }
+
+    // 备用方法：使用 textarea + document.execCommand
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-999999px';
+      textarea.style.top = '-999999px';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      if (successful) {
+        onSuccess();
+      } else {
+        console.error('execCommand 复制失败');
+      }
+    } catch (err) {
+      console.error('复制功能失败:', err);
+    }
   };
 
   return (

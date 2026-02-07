@@ -293,7 +293,7 @@ async def download_api_mission_results(api_mission_id: int):
         import io
 
         mission = database.execute_sql(
-            "SELECT name FROM api_missions WHERE id = ?",
+            "SELECT name, task_type FROM api_missions WHERE id = ?",
             (api_mission_id,),
             fetch_one=True
         )
@@ -312,12 +312,45 @@ async def download_api_mission_results(api_mission_id: int):
 
         zip_buffer = io.BytesIO()
         mission_name = mission['name'].replace(" ", "_").replace("/", "_")
+        task_type = mission['task_type']
+
+        # 确定文件扩展名
+        def get_file_extension(url: str, task_type: str) -> str:
+            """从 URL 或任务类型推断文件扩展名"""
+            # 先尝试从 URL 提取
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            path = parsed.path
+            if '.' in path:
+                return path.rsplit('.', 1)[-1].lower()
+
+            # 根据任务类型推断
+            if task_type in ['text_to_video', 'image_to_video', 'frame_to_video']:
+                return 'mp4'
+            return 'png'
 
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for idx, item in enumerate(items, 1):
                 url = item['result_url']
-                filename = f"{mission_name}_result_{idx}.png"
-                zip_file.writestr(filename, f"URL: {url}")
+                extension = get_file_extension(url, task_type)
+                filename = f"{mission_name}_result_{idx}.{extension}"
+
+                try:
+                    # 下载文件内容
+                    import requests
+                    response = requests.get(url, timeout=30)
+                    response.raise_for_status()
+
+                    # 将文件内容写入 ZIP
+                    zip_file.writestr(filename, response.content)
+
+                    logger.info(f"✅ 已下载文件 {idx}/{len(items)}: {filename}")
+
+                except Exception as e:
+                    logger.warning(f"⚠️ 下载文件 {url} 失败: {str(e)}")
+                    # 写入错误信息
+                    error_filename = f"{mission_name}_result_{idx}_error.txt"
+                    zip_file.writestr(error_filename, f"下载失败\nURL: {url}\n错误: {str(e)}")
 
         zip_buffer.seek(0)
 

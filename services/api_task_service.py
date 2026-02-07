@@ -523,7 +523,8 @@ class ApiTaskManager:
 
         # 获取输入参数（prompt、imageUrl 等）并与固定配置合并
         input_params = json.loads(item.get('input_params', '{}'))
-        params = {**input_params, **config}  # input_params 优先，config 作为补充
+        # config（固定配置）作为基础，input_params（用户选择）覆盖默认值
+        params = {**config, **input_params}
 
         # 从数据库获取 model_id
         mission = database.execute_sql(

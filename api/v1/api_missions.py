@@ -26,7 +26,8 @@ class CreateApiMissionRequest(BaseModel):
     """创建 API 任务请求"""
     name: str
     description: Optional[str] = None
-    task_type: str  # text_to_image, image_to_image, text_to_video, image_to_video
+    model_id: str  # 模型 ID（sora, sorapro, banana, veo, veopro）
+    task_type: str  # 任务类型（由模型支持的能力决定）
     config: Dict  # 包含 fixed_config 和 batch_input
     scheduled_time: Optional[str] = None  # 定时执行时间（ISO 格式字符串）
 
@@ -45,12 +46,19 @@ class SaveTemplateRequest(BaseModel):
 async def create_api_mission(request: CreateApiMissionRequest):
     """创建 API 任务"""
     try:
+        from core import is_task_type_supported
+
+        # 验证模型是否支持该任务类型
+        if not is_task_type_supported(request.model_id, request.task_type):
+            raise ValueError(f"模型 {request.model_id} 不支持任务类型 {request.task_type}")
+
         # 创建任务（支持定时执行）
         mission_id = api_task_service.create_mission(
             name=request.name,
             description=request.description,
             task_type=request.task_type,
             config=request.config,
+            model_id=request.model_id,
             scheduled_time=request.scheduled_time
         )
 
@@ -88,6 +96,81 @@ async def get_api_missions(page: int = 1, page_size: int = 20, status: Optional[
     except Exception as e:
         logger.error(f"获取任务列表失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"获取任务列表失败: {str(e)}")
+
+
+# ========== 模型管理接口 ==========
+# 注意：这些路由必须在 /{api_mission_id} 之前，否则会被匹配到
+
+@router.get("/models")
+async def get_models():
+    """获取所有可用模型列表"""
+    try:
+        from core import get_enabled_models
+        models = get_enabled_models()
+        return {
+            "code": 0,
+            "data": {
+                "items": models,
+                "total": len(models)
+            }
+        }
+    except Exception as e:
+        logger.error(f"获取模型列表失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取模型列表失败: {str(e)}")
+
+
+@router.get("/models/{model_id}")
+async def get_model_detail(model_id: str):
+    """获取指定模型的详细信息"""
+    try:
+        from core import get_model_config, get_model_capabilities, get_task_types_for_model
+        model = get_model_config(model_id)
+        capabilities = get_model_capabilities(model_id)
+        task_types = get_task_types_for_model(model_id)
+
+        return {
+            "code": 0,
+            "data": {
+                "model": model,
+                "capabilities": capabilities,
+                "task_types": task_types
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"获取模型详情失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取模型详情失败: {str(e)}")
+
+
+@router.get("/models/{model_id}/task-types")
+async def get_model_task_types(model_id: str):
+    """获取指定模型支持的任务类型列表"""
+    try:
+        from core import get_task_types_for_model, get_model_capabilities
+        task_types = get_task_types_for_model(model_id)
+        capabilities = get_model_capabilities(model_id)
+
+        # 返回任务类型及其配置
+        task_type_list = []
+        for task_type in task_types:
+            task_type_list.append({
+                "task_type": task_type,
+                **capabilities[task_type]
+            })
+
+        return {
+            "code": 0,
+            "data": {
+                "items": task_type_list,
+                "total": len(task_type_list)
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"获取模型任务类型失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取模型任务类型失败: {str(e)}")
 
 
 @router.get("/{api_mission_id}")

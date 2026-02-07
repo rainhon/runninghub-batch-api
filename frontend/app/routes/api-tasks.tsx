@@ -48,6 +48,19 @@ export default function ApiTasksPage() {
   const renderMissionCard = (mission: ApiMission) => {
     const isRunning = mission.status === 'running' || mission.status === 'queued';
 
+    // 获取模型显示名称
+    const getModelDisplayName = (modelId?: string): string => {
+      if (!modelId) return '-';
+      const names: Record<string, string> = {
+        sora: 'Sora',
+        sorapro: 'Sora Pro',
+        banana: 'Banana',
+        veo: 'Veo',
+        veopro: 'Veo Pro'
+      };
+      return names[modelId] || modelId;
+    };
+
     return (
       <Card key={mission.id} className="hover:shadow-md transition-shadow">
         <CardHeader>
@@ -65,6 +78,10 @@ export default function ApiTasksPage() {
           <div className="space-y-4">
             {/* 任务信息 */}
             <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">模型:</span>{' '}
+                <span className="font-medium">{getModelDisplayName(mission.model_id)}</span>
+              </div>
               <div>
                 <span className="text-muted-foreground">任务类型:</span>{' '}
                 <span className="font-medium">{getTaskTypeName(mission.task_type)}</span>

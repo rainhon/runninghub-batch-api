@@ -177,7 +177,7 @@ def get_api_mission_list(page: int = 1, page_size: int = 20, status: Optional[st
     # 查询列表
     offset = (page - 1) * page_size
     list_sql = f"""
-        SELECT id, name, description, task_type, status,
+        SELECT id, name, description, task_type, model_id, status,
                total_count, completed_count, failed_count,
                scheduled_time, started_at, created_at, updated_at
         FROM api_missions

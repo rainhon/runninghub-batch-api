@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Loader2, RefreshCw, Download, RotateCcw, XCircle, ArrowLeft, Image as ImageIcon, ExternalLink } from 'lucide-react';
+import { Loader2, RefreshCw, Download, RotateCcw, XCircle, ArrowLeft, Image as ImageIcon, ExternalLink, Clock, AlertCircle } from 'lucide-react';
 import { api } from '../lib/api';
 import type { ApiMissionDetail, ApiMissionItem } from '../types';
 
@@ -25,6 +25,16 @@ const TASK_TYPE_NAMES: Record<string, string> = {
   image_to_image: '图生图',
   text_to_video: '文生视频',
   image_to_video: '图生视频',
+  frame_to_video: '首尾帧生视频',
+};
+
+// 模型名称映射
+const MODEL_NAMES: Record<string, string> = {
+  sora: 'Sora',
+  sorapro: 'Sora Pro',
+  banana: 'Banana',
+  veo: 'Veo',
+  veopro: 'Veo Pro',
 };
 
 // 图片预览组件
@@ -75,6 +85,33 @@ function ImagePreview({ url }: { url: string }) {
       )}
     </>
   );
+}
+
+// 格式化重试剩余时间
+function formatRetryTime(nextRetryAt: string): { text: string; isUrgent: boolean } {
+  try {
+    const now = new Date();
+    const retryTime = new Date(nextRetryAt);
+    const diffMs = retryTime.getTime() - now.getTime();
+
+    if (diffMs <= 0) {
+      return { text: '即将重试', isUrgent: true };
+    }
+
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+
+    if (diffSecs < 60) {
+      return { text: `${diffSecs}秒后重试`, isUrgent: false };
+    } else if (diffMins < 60) {
+      return { text: `${diffMins}分钟后重试`, isUrgent: false };
+    } else {
+      return { text: `${diffHours}小时${diffMins % 60}分钟后重试`, isUrgent: false };
+    }
+  } catch (e) {
+    return { text: '计算中...', isUrgent: false };
+  }
 }
 
 // 输入参数渲染组件
@@ -227,6 +264,28 @@ export default function ApiTaskDetailPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
+            {/* 重试状态信息 */}
+            {(item.status === 'pending' || item.status === 'failed') && (item.retry_count ?? 0) > 0 && (
+              <div className="text-sm p-2 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 rounded-md">
+                <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span className="font-medium">重试状态: {item.retry_count}/7</span>
+                </div>
+                {item.next_retry_at && (
+                  <div className="flex items-center gap-2 mt-1 text-orange-600 dark:text-orange-500 text-xs">
+                    <Clock className="w-3 h-3 shrink-0" />
+                    <span>
+                      下次重试: {new Date(item.next_retry_at).toLocaleString('zh-CN')}
+                      {(() => {
+                        const { text } = formatRetryTime(item.next_retry_at);
+                        return ` (${text})`;
+                      })()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* 输入参数 */}
             <div className="text-sm">
               <span className="text-muted-foreground">输入参数:</span>
@@ -346,6 +405,10 @@ export default function ApiTaskDetailPage() {
           <div className="space-y-4">
             {/* 任务信息 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">模型:</span>{' '}
+                <span className="font-medium">{MODEL_NAMES[mission.model_id || ''] || '-'}</span>
+              </div>
               <div>
                 <span className="text-muted-foreground">任务类型:</span>{' '}
                 <span className="font-medium">{TASK_TYPE_NAMES[mission.task_type]}</span>

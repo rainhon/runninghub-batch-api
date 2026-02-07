@@ -14,9 +14,10 @@ interface PreciseTaskListProps {
   tasks: PreciseTaskConfig[];
   onChange: (tasks: PreciseTaskConfig[]) => void;
   taskType: ApiTaskType;
+  modelId?: string;  // 新增：模型ID
 }
 
-export function PreciseTaskList({ tasks, onChange, taskType }: PreciseTaskListProps) {
+export function PreciseTaskList({ tasks, onChange, taskType, modelId }: PreciseTaskListProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const handleAddTask = (task: PreciseTaskConfig) => {
@@ -59,6 +60,7 @@ export function PreciseTaskList({ tasks, onChange, taskType }: PreciseTaskListPr
               task={task}
               index={index}
               taskType={taskType}
+              modelId={modelId}
               onEdit={(updates) => handleEditTask(index, updates)}
               onDelete={() => handleDeleteTask(index)}
               onDuplicate={() => handleDuplicateTask(index)}
@@ -91,6 +93,7 @@ export function PreciseTaskList({ tasks, onChange, taskType }: PreciseTaskListPr
         onClose={() => setShowAddDialog(false)}
         onSave={handleAddTask}
         taskType={taskType}
+        modelId={modelId}
       />
     </div>
   );

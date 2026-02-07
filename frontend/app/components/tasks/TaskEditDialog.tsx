@@ -17,6 +17,7 @@ interface TaskEditDialogProps {
   onClose: () => void;
   onSave: (task: PreciseTaskConfig) => void;
   taskType: ApiTaskType;
+  modelId?: string;  // 新增：模型ID，用于获取模型能力
   // 编辑模式时传入现有任务，添加模式时不传
   editingTask?: PreciseTaskConfig;
 }
@@ -26,18 +27,22 @@ export function TaskEditDialog({
   onClose,
   onSave,
   taskType,
+  modelId,
   editingTask
 }: TaskEditDialogProps) {
   const [prompt, setPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [endImageUrl, setEndImageUrl] = useState('');  // 新增：尾帧图片
   const [aspectRatio, setAspectRatio] = useState('auto');
   const [duration, setDuration] = useState('10');
   const [uploading, setUploading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const endFileInputRef = useRef<HTMLInputElement>(null);  // 新增：尾帧文件输入
 
   const requiresImage = taskTypeRequiresImage(taskType);
-  const requiresDuration = taskType === 'text_to_video' || taskType === 'image_to_video';
+  const requiresEndImage = taskType === 'frame_to_video';  // 新增：首尾帧生视频需要尾帧
+  const requiresDuration = taskType === 'text_to_video' || taskType === 'image_to_video' || taskType === 'frame_to_video';
   const isEditMode = !!editingTask;
 
   // 根据任务类型获取可用的宽高比选项
@@ -48,12 +53,14 @@ export function TaskEditDialog({
     if (editingTask) {
       setPrompt(editingTask.prompt);
       setImageUrl(editingTask.imageUrl || '');
+      setEndImageUrl(editingTask.endImageUrl || '');
       setAspectRatio(editingTask.config.aspectRatio);
       setDuration(editingTask.config.duration || '10');
     } else {
       // 重置为默认值 - 使用当前任务类型的第一个宽高比作为默认值
       setPrompt('');
       setImageUrl('');
+      setEndImageUrl('');
       setAspectRatio(aspectRatios[0]?.value || 'auto');
       setDuration('10');
     }
@@ -78,8 +85,32 @@ export function TaskEditDialog({
     }
   };
 
+  // 新增：尾帧图片上传
+  const handleEndImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const result = await api.uploadApiImage(file);
+      setEndImageUrl(result.data.url);
+    } catch (err: any) {
+      alert(err.message || '图片上传失败');
+    } finally {
+      setUploading(false);
+      if (e.target) {
+        e.target.value = '';
+      }
+    }
+  };
+
   const handleRemoveImage = () => {
     setImageUrl('');
+  };
+
+  // 新增：移除尾帧图片
+  const handleRemoveEndImage = () => {
+    setEndImageUrl('');
   };
 
   const handleSave = () => {
@@ -93,10 +124,16 @@ export function TaskEditDialog({
       return;
     }
 
+    if (requiresEndImage && (!imageUrl || !endImageUrl)) {
+      alert('请上传首帧和尾帧图片');
+      return;
+    }
+
     const task: PreciseTaskConfig = {
       id: editingTask?.id || generateUUID(),
       prompt: prompt.trim(),
       ...(requiresImage && imageUrl && { imageUrl }),
+      ...(requiresEndImage && endImageUrl && { endImageUrl }),
       config: {
         aspectRatio,
         ...(requiresDuration && { duration })
@@ -109,6 +146,7 @@ export function TaskEditDialog({
     if (!isEditMode) {
       setPrompt('');
       setImageUrl('');
+      setEndImageUrl('');
       setAspectRatio('auto');
       setDuration('10');
     }
@@ -118,6 +156,7 @@ export function TaskEditDialog({
     // 重置表单
     setPrompt('');
     setImageUrl('');
+    setEndImageUrl('');
     setAspectRatio('auto');
     setDuration('10');
     onClose();
@@ -191,6 +230,56 @@ export function TaskEditDialog({
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     {uploading ? '上传中...' : '选择图片'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 尾帧图片上传（首尾帧生视频需要） */}
+          {requiresEndImage && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                尾帧图片 <span className="text-destructive">*</span>
+              </label>
+
+              {endImageUrl ? (
+                <div className="relative">
+                  <img
+                    src={endImageUrl}
+                    alt="上传的尾帧图片"
+                    className="w-full h-40 object-cover rounded-md border"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={handleRemoveEndImage}
+                    disabled={uploading}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed rounded-md p-6">
+                  <input
+                    ref={endFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEndImageUpload}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => endFileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {uploading ? '上传中...' : '选择尾帧图片'}
                   </Button>
                 </div>
               )}

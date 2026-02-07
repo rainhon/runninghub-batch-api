@@ -41,7 +41,8 @@ instance.interceptors.response.use(
     // HTTP 错误
     if (error.response) {
       const { status, data } = error.response;
-      const message = data?.msg || `HTTP ${status} 错误`;
+      // 处理 FastAPI HTTPException 响应格式（detail 字段）和自定义格式（msg 字段）
+      const message = data?.msg || data?.detail || (typeof data === 'string' ? data : `HTTP ${status} 错误`);
       return Promise.reject(new Error(message));
     } else if (error.request) {
       // 网络错误

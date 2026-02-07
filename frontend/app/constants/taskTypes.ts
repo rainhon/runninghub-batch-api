@@ -6,7 +6,13 @@
 import type { ApiTaskType } from '../types';
 
 // 任务类型基础配置（不含 JSX，可用于 JSON 序列化）
-export const TASK_TYPE_CONFIG: Record<ApiTaskType, {
+export const TASK_TYPE_CONFIG: Record<
+  | 'image_to_video'
+  | 'text_to_video'
+  | 'image_to_image'
+  | 'text_to_image'
+  | 'frame_to_video',
+  {
   id: ApiTaskType;
   name: string;
   description: string;
@@ -41,6 +47,13 @@ export const TASK_TYPE_CONFIG: Record<ApiTaskType, {
     iconName: 'image',
     color: 'bg-blue-500',
   },
+  frame_to_video: {
+    id: 'frame_to_video',
+    name: '首尾帧生视频',
+    description: '根据首尾帧图片生成中间过渡视频',
+    iconName: 'film',
+    color: 'bg-pink-500',
+  },
 };
 
 // 图片任务宽高比选项（香蕉 API）
@@ -74,7 +87,7 @@ export const VIDEO_DURATIONS = [
 export function getAspectRatiosForTaskType(taskType: ApiTaskType | null) {
   if (!taskType) return [];
 
-  if (taskType === 'text_to_video' || taskType === 'image_to_video') {
+  if (taskType === 'text_to_video' || taskType === 'image_to_video' || taskType === 'frame_to_video') {
     return VIDEO_ASPECT_RATIOS;
   }
   return IMAGE_ASPECT_RATIOS;
@@ -82,12 +95,13 @@ export function getAspectRatiosForTaskType(taskType: ApiTaskType | null) {
 
 // 工具函数：判断任务类型是否需要图片输入
 export function taskTypeRequiresImage(taskType: ApiTaskType | null): boolean {
-  return taskType === 'image_to_image' || taskType === 'image_to_video';
+  return taskType === 'image_to_image' || taskType === 'image_to_video' || taskType === 'frame_to_video';
 }
 
 // 工具函数：获取任务类型最大图片数
 export function getMaxImagesForTaskType(taskType: ApiTaskType | null): number {
   if (taskType === 'image_to_image') return 5;
   if (taskType === 'image_to_video') return 1;
+  if (taskType === 'frame_to_video') return 2;  // 首尾帧需要2张图片
   return 0;
 }

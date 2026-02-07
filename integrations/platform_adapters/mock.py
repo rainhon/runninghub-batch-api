@@ -50,13 +50,14 @@ class MockAdapter(BasePlatformAdapter):
         """
         return raw_result
 
-    def submit_task(self, task_type: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    def submit_task(self, task_type: str, params: Dict[str, Any], model_id: str) -> Dict[str, Any]:
         """
         提交任务到 Mock 平台
 
         Args:
             task_type: 任务类型
             params: 任务参数
+            model_id: 模型 ID（必需）
 
         Returns:
             提交结果
@@ -80,12 +81,13 @@ class MockAdapter(BasePlatformAdapter):
             "task_id": task_id,
             "task_type": task_type,
             "params": params,
+            "model_id": model_id,
             "status": "RUNNING",
             "created_at": time.time(),
             "platform_id": self.platform_id
         }
 
-        logger.info(f"📤 Mock 提交任务: {task_type} -> {task_id}")
+        logger.info(f"📤 Mock 提交任务: {task_type} (model={model_id}) -> {task_id}")
 
         return {
             "success": True,

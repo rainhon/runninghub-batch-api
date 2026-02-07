@@ -32,6 +32,17 @@ from .platforms import (
     get_all_task_types
 )
 
+from .models import (
+    MODELS_CONFIG,
+    get_model_config,
+    get_enabled_models,
+    get_model_capabilities,
+    get_task_types_for_model,
+    is_task_type_supported,
+    get_capability_config,
+    get_all_model_ids
+)
+
 __all__ = [
     'RUNNINGHUB_APP_TASK_KEY',
     'RUNNINGHUB_DIRECT_API_KEY',
@@ -56,5 +67,13 @@ __all__ = [
     'get_platform_endpoint',
     'TASK_TYPE_CONFIG',
     'get_task_type_config',
-    'get_all_task_types'
+    'get_all_task_types',
+    'MODELS_CONFIG',
+    'get_model_config',
+    'get_enabled_models',
+    'get_model_capabilities',
+    'get_task_types_for_model',
+    'is_task_type_supported',
+    'get_capability_config',
+    'get_all_model_ids'
 ]

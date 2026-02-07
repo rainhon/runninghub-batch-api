@@ -122,7 +122,8 @@ class ApiTaskManager:
         logger.info("⏹️ API任务管理器已停止")
 
     def create_api_mission(self, name: str, description: str, task_type: str,
-                           config: Dict, scheduled_time: Optional[str] = None) -> int:
+                           config: Dict, model_id: Optional[str] = None,
+                           scheduled_time: Optional[str] = None) -> int:
         """
         创建API任务
 
@@ -131,6 +132,7 @@ class ApiTaskManager:
             description: 任务描述
             task_type: 任务类型
             config: 任务配置（包含 batch_input）
+            model_id: 模型 ID
             scheduled_time: 定时执行时间（ISO 格式字符串，可选）
 
         Returns:
@@ -183,9 +185,9 @@ class ApiTaskManager:
         # 创建数据库记录
         mission_id = database.execute_insert_returning_id(
             """INSERT INTO api_missions
-               (name, description, task_type, status, total_count, config_json, scheduled_time)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (name, description, task_type, mission_status, total_count, json.dumps(fixed_config), scheduled_time_iso)
+               (name, description, task_type, model_id, status, total_count, config_json, scheduled_time)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (name, description, task_type, model_id, mission_status, total_count, json.dumps(fixed_config), scheduled_time_iso)
         )
 
         logger.info(f"📋 API任务 #{mission_id} 已创建，共 {total_count} 个子任务，状态: {mission_status}")
@@ -264,7 +266,7 @@ class ApiTaskManager:
             # 1. 恢复 pending 状态的子任务到队列（保留 next_retry_at）
             # 注意：排除 scheduled 状态的任务，这些任务由调度器管理
             pending_items = database.execute_sql(
-                """SELECT i.*, m.task_type, m.config_json
+                """SELECT i.*, m.task_type, m.config_json, m.model_id
                    FROM api_mission_items i
                    JOIN api_missions m ON i.api_mission_id = m.id
                    WHERE i.status = 'pending'
@@ -357,11 +359,20 @@ class ApiTaskManager:
                     fetch_one=True
                 )
 
-                if mission_status and mission_status['status'] in ['queued', 'completed', 'failed']:
-                    database.execute_sql(
-                        "UPDATE api_missions SET status = 'running' WHERE id = ?",
-                        (mission_id,)
-                    )
+                if not mission_status:
+                    continue
+
+                status = mission_status['status']
+
+                # 对于运行中或排队的任务，启动监控线程
+                if status in ['running', 'queued']:
+                    # 如果状态是 queued，更新为 running
+                    if status == 'queued':
+                        database.execute_sql(
+                            "UPDATE api_missions SET status = 'running' WHERE id = ?",
+                            (mission_id,)
+                        )
+                        logger.info(f"📝 任务 #{mission_id} 状态从 queued 更新为 running")
 
                     # 启动监控线程
                     monitor_thread = threading.Thread(
@@ -371,6 +382,8 @@ class ApiTaskManager:
                         name=f"Monitor-Mission-{mission_id}"
                     )
                     monitor_thread.start()
+                    logger.info(f"🔄 重启监控线程：任务 #{mission_id} (当前状态: {status})")
+                # scheduled 任务不在这里处理，由定时器处理
 
             logger.info(f"✅ 任务恢复完成：队列 {restored_count} 个，轮询 {restored_polling_count} 个")
 
@@ -506,18 +519,28 @@ class ApiTaskManager:
         item = item_data['item']
         task_type = item_data['task_type']
         config = item_data['config']
+        mission_id = item_data['mission_id']
 
         # 获取输入参数（prompt、imageUrl 等）并与固定配置合并
         input_params = json.loads(item.get('input_params', '{}'))
         params = {**input_params, **config}  # input_params 优先，config 作为补充
 
-        # 使用平台管理器提交任务
+        # 从数据库获取 model_id
+        mission = database.execute_sql(
+            "SELECT model_id FROM api_missions WHERE id = ?",
+            (mission_id,),
+            fetch_one=True
+        )
+        model_id = mission.get('model_id') if mission else None
+
+        # 使用平台管理器提交任务（传递 model_id）
         from services.platform_manager import platform_manager
 
         result = platform_manager.submit_task(
             task_type=task_type,
             params=params,
-            item_id=item['id']
+            item_id=item['id'],
+            model_id=model_id
         )
 
         return result
@@ -886,7 +909,7 @@ class ApiTaskManager:
                 # 查询所有到期的 pending 任务
                 due_items = database.execute_sql(
                     """SELECT i.id, i.api_mission_id, i.item_index, i.status, i.next_retry_at,
-                              m.task_type, m.config_json
+                              m.task_type, m.config_json, m.model_id
                        FROM api_mission_items i
                        JOIN api_missions m ON i.api_mission_id = m.id
                        WHERE i.status = 'pending'
@@ -939,13 +962,15 @@ api_task_manager = ApiTaskManager()
 
 
 # 便捷函数：供 API 路由直接调用
-def create_mission(name: str, description: str, task_type: str, config: dict, scheduled_time: Optional[str] = None) -> int:
+def create_mission(name: str, description: str, task_type: str, config: dict,
+                   model_id: Optional[str] = None, scheduled_time: Optional[str] = None) -> int:
     """创建 API 任务"""
     return api_task_manager.create_api_mission(
         name=name,
         description=description,
         task_type=task_type,
         config=config,
+        model_id=model_id,
         scheduled_time=scheduled_time
     )
 

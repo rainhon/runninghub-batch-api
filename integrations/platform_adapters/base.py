@@ -39,13 +39,14 @@ class BasePlatformAdapter(ABC):
         pass
 
     @abstractmethod
-    def submit_task(self, task_type: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    def submit_task(self, task_type: str, params: Dict[str, Any], model_id: str) -> Dict[str, Any]:
         """
         提交任务到平台
 
         Args:
             task_type: 任务类型
             params: 任务参数（标准化格式）
+            model_id: 模型 ID（必需，用于根据模型选择不同端点）
 
         Returns:
             提交结果字典：

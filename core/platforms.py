@@ -25,57 +25,6 @@ PLATFORMS_CONFIG: List[Dict[str, Any]] = [
             "text_to_video": "/rhart-video-v1/text-to-video",
             "image_to_video": "/rhart-video-v1/image-to-video"
         }
-    },
-    {
-        "platform_id": "midjourney",
-        "name": "Midjourney",
-        "display_name": "Midjourney",
-        "enabled": False,  # 默认禁用，需要配置后启用
-        "priority": 8,
-        "supported_task_types": ["text_to_image", "image_to_image"],
-        "api_key_env": "MIDJOURNEY_API_KEY",
-        "api_endpoint": "https://api.midjourney.com/v1",
-        "rate_limit": 30,
-        "timeout": 600,
-        "cost_per_task": 0.0,
-        "endpoints": {
-            "text_to_image": "/txt2img",
-            "image_to_image": "/img2img"
-        }
-    },
-    {
-        "platform_id": "stability",
-        "name": "Stability AI",
-        "display_name": "Stability AI",
-        "enabled": False,
-        "priority": 7,
-        "supported_task_types": ["text_to_image", "image_to_image"],
-        "api_key_env": "STABILITY_API_KEY",
-        "api_endpoint": "https://api.stability.ai/v1",
-        "rate_limit": 50,
-        "timeout": 300,
-        "cost_per_task": 0.0,
-        "endpoints": {
-            "text_to_image": "/text-to-image",
-            "image_to_image": "/image-to-image"
-        }
-    },
-    {
-        "platform_id": "replicate",
-        "name": "Replicate",
-        "display_name": "Replicate",
-        "enabled": False,
-        "priority": 6,
-        "supported_task_types": ["text_to_image", "image_to_video"],
-        "api_key_env": "REPLICATE_API_KEY",
-        "api_endpoint": "https://api.replicate.com/v1",
-        "rate_limit": 100,
-        "timeout": 600,
-        "cost_per_task": 0.0,
-        "endpoints": {
-            "text_to_image": "/predictions",
-            "image_to_video": "/predictions"
-        }
     }
 ]
 

@@ -1,20 +1,20 @@
 /**
- * API 任务创建页面
+ * API 任务创建页面（新版：先选择模型，再根据模型能力选择任务类型）
  */
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { api } from '../lib/api';
-import type { ApiTaskType, ApiMissionConfig } from '../types';
+import type { ApiTaskType, ApiMissionConfig, Model } from '../types';
 
 // 使用自定义 hooks
 import { useApiTaskFormState } from '../hooks/useApiTaskFormState';
 
 // 使用新组件
-import { ApiTaskTypeTabs } from '../components/tasks';
+import { ModelSelector, ModelTaskTypeSelector } from '../components/tasks';
 import { ApiTaskNameInput, ApiTaskDescription, ApiRepeatCountInput } from '../components/forms';
 import { ApiPromptsInput, ApiImageUpload, ApiBatchPreview } from '../components/tasks';
 import { BatchModeSelector } from '../components/tasks/BatchModeSelector';
@@ -23,24 +23,17 @@ import { ScheduledExecutionToggle } from '../components/tasks/ScheduledExecution
 import type { ImageBatch } from '../components/tasks';
 import type { PreciseTaskConfig } from '../components/tasks/TaskCard';
 
-// 使用常量
-import { TASK_TYPE_CONFIG } from '../constants/taskTypes';
-import { getAspectRatiosForTaskType, taskTypeRequiresImage } from '../constants/taskTypes';
-
 // 初始化图片批次
 const initialImageBatches: ImageBatch[] = [{ id: Date.now().toString(), images: [] }];
-
-// 配置常量
-const VIDEO_DURATIONS = [
-  { value: '10', label: '10秒' },
-  { value: '15', label: '15秒' },
-];
 
 export default function ApiCreatePage() {
   const navigate = useNavigate();
 
-  // 任务类型状态
-  const [taskType, setTaskType] = useState<ApiTaskType | null>('image_to_video');
+  // 模型和任务类型状态
+  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+  const [taskType, setTaskType] = useState<ApiTaskType | null>(null);
+
+  // 表单状态
   const [config, setConfig] = useState<ApiMissionConfig>({});
   const [imageBatches, setImageBatches] = useState<ImageBatch[]>(initialImageBatches);
   const [prompts, setPrompts] = useState<string[]>(['']);
@@ -54,30 +47,36 @@ export default function ApiCreatePage() {
   // 定时执行时间
   const [scheduledTime, setScheduledTime] = useState<string | undefined>();
 
-  // 初始化默认配置（在组件挂载或任务类型改变时）
+  // 初始化默认配置（在任务类型改变时）
   useEffect(() => {
-    if (taskType) {
-      const aspectRatios = getAspectRatiosForTaskType(taskType);
-      const isVideoTask = taskType === 'text_to_video' || taskType === 'image_to_video';
-      setConfig({
-        aspectRatio: aspectRatios[0]?.value,
-        duration: isVideoTask ? '10' : undefined
-      });
+    if (taskType && selectedModel) {
+      initConfigForTaskType(taskType);
     }
-  }, [taskType]);
+  }, [taskType, selectedModel]);
 
   // 使用表单状态 hook
   const formState = useApiTaskFormState();
 
-  // 当前任务类型配置
-  const currentTaskConfig = taskType ? TASK_TYPE_CONFIG[taskType] : null;
+  // 初始化任务类型配置
+  const initConfigForTaskType = (tt: ApiTaskType) => {
+    const isVideoTask = tt === 'text_to_video' || tt === 'image_to_video' || tt === 'frame_to_video';
+
+    // 从模型能力配置获取支持的宽高比
+    const capability = selectedModel?.capabilities?.[tt];
+    const aspectRatios = capability?.supported_aspect_ratios || ['16:9', '9:16', '1:1'];
+
+    setConfig({
+      aspectRatio: aspectRatios[0] as any,
+      duration: isVideoTask ? '10' : undefined
+    });
+  };
 
   // 提交任务
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!taskType || !formState.taskName.trim()) {
-      formState.setError('请填写任务名称');
+    if (!selectedModel || !taskType || !formState.taskName.trim()) {
+      formState.setError('请填写完整信息');
       return;
     }
 
@@ -100,7 +99,7 @@ export default function ApiCreatePage() {
         return;
       }
 
-      const needsImage = taskTypeRequiresImage(taskType);
+      const needsImage = doesTaskTypeRequireImage(taskType);
       const hasImages = imageBatches.some(batch => batch.images.length > 0);
       if (needsImage && !hasImages) {
         formState.setError('请上传参考图片');
@@ -147,6 +146,19 @@ export default function ApiCreatePage() {
               }
             }
           }
+        } else if (taskType === 'frame_to_video') {
+          // 首尾帧生视频：需要首尾帧图片
+          for (let i = 0; i < allBatchImages.length - 1; i += 2) {
+            for (const prompt of validPrompts) {
+              baseTasks.push({
+                prompt: prompt.trim(),
+                imageUrl: allBatchImages[i],
+                endImageUrl: allBatchImages[i + 1],
+                aspectRatio: config.aspectRatio,
+                duration: config.duration,
+              });
+            }
+          }
         } else {
           // 文生图/文生视频：每个提示词独立生成
           for (const prompt of validPrompts) {
@@ -183,9 +195,9 @@ export default function ApiCreatePage() {
         }
 
         // 验证需要图片的任务类型
-        const needsImage = taskTypeRequiresImage(taskType);
+        const needsImage = doesTaskTypeRequireImage(taskType);
         if (needsImage) {
-          const tasksWithoutImage = preciseTasks.filter(t => !t.imageUrl && !t.imageUrls);
+          const tasksWithoutImage = preciseTasks.filter(t => !t.imageUrl && !t.imageUrls && !t.endImageUrl);
           if (tasksWithoutImage.length > 0) {
             formState.setError('所有任务都必须上传参考图片');
             formState.setSubmitting(false);
@@ -198,6 +210,7 @@ export default function ApiCreatePage() {
           prompt: task.prompt.trim(),
           ...(task.imageUrl && { imageUrl: task.imageUrl }),
           ...(task.imageUrls && { imageUrls: task.imageUrls }),
+          ...(task.endImageUrl && { endImageUrl: task.endImageUrl }),
           aspectRatio: task.config.aspectRatio,
           ...(task.config.duration && { duration: task.config.duration })
         }));
@@ -215,8 +228,9 @@ export default function ApiCreatePage() {
       };
 
       console.log('📤 提交配置:', {
-        mode: batchMode,
+        model: selectedModel,
         taskType,
+        mode: batchMode,
         config: submitConfig,
         batch_input_count: batch_input.length,
         sample_items: batch_input.slice(0, 3)
@@ -225,6 +239,7 @@ export default function ApiCreatePage() {
       await api.submitApiMission({
         name: formState.taskName,
         description: formState.taskDescription,
+        model_id: selectedModel.model_id,
         task_type: taskType,
         config: submitConfig,
         scheduled_time: scheduledTime,
@@ -245,161 +260,221 @@ export default function ApiCreatePage() {
     }
   };
 
+  // 处理模型选择
+  const handleModelSelect = (model: Model, _taskTypes: ApiTaskType[]) => {
+    setSelectedModel(model);
+    setTaskType(null); // 重置任务类型
+    setPreciseTasks([]); // 清空任务列表
+  };
+
+  // 处理任务类型选择
+  const handleTaskTypeSelect = (tt: ApiTaskType) => {
+    setTaskType(tt);
+    setPreciseTasks([]); // 清空任务列表
+  };
+
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      {/* 任务类型 Tab 选择器 */}
-      <div className="mb-6">
-        <ApiTaskTypeTabs
-          value={taskType || ''}
-          onChange={(value) => {
-            setTaskType(value);
-            setImageBatches(initialImageBatches);
-            // config 会在 useEffect 中自动初始化
-          }}
-        />
+    <div className="container mx-auto py-8 px-4 max-w-5xl">
+      {/* 步骤指示器 */}
+      <div className="mb-6 flex items-center justify-center gap-4 text-sm">
+        <div className={`flex items-center gap-2 ${selectedModel ? 'text-primary' : 'text-muted-foreground'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedModel ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+            {selectedModel ? <CheckCircle2 className="w-4 h-4" /> : '1'}
+          </div>
+          <span>选择模型</span>
+        </div>
+        <ArrowRight className="w-4 h-4 text-muted-foreground" />
+        <div className={`flex items-center gap-2 ${taskType ? 'text-primary' : 'text-muted-foreground'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${taskType ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+            {taskType ? <CheckCircle2 className="w-4 h-4" /> : '2'}
+          </div>
+          <span>选择任务类型</span>
+        </div>
+        <ArrowRight className="w-4 h-4 text-muted-foreground" />
+        <div className={`flex items-center gap-2 ${taskType ? 'text-primary' : 'text-muted-foreground'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-muted`}>
+            3
+          </div>
+          <span>配置参数</span>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>创建 API 任务</CardTitle>
-          <CardDescription>
-            {taskType
-              ? `配置${currentTaskConfig?.name}任务参数后批量提交`
-              : '选择任务类型，配置参数后批量提交'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {taskType ? (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 任务名称 */}
-              <ApiTaskNameInput
-                value={formState.taskName}
-                onChange={formState.setTaskName}
-                placeholder={`例如：批量${currentTaskConfig?.name}测试`}
-              />
+      {/* 步骤 1: 选择模型 */}
+      {!selectedModel && (
+        <ModelSelector
+          value={null}
+          onChange={handleModelSelect}
+          disabled={formState.submitting}
+        />
+      )}
 
-              {/* 任务描述 */}
-              <ApiTaskDescription
-                value={formState.taskDescription}
-                onChange={formState.setTaskDescription}
-              />
+      {/* 步骤 2: 选择任务类型（在模型选择后显示） */}
+      {selectedModel && !taskType && (
+        <ModelTaskTypeSelector
+          modelCapabilities={selectedModel.capabilities}
+          value={taskType}
+          onChange={handleTaskTypeSelect}
+          disabled={formState.submitting}
+        />
+      )}
 
-              {/* 定时执行 */}
-              <ScheduledExecutionToggle
-                scheduledTime={scheduledTime}
-                onChange={setScheduledTime}
-                disabled={formState.submitting}
-              />
+      {/* 步骤 3: 配置参数（在任务类型选择后显示） */}
+      {selectedModel && taskType && (
+        <>
+          {/* 返回按钮 */}
+          <div className="mb-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setSelectedModel(null);
+                setTaskType(null);
+              }}
+              disabled={formState.submitting}
+            >
+              ← 重新选择模型
+            </Button>
+          </div>
 
-              {/* 重复次数 */}
-              <ApiRepeatCountInput
-                value={formState.repeatCount}
-                onChange={formState.setRepeatCount}
-                min={1}
-                max={100}
-              />
-
-              {/* 批量模式切换器 */}
-              <BatchModeSelector
-                value={batchMode}
-                onChange={setBatchMode}
-              />
-
-              {/* 根据模式显示不同界面 */}
-              {batchMode === 'precise' ? (
-                /* 精确模式：任务列表 */
-                <PreciseTaskList
-                  tasks={preciseTasks}
-                  onChange={setPreciseTasks}
-                  taskType={taskType}
+          <Card>
+            <CardHeader>
+              <CardTitle>配置任务参数</CardTitle>
+              <CardDescription>
+                已选择模型：<strong>{selectedModel.display_name}</strong> |
+                任务类型：<strong>{getTaskTypeLabel(taskType)}</strong>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* 任务名称 */}
+                <ApiTaskNameInput
+                  value={formState.taskName}
+                  onChange={formState.setTaskName}
+                  placeholder={`例如：批量${getTaskTypeLabel(taskType)}测试`}
                 />
-              ) : (
-                /* 组合模式：笛卡尔积方式 */
-                <>
-                  {/* 配置表单 */}
-                  {renderConfigForm()}
 
-                  {/* 提示词输入 */}
-                  <ApiPromptsInput
-                    prompts={prompts}
-                    onChange={setPrompts}
-                    maxCount={50}
-                  />
+                {/* 任务描述 */}
+                <ApiTaskDescription
+                  value={formState.taskDescription}
+                  onChange={formState.setTaskDescription}
+                />
 
-                  {/* 图片上传（如果需要） */}
-                  {taskTypeRequiresImage(taskType) && (
-                    <ApiImageUpload
-                      imageBatches={imageBatches}
-                      onBatchesChange={setImageBatches}
-                      taskType={taskType}
-                      onUploadingChange={formState.setSubmitting}
-                      onError={formState.setError}
-                      onSuccess={formState.setSuccessMessage}
-                    />
-                  )}
+                {/* 定时执行 */}
+                <ScheduledExecutionToggle
+                  scheduledTime={scheduledTime}
+                  onChange={setScheduledTime}
+                  disabled={formState.submitting}
+                />
 
-                  {/* 批量预览 */}
-                  <ApiBatchPreview
+                {/* 重复次数 */}
+                <ApiRepeatCountInput
+                  value={formState.repeatCount}
+                  onChange={formState.setRepeatCount}
+                  min={1}
+                  max={100}
+                />
+
+                {/* 批量模式切换器 */}
+                <BatchModeSelector
+                  value={batchMode}
+                  onChange={setBatchMode}
+                />
+
+                {/* 根据模式显示不同界面 */}
+                {batchMode === 'precise' ? (
+                  /* 精确模式：任务列表 */
+                  <PreciseTaskList
+                    tasks={preciseTasks}
+                    onChange={setPreciseTasks}
                     taskType={taskType}
-                    prompts={prompts}
-                    imageBatches={imageBatches}
-                    repeatCount={formState.repeatCount}
-                    config={config}
+                    modelId={selectedModel.model_id}
                   />
-                </>
-              )}
+                ) : (
+                  /* 组合模式：笛卡尔积方式 */
+                  <>
+                    {/* 配置表单 */}
+                    {renderConfigForm()}
 
-              {/* 错误提示 */}
-              {formState.error && (
-                <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
-                  {formState.error}
+                    {/* 提示词输入 */}
+                    <ApiPromptsInput
+                      prompts={prompts}
+                      onChange={setPrompts}
+                      maxCount={50}
+                    />
+
+                    {/* 图片上传（如果需要） */}
+                    {doesTaskTypeRequireImage(taskType) && (
+                      <ApiImageUpload
+                        imageBatches={imageBatches}
+                        onBatchesChange={setImageBatches}
+                        taskType={taskType}
+                        onUploadingChange={formState.setSubmitting}
+                        onError={formState.setError}
+                        onSuccess={formState.setSuccessMessage}
+                      />
+                    )}
+
+                    {/* 批量预览 */}
+                    <ApiBatchPreview
+                      taskType={taskType}
+                      prompts={prompts}
+                      imageBatches={imageBatches}
+                      repeatCount={formState.repeatCount}
+                      config={config}
+                    />
+                  </>
+                )}
+
+                {/* 错误提示 */}
+                {formState.error && (
+                  <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
+                    {formState.error}
+                  </div>
+                )}
+
+                {/* 成功提示 */}
+                {formState.successMessage && (
+                  <div className="p-3 bg-green-500/10 text-green-600 dark:text-green-400 rounded-md text-sm">
+                    {formState.successMessage}
+                  </div>
+                )}
+
+                {/* 提交按钮 */}
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={formState.submitting} className="flex-1">
+                    {formState.submitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        提交中...
+                      </>
+                    ) : (
+                      '提交任务'
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/api-tasks')}
+                  >
+                    任务列表
+                  </Button>
                 </div>
-              )}
-
-              {/* 成功提示 */}
-              {formState.successMessage && (
-                <div className="p-3 bg-green-500/10 text-green-600 dark:text-green-400 rounded-md text-sm">
-                  {formState.successMessage}
-                </div>
-              )}
-
-              {/* 提交按钮 */}
-              <div className="flex gap-2">
-                <Button type="submit" disabled={formState.submitting} className="flex-1">
-                  {formState.submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      提交中...
-                    </>
-                  ) : (
-                    '提交任务'
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate('/api-tasks')}
-                >
-                  任务列表
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              请先选择上方的任务类型
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </form>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 
   // 渲染配置表单（内部函数）
   function renderConfigForm() {
-    if (!taskType) return null;
+    if (!taskType || !selectedModel) return null;
 
-    const isVideoTask = taskType === 'text_to_video' || taskType === 'image_to_video';
-    const aspectRatios = getAspectRatiosForTaskType(taskType);
+    const isVideoTask = taskType === 'text_to_video' || taskType === 'image_to_video' || taskType === 'frame_to_video';
+    const capability = selectedModel.capabilities?.[taskType];
+    const aspectRatios = capability?.supported_aspect_ratios || ['16:9', '9:16', '1:1'];
+    const durationOptions = capability?.duration_options || [5, 10, 15];
 
     return (
       <Card>
@@ -412,12 +487,12 @@ export default function ApiCreatePage() {
             <label className="text-sm font-medium">宽高比</label>
             <select
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring mt-2"
-              value={config.aspectRatio || (aspectRatios[0]?.value as any)}
+              value={config.aspectRatio || aspectRatios[0]}
               onChange={(e) => setConfig({ ...config, aspectRatio: e.target.value as any })}
             >
               {aspectRatios.map((ratio) => (
-                <option key={ratio.value} value={ratio.value}>
-                  {ratio.label}
+                <option key={ratio} value={ratio}>
+                  {ratio}
                 </option>
               ))}
             </select>
@@ -429,12 +504,12 @@ export default function ApiCreatePage() {
               <label className="text-sm font-medium">视频时长</label>
               <select
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring mt-2"
-                value={config.duration || '10'}
+                value={config.duration || String(durationOptions[0])}
                 onChange={(e) => setConfig({ ...config, duration: e.target.value })}
               >
-                {VIDEO_DURATIONS.map((d) => (
-                  <option key={d.value} value={d.value}>
-                    {d.label}
+                {durationOptions.map((d) => (
+                  <option key={d} value={String(d)}>
+                    {d}秒
                   </option>
                 ))}
               </select>
@@ -444,4 +519,20 @@ export default function ApiCreatePage() {
       </Card>
     );
   }
+}
+
+// 辅助函数
+function getTaskTypeLabel(taskType: ApiTaskType): string {
+  const labels: Record<ApiTaskType, string> = {
+    text_to_image: '文生图',
+    image_to_image: '图生图',
+    text_to_video: '文生视频',
+    image_to_video: '图生视频',
+    frame_to_video: '首尾帧生视频'
+  };
+  return labels[taskType];
+}
+
+function doesTaskTypeRequireImage(taskType: ApiTaskType): boolean {
+  return taskType === 'image_to_image' || taskType === 'image_to_video' || taskType === 'frame_to_video';
 }

@@ -8,13 +8,51 @@ from utils import get_logger
 
 logger = get_logger(__name__)
 
+# RunningHub 模型到端点的映射
+MODEL_ENDPOINT_MAP = {
+    "sora": {
+        "text_to_video": "/rhart-video-s/text-to-video",
+        "image_to_video": "/rhart-video-s/image-to-video",
+    },
+    "sorapro": {
+        "text_to_video": "/rhart-video-s/text-to-video-pro",
+        "image_to_video": "/rhart-video-s/image-to-video-pro",
+    }
+}
+
 
 class RunningHubAdapter(BasePlatformAdapter):
     """RunningHub 平台适配器"""
 
     def get_supported_task_types(self) -> List[str]:
         """获取支持的任务类型"""
-        return ["text_to_image", "image_to_image", "text_to_video", "image_to_video"]
+        return ["text_to_image", "image_to_image", "text_to_video", "image_to_video", "frame_to_video"]
+
+    def get_api_endpoint(self, task_type: str, model_id: str) -> str:
+        """
+        获取任务类型对应的 API 端点
+
+        Args:
+            task_type: 任务类型
+            model_id: 模型 ID（必需）
+
+        Returns:
+            API 端点路径
+
+        Raises:
+            ValueError: 如果找不到对应的端点配置
+        """
+        if not model_id:
+            raise ValueError("model_id 是必需参数")
+
+        if model_id not in MODEL_ENDPOINT_MAP:
+            raise ValueError(f"不支持的模型: {model_id}")
+
+        model_endpoints = MODEL_ENDPOINT_MAP[model_id]
+        if task_type not in model_endpoints:
+            raise ValueError(f"模型 {model_id} 不支持任务类型: {task_type}")
+
+        return model_endpoints[task_type]
 
     def normalize_params(self, task_type: str, raw_params: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -56,21 +94,24 @@ class RunningHubAdapter(BasePlatformAdapter):
             "raw_response": raw_result
         }
 
-    def submit_task(self, task_type: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    def submit_task(self, task_type: str, params: Dict[str, Any], model_id: str) -> Dict[str, Any]:
         """
         提交任务到 RunningHub
 
         Args:
             task_type: 任务类型
             params: 任务参数
+            model_id: 模型 ID（必需）
 
         Returns:
             提交结果
         """
         from integrations.runninghub_client import submit_task
-        from core import API_TASK_TYPES
+        from core.config import RUNNINGHUB_BASE_URL
 
-        if task_type not in self.get_supported_task_types():
+        # 验证任务类型是否支持
+        supported = self.get_supported_task_types()
+        if task_type not in supported:
             return {
                 "success": False,
                 "status": "failed",
@@ -78,50 +119,42 @@ class RunningHubAdapter(BasePlatformAdapter):
                 "raw_response": {}
             }
 
-        # 获取 API URL
-        if task_type not in API_TASK_TYPES:
+        try:
+            # 获取 API 端点（model_id 必需）
+            api_endpoint = self.get_api_endpoint(task_type, model_id)
+            api_url = f"{RUNNINGHUB_BASE_URL}/openapi/v2{api_endpoint}"
+
+            logger.info(f"📤 RunningHub 提交 {task_type} 任务 (model={model_id}, endpoint={api_endpoint})")
+
+            # 调用 RunningHub API 客户端
+            response = submit_task(task_type, params, api_url)
+
+            # 检查返回结果
+            error_code = response.get("errorCode", "")
+            error_message = response.get("errorMessage", "")
+            task_id = response.get("taskId")
+
+            if task_id and not error_code:
+                return {
+                    "success": True,
+                    "task_id": task_id,
+                    "status": response.get("status", "submitted").lower(),
+                    "message": "任务提交成功",
+                    "raw_response": response
+                }
+            else:
+                return {
+                    "success": False,
+                    "status": "failed",
+                    "message": error_message or "提交失败",
+                    "raw_response": response
+                }
+        except ValueError as e:
             return {
                 "success": False,
                 "status": "failed",
-                "message": f"未配置任务类型: {task_type}",
+                "message": str(e),
                 "raw_response": {}
-            }
-
-        api_url = API_TASK_TYPES[task_type]["url"]
-
-        # 调用 RunningHub API 客户端
-        response = submit_task(task_type, params, api_url)
-
-        # RunningHub API 返回格式:
-        # {
-        #     "taskId": "xxx",
-        #     "status": "RUNNING",
-        #     "errorCode": "",
-        #     "errorMessage": "",
-        #     "results": null,
-        #     "clientId": "xxx",
-        #     "promptTips": "{...}"
-        # }
-
-        # 检查是否有错误码
-        error_code = response.get("errorCode", "")
-        error_message = response.get("errorMessage", "")
-        task_id = response.get("taskId")
-
-        if task_id and not error_code:
-            return {
-                "success": True,
-                "task_id": task_id,
-                "status": response.get("status", "submitted").lower(),
-                "message": "任务提交成功",
-                "raw_response": response
-            }
-        else:
-            return {
-                "success": False,
-                "status": "failed",
-                "message": error_message or "提交失败",
-                "raw_response": response
             }
 
     def query_task(self, task_id: str) -> Dict[str, Any]:

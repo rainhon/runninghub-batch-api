@@ -19,6 +19,7 @@ export interface PreciseTaskConfig {
   prompt: string;
   imageUrl?: string;
   imageUrls?: string;
+  endImageUrl?: string;  // 用于首尾帧生视频
   config: {
     aspectRatio: string;
     duration?: string;
@@ -29,16 +30,18 @@ interface TaskCardProps {
   task: PreciseTaskConfig;
   index: number;
   taskType: ApiTaskType;
+  modelId?: string;  // 新增：模型ID
   onEdit: (task: PreciseTaskConfig) => void;
   onDelete: () => void;
   onDuplicate: () => void;
 }
 
-export function TaskCard({ task, index, taskType, onEdit, onDelete, onDuplicate }: TaskCardProps) {
+export function TaskCard({ task, index, taskType, modelId, onEdit, onDelete, onDuplicate }: TaskCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
 
   const requiresImage = taskType === 'image_to_image' || taskType === 'image_to_video';
+  const requiresEndImage = taskType === 'frame_to_video';
 
   return (
     <div className="border rounded-lg p-3 space-y-2 hover:border-primary/50 transition-colors">
@@ -95,6 +98,28 @@ export function TaskCard({ task, index, taskType, onEdit, onDelete, onDuplicate 
           </div>
         )}
 
+        {requiresEndImage && task.imageUrl && (
+          <div>
+            <span className="text-muted-foreground block mb-1">首帧图片：</span>
+            <img
+              src={task.imageUrl}
+              alt="首帧图片"
+              className="w-full h-24 object-cover rounded-md border"
+            />
+          </div>
+        )}
+
+        {requiresEndImage && task.endImageUrl && (
+          <div>
+            <span className="text-muted-foreground block mb-1">尾帧图片：</span>
+            <img
+              src={task.endImageUrl}
+              alt="尾帧图片"
+              className="w-full h-24 object-cover rounded-md border"
+            />
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground">{task.config.aspectRatio}</span>
           {task.config.duration && <span>| {task.config.duration}秒</span>}
@@ -110,6 +135,7 @@ export function TaskCard({ task, index, taskType, onEdit, onDelete, onDuplicate 
           setShowEditDialog(false);
         }}
         taskType={taskType}
+        modelId={modelId}
         editingTask={task}
       />
 

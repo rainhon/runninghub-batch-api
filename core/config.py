@@ -50,7 +50,7 @@ MAX_CONCURRENT_API_TASKS = 50
 API_POLL_INTERVAL = 5  # API 任务轮询间隔（秒）
 API_MAX_POLLS = 120  # API 任务最多轮询次数（10分钟）
 
-# API 任务类型配置
+# API 任务类型配置（默认端点，实际端点可能根据模型变化）
 API_TASK_TYPES: Dict[str, Dict] = {
     "text_to_image": {
         "url": f"{RUNNINGHUB_BASE_URL}/openapi/v2/rhart-image-v1/text-to-image",
@@ -75,6 +75,12 @@ API_TASK_TYPES: Dict[str, Dict] = {
         "required_fields": ["imageUrl", "prompt"],
         "optional_fields": ["duration", "aspectRatio"],
         "name": "图生视频"
+    },
+    "frame_to_video": {
+        "url": f"{RUNNINGHUB_BASE_URL}/openapi/v2/rhart-video-s/frame-to-video",
+        "required_fields": ["imageUrl", "endImageUrl", "prompt"],
+        "optional_fields": ["duration", "aspectRatio"],
+        "name": "首尾帧生视频"
     }
 }
 
@@ -83,7 +89,7 @@ DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 
 # 文件上传配置
-MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
+MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 10MB
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 
 

@@ -1,5 +1,6 @@
 -- API 任务管理系统数据库表初始化脚本
 -- 创建时间: 2026-01-23
+-- 更新时间: 2026-02-07 (添加 model_id 字段)
 
 -- 创建 API 任务主表
 DROP TABLE IF EXISTS api_missions;
@@ -8,7 +9,8 @@ CREATE TABLE IF NOT EXISTS api_missions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(200) NOT NULL,                    -- 任务名称
     description TEXT,                               -- 任务描述
-    task_type VARCHAR(50) NOT NULL,                -- 任务类型: text_to_image/image_to_image/text_to_video/image_to_video
+    task_type VARCHAR(50) NOT NULL,                -- 任务类型: text_to_image/image_to_image/text_to_video/image_to_video/frame_to_video
+    model_id VARCHAR(50),                           -- 模型 ID: sora/sorapro/banana/veo/veopro
     status VARCHAR(20) DEFAULT 'queued',           -- 状态: queued/running/completed/cancelled/failed/scheduled
     total_count INTEGER NOT NULL,                   -- 总任务数
     completed_count INTEGER DEFAULT 0,              -- 已完成数
@@ -56,6 +58,7 @@ CREATE TABLE IF NOT EXISTS api_templates (
 -- 创建索引
 CREATE INDEX IF NOT EXISTS idx_api_missions_status ON api_missions(status);
 CREATE INDEX IF NOT EXISTS idx_api_missions_type ON api_missions(task_type);
+CREATE INDEX IF NOT EXISTS idx_api_missions_model_id ON api_missions(model_id);
 CREATE INDEX IF NOT EXISTS idx_api_missions_created ON api_missions(created_at);
 CREATE INDEX IF NOT EXISTS idx_api_missions_scheduled_time ON api_missions(scheduled_time);
 CREATE INDEX IF NOT EXISTS idx_api_missions_status_scheduled ON api_missions(status, scheduled_time);

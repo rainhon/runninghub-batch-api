@@ -130,8 +130,52 @@ export interface SaveTemplateRequest {
 
 // ==================== API 任务相关类型 ====================
 
-// API 任务类型
-export type ApiTaskType = 'text_to_image' | 'image_to_image' | 'text_to_video' | 'image_to_video';
+// API 任务类型（扩展以支持更多类型）
+export type ApiTaskType =
+  | 'text_to_image'
+  | 'image_to_image'
+  | 'text_to_video'
+  | 'image_to_video'
+  | 'frame_to_video';  // 首尾帧生视频
+
+// 模型类型
+export type ModelId = 'sora' | 'sorapro' | 'banana' | 'veo' | 'veopro';
+
+// 模型能力配置
+export interface ModelCapability {
+  enabled: boolean;
+  duration_options?: number[];  // 视频时长选项（秒）
+  supported_aspect_ratios: string[];  // 支持的宽高比
+  required_params: string[];  // 必需参数
+  optional_params: string[];  // 可选参数
+  description?: string;  // 能力描述
+}
+
+// 模型配置
+export interface Model {
+  model_id: ModelId;
+  name: string;
+  display_name: string;
+  description: string;
+  enabled: boolean;
+  priority: number;
+  capabilities: {
+    [key in ApiTaskType]?: ModelCapability;
+  };
+  rate_limit: number;
+  timeout: number;
+}
+
+// 模型列表响应
+export interface ModelsListResponse {
+  items: Model[];
+  total: number;
+}
+
+// 模型任务类型信息（包含能力配置）
+export interface ModelTaskTypeInfo extends ModelCapability {
+  task_type: ApiTaskType;
+}
 
 // API 任务状态
 export type ApiMissionStatus = 'queued' | 'running' | 'completed' | 'cancelled' | 'failed';
@@ -158,6 +202,7 @@ export interface ApiMission {
   name: string;
   description?: string;
   task_type: ApiTaskType;
+  model_id?: ModelId;  // 使用的模型
   status: ApiMissionStatus;
   total_count: number;
   completed_count: number;
@@ -180,6 +225,10 @@ export interface ApiMissionItem {
   result_url?: string;
   error_message?: string;
   runninghub_task_id?: string;
+  platform_id?: string;  // 使用的平台ID
+  platform_task_id?: string;  // 平台任务ID
+  retry_count?: number;  // 重试次数
+  next_retry_at?: string;  // 下次重试时间（中国时区 ISO 格式）
   created_at: string;
   updated_at: string;
 }
@@ -193,6 +242,7 @@ export interface ApiMissionDetail extends ApiMission {
 export interface CreateApiMissionRequest {
   name: string;
   description?: string;
+  model_id: ModelId;  // 模型 ID
   task_type: ApiTaskType;
   config: ApiMissionConfig;
   scheduled_time?: string;  // 定时执行时间（中国时区 ISO 格式）

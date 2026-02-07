@@ -107,7 +107,8 @@ class PlatformManager:
         return self.adapters.get(platform_id)
 
     def submit_task(self, task_type: str, params: Dict[str, Any],
-                    item_id: int, platform_id: str = None) -> Dict[str, Any]:
+                    item_id: int, platform_id: str = None,
+                    model_id: str = None) -> Dict[str, Any]:
         """
         提交任务到指定平台
 
@@ -116,11 +117,20 @@ class PlatformManager:
             params: 任务参数
             item_id: 子任务 ID
             platform_id: 平台 ID，如果为 None 则使用默认平台（runninghub）
+            model_id: 模型 ID（必需）
 
         Returns:
             提交结果
         """
         import repositories as database
+
+        # 验证 model_id
+        if not model_id:
+            return {
+                "success": False,
+                "status": "failed",
+                "message": "model_id 是必需参数"
+            }
 
         # 确定使用的平台
         if platform_id is None:
@@ -136,14 +146,14 @@ class PlatformManager:
                 "message": f"平台 {platform_id} 的适配器未加载"
             }
 
-        logger.info(f"📤 使用平台 {platform_id} 提交 {task_type} 任务")
+        logger.info(f"📤 使用平台 {platform_id} 提交 {task_type} 任务 (model={model_id})")
 
         # 标准化参数
         normalized_params = adapter.normalize_params(task_type, params)
 
-        # 提交任务
+        # 提交任务（传递 model_id）
         try:
-            result = adapter.submit_task(task_type, normalized_params)
+            result = adapter.submit_task(task_type, normalized_params, model_id=model_id)
 
             # 更新使用的平台、平台任务ID
             database.execute_sql(
@@ -154,7 +164,7 @@ class PlatformManager:
             )
 
             if result['success']:
-                logger.info(f"✅ 任务提交成功: task_id={result.get('task_id')}, platform={platform_id}")
+                logger.info(f"✅ 任务提交成功: task_id={result.get('task_id')}, platform={platform_id}, model={model_id}")
                 return result
             else:
                 logger.warning(f"⚠️ 任务提交失败: {result.get('message')}, platform={platform_id}")

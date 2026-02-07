@@ -3,7 +3,8 @@ import type {
   NodeInfo, Task, TaskResult, SubmitTaskRequest, MediaFile, TaskTemplate, SaveTemplateRequest,
   ApiMission, ApiMissionDetail, ApiMissionListResponse, CreateApiMissionRequest,
   ApiMissionItem, ApiTemplate, SaveApiTemplateRequest,
-  AppMission, AppMissionDetail, AppMissionListResponse, CreateAppMissionRequest, AppMissionItem
+  AppMission, AppMissionDetail, AppMissionListResponse, CreateAppMissionRequest, AppMissionItem,
+  Model, ModelsListResponse, ModelTaskTypeInfo
 } from '../types';
 
 // 从环境变量获取 baseURL
@@ -152,6 +153,24 @@ export const api = {
   getTaskTypes: () => {
     return request.get<any[]>('/api/v1/platforms/task-types');
   },
+
+  // ============== 模型管理 API ==============
+
+  // 获取所有可用模型列表
+  getModels: () =>
+    request.get<ModelsListResponse>('/api/v1/api_missions/models'),
+
+  // 获取指定模型的详细信息
+  getModelDetail: (modelId: string) =>
+    request.get<{ model: Model; capabilities: any; task_types: string[] }>(
+      `/api/v1/api_missions/models/${modelId}`
+    ),
+
+  // 获取指定模型支持的任务类型列表
+  getModelTaskTypes: (modelId: string) =>
+    request.get<{ items: ModelTaskTypeInfo[]; total: number }>(
+      `/api/v1/api_missions/models/${modelId}/task-types`
+    ),
 
   // ============== API 模板管理 API ==============
 

@@ -358,6 +358,13 @@ export default function ApiTaskDetailPage() {
                     </span>
                   </div>
                 )}
+                {/* 显示错误信息 */}
+                {item.error_message && (
+                  <div className="mt-2 text-orange-700 dark:text-orange-400 text-xs">
+                    <span className="font-medium">错误: </span>
+                    <span className="break-all">{item.error_message}</span>
+                  </div>
+                )}
               </div>
             )}
 

@@ -238,6 +238,7 @@ class ApiTaskManager:
                 return
 
             with self.queue_lock:
+                # 添加所有子任务到队列
                 for item in items:
                     item_data = {
                         'mission_id': mission_id,
@@ -263,15 +264,18 @@ class ApiTaskManager:
         try:
             logger.info("🔄 开始恢复未完成的任务...")
 
-            # 1. 恢复 pending 状态的子任务到队列（保留 next_retry_at）
-            # 注意：排除 scheduled 状态的任务，这些任务由调度器管理
+            # 1. 恢复 pending 状态的子任务到队列
+            # 注意：
+            # - 排除 scheduled 状态的任务（由调度器管理）
+            # - 排除带 next_retry_at 的任务（由重试检查器在到期时恢复）
             pending_items = database.execute_sql(
                 """SELECT i.*, m.task_type, m.config_json, m.model_id
                    FROM api_mission_items i
                    JOIN api_missions m ON i.api_mission_id = m.id
                    WHERE i.status = 'pending'
                      AND m.status != 'scheduled'
-                   ORDER BY i.next_retry_at ASC""",
+                     AND i.next_retry_at IS NULL
+                   ORDER BY i.id ASC""",
                 fetch_all=True
             )
 
@@ -287,7 +291,7 @@ class ApiTaskManager:
                     self.item_queue.append(item_data)
                 restored_count += 1
 
-            logger.info(f"📥 恢复 {restored_count} 个待处理的子任务到队列（包含重试时间信息）")
+            logger.info(f"📥 恢复 {restored_count} 个待处理的子任务到队列（不含待重试任务）")
 
             # 2. 恢复 processing 状态且有 platform_task_id 的子任务的轮询
             processing_items = database.execute_sql(

@@ -10,6 +10,7 @@ import type { ApiMission, ApiMissionStatus } from '../types';
 export interface UseApiTaskListStateProps {
   pageSize?: number;
   defaultStatusFilter?: ApiMissionStatus | 'all';
+  initialPage?: number;  // 初始页码（从 URL 参数读取）
 }
 
 export interface UseApiTaskListStateReturn {
@@ -38,12 +39,13 @@ export function useApiTaskListState(
   const {
     pageSize = 20,
     defaultStatusFilter = 'all',
+    initialPage = 1,
   } = props;
 
   const [missions, setMissions] = useState<ApiMission[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState<ApiMissionStatus | 'all'>(defaultStatusFilter);
@@ -79,6 +81,15 @@ export function useApiTaskListState(
   // 页码或筛选变化时重新加载
   useEffect(() => {
     loadMissions();
+  }, [loadMissions]);
+
+  // 定时刷新：每10秒自动刷新当前页任务状态
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadMissions(true); // 使用 refreshing 模式，避免全屏 loading
+    }, 10000); // 10 秒
+
+    return () => clearInterval(interval); // 清理定时器
   }, [loadMissions]);
 
   // 取消任务

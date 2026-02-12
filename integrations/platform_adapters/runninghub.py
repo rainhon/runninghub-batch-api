@@ -119,6 +119,12 @@ class RunningHubAdapter(BasePlatformAdapter):
                 "raw_response": {}
             }
 
+        # sora 和 sorapro 的视频任务强制添加 storyboard: false
+        if model_id in ('sora', 'sorapro') and task_type in ('text_to_video', 'image_to_video'):
+            params = dict(params)  # 创建副本，避免修改原始参数
+            params['storyboard'] = False
+            logger.debug(f"   为模型 {model_id} 添加 storyboard: false 参数")
+
         try:
             # 获取 API 端点（model_id 必需）
             api_endpoint = self.get_api_endpoint(task_type, model_id)

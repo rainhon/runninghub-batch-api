@@ -3,7 +3,7 @@
  * 使用新组件和 hooks，代码从 380 行减少到约 150 行
  */
 
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Loader2, RefreshCw, Download, Trash2, RotateCcw, XCircle, Plus, Eye } from 'lucide-react';
@@ -13,6 +13,9 @@ import { getTaskTypeName } from '../constants/statusConfig';
 
 export default function ApiTasksPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pageParam = searchParams.get('page');
+  const initialPage = pageParam ? parseInt(pageParam, 10) : 1;
 
   // 使用自定义 hook 管理列表状态
   const {
@@ -24,11 +27,13 @@ export default function ApiTasksPage() {
     total,
     statusFilter,
     error,
+    loadMissions,
+    setCurrentPage,
     setStatusFilter,
     handleCancel,
     handleRetry,
     handleDownload,
-  } = useApiTaskListState({ pageSize: 20 });
+  } = useApiTaskListState({ pageSize: 20, initialPage });
 
   // 删除任务（保留在页面中，因为涉及业务逻辑）
   const handleDelete = async (missionId: number) => {
@@ -37,8 +42,8 @@ export default function ApiTasksPage() {
     try {
       const { api } = await import('../lib/api');
       await api.deleteApiMission(missionId);
-      // 重新加载当前页
-      window.location.reload();
+      // 使用 loadMissions 刷新，不重新加载整个页面
+      await loadMissions(true);
     } catch (err: any) {
       alert(err.message || '删除失败');
     }
@@ -206,7 +211,12 @@ export default function ApiTasksPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">API 任务</h1>
-          <p className="text-muted-foreground mt-1">管理和监控批量 API 任务</p>
+          <p className="text-muted-foreground mt-1">
+            管理和监控批量 API 任务
+            <span className="ml-2 text-xs text-muted-foreground/70">
+              (每 10 秒自动刷新)
+            </span>
+          </p>
         </div>
         <Button onClick={() => navigate('/api-create')}>
           <Plus className="w-4 h-4 mr-2" />
@@ -228,10 +238,7 @@ export default function ApiTasksPage() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => {
-                  // 触发刷新
-                  window.location.reload();
-                }}
+                onClick={() => loadMissions(true)}
                 disabled={refreshing}
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
@@ -277,10 +284,15 @@ export default function ApiTasksPage() {
                   total={total}
                   pageSize={20}
                   onPageChange={(page) => {
-                    const { useApiTaskListState } = require('../hooks/useApiTaskListState');
-                    // 页码变化会在 hook 内部处理
-                    window.history.pushState({}, '', `?page=${page}`);
-                    window.location.reload();
+                    // 更新 URL 参数
+                    if (page === 1) {
+                      searchParams.delete('page');
+                    } else {
+                      searchParams.set('page', page.toString());
+                    }
+                    setSearchParams(searchParams);
+                    // 更新当前页（会触发 hook 中的 loadMissions）
+                    setCurrentPage(page);
                   }}
                 />
               </div>
